@@ -20,11 +20,11 @@ mingw32-make.exe
 
 ## Usage
 ```powershell
-# Download ggml weights from huggingface
-# https://huggingface.co/Drararara/llama-7b-ggml/tree/main
-# https://huggingface.co/Pi3141/alpaca-lora-7B-ggml/tree/main
-# https://huggingface.co/Sosaka/Vicuna-7B-4bit-ggml/tree/main
-# https://huggingface.co/eachadea/ggml-vicuna-7b-4bit/tree/main
+# Download ggml weights
+## https://huggingface.co/Drararara/llama-7b-ggml/tree/main
+## https://huggingface.co/Pi3141/alpaca-lora-7B-ggml/tree/main
+## https://huggingface.co/Sosaka/Vicuna-7B-4bit-ggml/tree/main
+## https://huggingface.co/eachadea/ggml-vicuna-7b-4bit/tree/main
 
 ./bin/my-llama.exe -m <ggml_model_file>
 ```
