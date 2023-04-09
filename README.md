@@ -11,8 +11,8 @@
 git submodule update --init --recursive
 
 # Then modify /llama.cpp/Makefile. - See /Makefile
-# Append 'CC = gcc'(not g++) at top of Makefile in /llama.cpp
-# Comment or remove CCV, CXXV definition and print
+## Append 'CC = gcc'(not g++) at top of Makefile in /llama.cpp
+## Comment or remove CCV, CXXV definition and print
 
 mingw32-make.exe
 ```
