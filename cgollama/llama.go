@@ -37,6 +37,8 @@ func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, text string, po Predict
 	predVARs := C.llama_prepare_pred_vars(params, l.state)
 	remainCOUNT := C.llama_get_remain_count(predVARs)
 
+	brokenBytes := []byte{} // for broken non-ascii characters correction
+
 END:
 	for remainCOUNT > 0 {
 		idsSIZE := int(C.llama_get_embedding_ids(params, predVARs))
@@ -48,22 +50,25 @@ END:
 			default:
 				id := C.llama_get_id(predVARs, C.int(i))
 				embedCSTR := C.llama_get_embed_string(predVARs, id)
-				// embedSTR := C.GoString(embedCSTR)
-				// fmt.Print(embedSTR)
+				response := C.GoString(embedCSTR)
+				fmt.Print(response)
 
-				embedCBYTES := C.GoBytes(unsafe.Pointer(embedCSTR), C.int(len(C.GoString(embedCSTR))))
-				var embedSTR string
-				for len(embedCBYTES) > 0 {
-					r, size := utf8.DecodeRune(embedCBYTES)
-					if r == utf8.RuneError {
-						// fmt.Println("Invalid UTF-8")
-						break
+				// Correct broken non-ascii characters
+				if !utf8.ValidString(response) {
+					brokenBytes = append(brokenBytes, []byte(response)...)
+					continue
+				} else {
+					fmt.Println("valid??")
+					if len(brokenBytes) > 0 {
+						response = string(brokenBytes)
+						brokenBytes = []byte{}
+
+						if !utf8.ValidString(response) {
+							continue // still broken
+						}
 					}
-					embedSTR += string(r)
-					embedCBYTES = embedCBYTES[size:]
 				}
 
-				response := embedSTR
 				err := handler.Send(conn, response)
 				if err != nil {
 					fmt.Println("Send error:", err)
