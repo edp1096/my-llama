@@ -117,6 +117,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if _, err := os.Stat(model); os.IsNotExist(err) {
+		fmt.Printf("Model file %s does not exist", model)
+		os.Exit(1)
+	}
+
 	listenURI := Address + ":" + Port
 	uri := HttpProtocol + "://" + Address + ":" + Port
 
