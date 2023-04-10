@@ -34,8 +34,7 @@ func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, text string, po Predict
 	params := C.llama_allocate_params(input, C.int(po.Seed), C.int(po.Threads), C.int(po.Tokens), C.int(po.TopK),
 		C.float(po.TopP), C.float(po.Temperature), C.float(po.Penalty), C.int(po.Repeat), C.bool(po.IgnoreEOS), C.bool(po.F16KV))
 
-	state := l.state
-	predVARs := C.llama_prepare_pred_vars(params, state)
+	predVARs := C.llama_prepare_pred_vars(params, l.state)
 	remainCOUNT := C.llama_get_remain_count(predVARs)
 
 END:
@@ -65,7 +64,6 @@ END:
 				}
 
 				response := embedSTR
-				// response := strings.Replace(embedSTR, "\n", "<br>", -1)
 				err := handler.Send(conn, response)
 				if err != nil {
 					fmt.Println("Send error:", err)
@@ -81,6 +79,7 @@ END:
 			break
 		}
 	}
+	fmt.Println()
 
 	err := handler.Send(conn, "<br />Response done.<br />")
 	if err != nil {
