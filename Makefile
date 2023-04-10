@@ -1,5 +1,4 @@
-# CC = gcc
-CC = g++
+CC = gcc
 
 ifndef UNAME_S
 UNAME_S := $(shell uname -s)
