@@ -35,6 +35,10 @@ mingw32-make.exe
 ```
 
 
+## TODO
+* Add DeepL API
+
+
 ## Source
 * https://github.com/ggerganov/llama.cpp
 * https://github.com/go-skynet/go-llama.cpp
