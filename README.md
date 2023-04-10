@@ -1,6 +1,4 @@
-# My-llama
-
-`My-llama` to run llama 7B on my windows machine.
+Llama 7B runner on my windows machine
 
 ## Requirements
 * [Go](https://golang.org/dl)
