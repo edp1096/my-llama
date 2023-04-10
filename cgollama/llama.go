@@ -24,69 +24,35 @@ func New(model string, opts ...ModelOption) (*LLama, error) {
 	return &LLama{state: result}, nil
 }
 
-func (l *LLama) Predict(text string, po PredictOptions) (string, error) {
+func (l *LLama) Predict(text string, po PredictOptions) error {
 	input := C.CString(text)
-	// if po.Tokens == 0 {
-	// 	po.Tokens = 99999999
-	// }
-	// out := make([]byte, po.Tokens)
 
 	params := C.llama_allocate_params(input, C.int(po.Seed), C.int(po.Threads), C.int(po.Tokens), C.int(po.TopK),
 		C.float(po.TopP), C.float(po.Temperature), C.float(po.Penalty), C.int(po.Repeat), C.bool(po.IgnoreEOS), C.bool(po.F16KV))
 
-	// pred_vars := C.llama_get_prediction(params, l.state, (*C.char)(unsafe.Pointer(&out[0])))
-	pred_vars := C.llama_get_prediction(params, l.state)
-	n_remains := C.llama_get_remain_count(pred_vars)
+	predVARs := C.llama_prepare_pred_vars(params, l.state)
+	remainCOUNT := C.llama_get_remain_count(predVARs)
 
-	for n_remains > 0 {
-		embed_size := int(C.llama_loop_prediction(params, pred_vars))
+	for remainCOUNT > 0 {
+		idsSIZE := int(C.llama_get_embedding_ids(params, predVARs))
 
-		for i := 0; i < embed_size; i++ {
-			id := C.llama_get_id(pred_vars, C.int(i))
-			embedCSTR := C.llama_get_embed_string(pred_vars, id)
+		for i := 0; i < idsSIZE; i++ {
+			id := C.llama_get_id(predVARs, C.int(i))
+			embedCSTR := C.llama_get_embed_string(predVARs, id)
 			embedSTR := C.GoString(embedCSTR)
 			fmt.Print(embedSTR)
 		}
 
-		n_remains = C.llama_get_remain_count(pred_vars)
+		remainCOUNT = C.llama_get_remain_count(predVARs)
+		isTokenEND := C.llama_check_token_end(predVARs)
+		if bool(isTokenEND) {
+			break
+		}
 	}
 	fmt.Println()
 
-	// res := C.GoString((*C.char)(unsafe.Pointer(&out[0])))
-	// res = strings.TrimPrefix(res, " ")
-	// res = strings.TrimPrefix(res, text)
-	// res = strings.TrimPrefix(res, "\n")
-
 	C.llama_default_signal_action()
-
 	C.llama_free_params(params)
 
-	// return res, nil
-	return "", nil
+	return nil
 }
-
-// func (l *LLama) Predict(text string, opts ...PredictOption) (string, error) {
-// 	po := NewPredictOptions(opts...)
-
-// 	input := C.CString(text)
-// 	if po.Tokens == 0 {
-// 		po.Tokens = 99999999
-// 	}
-// 	out := make([]byte, po.Tokens)
-
-// 	params := C.llama_allocate_params(input, C.int(po.Seed), C.int(po.Threads), C.int(po.Tokens), C.int(po.TopK),
-// 		C.float(po.TopP), C.float(po.Temperature), C.float(po.Penalty), C.int(po.Repeat), C.bool(po.IgnoreEOS), C.bool(po.F16KV))
-// 	ret := C.llama_predict(params, l.state, (*C.char)(unsafe.Pointer(&out[0])))
-// 	if ret != 0 {
-// 		return "", fmt.Errorf("inference failed")
-// 	}
-// 	res := C.GoString((*C.char)(unsafe.Pointer(&out[0])))
-
-// 	res = strings.TrimPrefix(res, " ")
-// 	res = strings.TrimPrefix(res, text)
-// 	res = strings.TrimPrefix(res, "\n")
-
-// 	C.llama_free_params(params)
-
-// 	return res, nil
-// }

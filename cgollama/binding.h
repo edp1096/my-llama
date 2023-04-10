@@ -29,11 +29,11 @@ void llama_free_model(void* state);
 
 int llama_get_remain_count(void* pred_vars_v);
 void llama_default_signal_action();
-// void* llama_get_prediction(void* params_ptr, void* state_pr, char* result);
-void* llama_get_prediction(void* params_ptr, void* state_pr);
-int llama_loop_prediction(void* params_ptr, void* pred_vars_ptr);
+void* llama_prepare_pred_vars(void* params_ptr, void* state_pr);
+int llama_get_embedding_ids(void* params_ptr, void* pred_vars_ptr);
 int llama_get_id(void* pred_vars_ptr, int index);
 char* llama_get_embed_string(void* pred_vars_ptr, int id);
+bool llama_check_token_end(void* pred_vars_ptr);
 
 int llama_predict(void* params_ptr, void* state_pr, char* result);
 

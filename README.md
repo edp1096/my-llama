@@ -21,6 +21,10 @@ mingw32-make.exe
 ## https://huggingface.co/eachadea/ggml-vicuna-7b-4bit/tree/main
 
 ./bin/my-llama.exe -m <ggml_model_file>
+
+# Change tokens, threads count on input
+/tokens=128<enter>
+/threads=4<enter>
 ```
 
 
