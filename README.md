@@ -36,7 +36,7 @@ mingw32-make.exe
 
 
 ## TODO
-* Add DeepL API
+* Add Papago, Kakao API
 
 
 ## Source
