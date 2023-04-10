@@ -1,0 +1,59 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>WebSocket</title>
+</head>
+
+<body>
+    <textarea id="inputs">Do you know 김치?</textarea>
+    <button id="send" onclick="send()">Send</button>
+    <button id="send" onclick="stopResponse()">Stop</button>
+    <p id="outputs"></p>
+</body>
+
+<script>
+    const loc = window.location
+    let uri = 'ws:'
+
+    if (loc.protocol === 'https:') uri = 'wss:'
+
+    uri += '//' + "localhost" + ":1323"
+    uri += "/" + 'ws'
+
+    ws = new WebSocket(uri)
+
+    ws.onopen = function () {
+        console.log('Connected')
+    }
+
+    ws.onmessage = function (evt) {
+        var out = document.getElementById('outputs')
+        out.innerHTML += evt.data
+        // ws.close()
+    }
+
+    function send() {
+        const input = document.querySelector("#inputs")
+        if (input.value === '') {
+            return
+        }
+
+        ws.send(input.value)
+
+        input.value = ''
+        input.focus()
+    }
+
+    function stopResponse() {
+        const input = document.querySelector("#inputs")
+        const stopmsg = "$$__STOP__$$"
+
+        ws.send(stopmsg)
+
+        input.value = ''
+        input.focus()
+    }
+</script>
+
+</html>
