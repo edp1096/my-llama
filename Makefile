@@ -139,13 +139,13 @@ build:
 	go build -o bin/
 
 llama.cpp/ggml.o:
-	$(MAKE) -C llama.cpp ggml.o
+	$(MAKE) CC=$(CC) -C llama.cpp ggml.o
 
 llama.cpp/llama.o:
-	$(MAKE) -C llama.cpp llama.o
+	$(MAKE) CC=$(CC) -C llama.cpp llama.o
 
 llama.cpp/common.o:
-	$(MAKE) -C llama.cpp common.o
+	$(MAKE) CC=$(CC) -C llama.cpp common.o
 
 binding.o: llama.cpp/ggml.o llama.cpp/llama.o llama.cpp/common.o
 	$(CXX) $(CXXFLAGS) -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
