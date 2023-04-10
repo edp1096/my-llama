@@ -2,12 +2,22 @@
 
 Llama 7B runner on my windows machine
 
-## Requirements
+
+## Binary
+* [Windows](https://github.com/edp1096/my-llama/releases/download/v0.0.2/my-llama.exe)
+
+
+
+## Build from source
+
+### Requirements
 * [Go](https://golang.org/dl)
 * [MinGW](https://github.com/brechtsanders/winlibs_mingw)
 
-## Build
+### Build
 ```powershell
+git clone https://github.com/edp1096/my-llama.git
+
 git submodule update --init --recursive
 
 mingw32-make.exe
@@ -24,10 +34,6 @@ mingw32-make.exe
 
 ./bin/my-llama.exe [-m <ggml_model_file>] [-t <cpu_count>] [-n <token_count>]
 ```
-
-
-## Todo
-* UTF-8
 
 
 ## Source
