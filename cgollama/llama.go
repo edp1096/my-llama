@@ -6,6 +6,7 @@ package cgollama
 import "C"
 import (
 	"fmt"
+	"unicode"
 	"unicode/utf8"
 	"unsafe"
 
@@ -28,6 +29,16 @@ func New(model string, opts ...ModelOption) (*LLama, error) {
 	return &LLama{state: result}, nil
 }
 
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] > unicode.MaxASCII {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, text string, po PredictOptions) error {
 	input := C.CString(text)
 
@@ -35,9 +46,10 @@ func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, text string, po Predict
 		C.float(po.TopP), C.float(po.Temperature), C.float(po.Penalty), C.int(po.Repeat), C.bool(po.IgnoreEOS), C.bool(po.F16KV))
 
 	predVARs := C.llama_prepare_pred_vars(params, l.state)
-	remainCOUNT := C.llama_get_remain_count(predVARs)
+	remainCOUNT := int(C.llama_get_remain_count(predVARs))
 
-	brokenBytes := []byte{} // for broken non-ascii characters correction
+	responseBYTEs := []byte{}
+	response := ""
 
 END:
 	for remainCOUNT > 0 {
@@ -50,23 +62,15 @@ END:
 			default:
 				id := C.llama_get_id(predVARs, C.int(i))
 				embedCSTR := C.llama_get_embed_string(predVARs, id)
-				response := C.GoString(embedCSTR)
-				fmt.Print(response)
+				embedSTR := C.GoString(embedCSTR)
+				// fmt.Print(embedSTR)
 
-				// Correct broken non-ascii characters
-				if !utf8.ValidString(response) {
-					brokenBytes = append(brokenBytes, []byte(response)...)
+				responseBYTEs = append(responseBYTEs, []byte(embedSTR)...)
+				response = string(responseBYTEs)
+
+				// Because connection is closed, don't send invalid UTF-8
+				if !utf8.ValidString(embedSTR) {
 					continue
-				} else {
-					fmt.Println("valid??")
-					if len(brokenBytes) > 0 {
-						response = string(brokenBytes)
-						brokenBytes = []byte{}
-
-						if !utf8.ValidString(response) {
-							continue // still broken
-						}
-					}
 				}
 
 				err := handler.Send(conn, response)
@@ -77,16 +81,15 @@ END:
 			}
 		}
 
-		remainCOUNT = C.llama_get_remain_count(predVARs)
+		remainCOUNT = int(C.llama_get_remain_count(predVARs))
 		isTokenEND := C.llama_check_token_end(predVARs)
 
 		if bool(isTokenEND) {
 			break
 		}
 	}
-	fmt.Println()
 
-	err := handler.Send(conn, "<br />Response done.<br />")
+	err := handler.Send(conn, response+"\nResponse done.\n")
 	if err != nil {
 		fmt.Println("Send error:", err)
 		return err

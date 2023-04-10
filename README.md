@@ -1,3 +1,5 @@
+![image description](doc/screenshot.png)
+
 Llama 7B runner on my windows machine
 
 ## Requirements
@@ -20,7 +22,7 @@ mingw32-make.exe
 ## https://huggingface.co/Sosaka/Vicuna-7B-4bit-ggml/tree/main
 ## https://huggingface.co/eachadea/ggml-vicuna-7b-4bit/tree/main
 
-./bin/my-llama.exe -m <ggml_model_file>
+./bin/my-llama.exe [-m <ggml_model_file>] [-t <cpu_count>] [-n <token_count>]
 ```
 
 

@@ -62,7 +62,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					continue
 				}
 
-				fmt.Printf("%s\n", message)
+				// fmt.Printf("%s\n", message) // Print received message from client
 			}
 
 			if predictRunning {

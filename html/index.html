@@ -6,10 +6,14 @@
 </head>
 
 <body>
-    <textarea id="inputs">Do you know 김치?</textarea>
+    <div>
+        <textarea id="inputs">Do you know kimchi?</textarea>
+    </div>
+
     <button id="send" onclick="send()">Send</button>
     <button id="send" onclick="stopResponse()">Stop</button>
-    <p id="outputs"></p>
+
+    <div id="outputs"></div>
 </body>
 
 <script>
@@ -29,7 +33,7 @@
 
     ws.onmessage = function (evt) {
         var out = document.getElementById('outputs')
-        out.innerHTML += evt.data
+        out.innerHTML = evt.data.replace(/\n/g, "<br />")
         // ws.close()
     }
 
