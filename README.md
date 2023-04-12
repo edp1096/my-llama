@@ -37,6 +37,7 @@ mingw32-make.exe
 
 
 ## TODO
+* Prompt
 * Add Papago, Kakao API
 
 
