@@ -21,6 +21,7 @@ git submodule update --init --recursive
 
 mingw32-make.exe
 ```
+* About submodule `llama.cpp`, since `<regex>` header is removed and came huge changes from the commits beyond `aaf3b23`, you should append `<time.h>` to `llama.cpp/llama.cpp` manually and also should modify many things in `cgollama/*`. Otherwise, do keep the commit hash as `aaf3b23`.
 
 
 ## Usage
