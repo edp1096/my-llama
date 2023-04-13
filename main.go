@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
+	"unsafe"
 
 	_ "embed"
 
@@ -35,6 +37,8 @@ var model string
 func wsController(w http.ResponseWriter, req *http.Request) {
 	ws.Handler(func(conn *ws.Conn) {
 		defer conn.Close()
+
+		requestCount := 0 // to ignore prompt
 
 		l, po := initModel(model)
 		fmt.Printf("Model loaded.\n")
@@ -69,17 +73,44 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 				continue
 			}
 
+			datas := strings.Split(message, "\n$$__SEPARATOR__$$\n")
+
+			params := unsafe.Pointer(nil)
+			predVARs := unsafe.Pointer(nil)
+			remainCOUNT := 0
+
 			// Predict and Write
 			go func() {
 				predictRunning = true
 
-				err = l.Predict(conn, handler, message, po)
+				if len(datas) < 3 {
+					return
+				}
+
+				prompt := datas[1]
+				input := prompt + datas[0]
+				antiprompt := datas[2]
+
+				fmt.Println("Input:", input)
+				fmt.Println("Prompt:", prompt)
+				fmt.Println("Antiprompt:", antiprompt)
+
+				if requestCount == 0 {
+					params, predVARs, remainCOUNT = l.GetInitialParams(input, prompt, antiprompt, po)
+				} else {
+					input = datas[0]
+					params, predVARs, remainCOUNT = l.GetContinueParams(input, antiprompt, params, predVARs, po)
+				}
+
+				err = l.Predict(conn, handler, params, predVARs, remainCOUNT)
 				if err != nil {
 					fmt.Println("Predict error:" + err.Error())
 					disconnected = true
 				}
 
 				predictRunning = false
+				requestCount++
+				fmt.Println("Request count:", requestCount)
 			}()
 		}
 	}).ServeHTTP(w, req)

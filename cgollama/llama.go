@@ -39,15 +39,35 @@ func isASCII(s string) bool {
 	return true
 }
 
-func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, text string, po PredictOptions) error {
-	input := C.CString(text)
+func (l *LLama) GetInitialParams(text string, prompt string, antiprompt string, po PredictOptions) (unsafe.Pointer, unsafe.Pointer, int) {
 
-	params := C.llama_allocate_params(input, C.int(po.Seed), C.int(po.Threads), C.int(po.Tokens), C.int(po.TopK),
+	input := C.CString(text)
+	reversePrompt := C.CString(antiprompt)
+
+	params := C.llama_allocate_params(input, reversePrompt, C.int(po.Seed), C.int(po.Threads), C.int(po.Tokens), C.int(po.TopK),
 		C.float(po.TopP), C.float(po.Temperature), C.float(po.Penalty), C.int(po.Repeat), C.bool(po.IgnoreEOS), C.bool(po.F16KV))
 
 	predVARs := C.llama_prepare_pred_vars(params, l.state)
 	remainCOUNT := int(C.llama_get_remain_count(predVARs))
 
+	return params, predVARs, remainCOUNT
+}
+
+func (l *LLama) GetContinueParams(text string, antiprompt string, params unsafe.Pointer, predVARs unsafe.Pointer, po PredictOptions) (unsafe.Pointer, unsafe.Pointer, int) {
+	input := C.CString(text)
+	reversePrompt := C.CString(antiprompt)
+
+	// params = C.llama_update_params(params, input)
+	params = C.llama_allocate_params(input, reversePrompt, C.int(po.Seed), C.int(po.Threads), C.int(po.Tokens), C.int(po.TopK),
+		C.float(po.TopP), C.float(po.Temperature), C.float(po.Penalty), C.int(po.Repeat), C.bool(po.IgnoreEOS), C.bool(po.F16KV))
+	predVARs = C.llama_prepare_pred_vars(params, l.state)
+	remainCOUNT := int(C.llama_get_remain_count(predVARs))
+	// remainCOUNT := int(C.llama_get_remain_count(predVARs))
+
+	return params, predVARs, remainCOUNT
+}
+
+func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, params unsafe.Pointer, predVARs unsafe.Pointer, remainCOUNT int) error {
 	responseBYTEs := []byte{}
 	response := ""
 
@@ -63,7 +83,7 @@ END:
 				id := C.llama_get_id(predVARs, C.int(i))
 				embedCSTR := C.llama_get_embed_string(predVARs, id)
 				embedSTR := C.GoString(embedCSTR)
-				// fmt.Print(embedSTR)
+				fmt.Print(embedSTR)
 
 				responseBYTEs = append(responseBYTEs, []byte(embedSTR)...)
 				response = string(responseBYTEs)
@@ -89,7 +109,7 @@ END:
 		}
 	}
 
-	err := handler.Send(conn, response+"\nResponse done.\n")
+	err := handler.Send(conn, response+"\n$$__RESPONSE_DONE__$$\n")
 	if err != nil {
 		fmt.Println("Send error:", err)
 		return err

@@ -6,12 +6,37 @@
 </head>
 
 <body>
-    <div>
-        <textarea id="inputs">Do you know kimchi?</textarea>
+    <div id="input-container">
+        <div>
+            <div>
+                <label for="inputs">Input:</label>
+                <br />
+                <!-- <textarea id="inputs">Do you know kimchi?</textarea> -->
+                <textarea id="inputs">Please tell me the largest city in Asia.</textarea>
+            </div>
+        </div>
+
+        <div>
+            <div>
+                <label for="prompt">Prompt:</label>
+                <br />
+                <textarea id="prompt"></textarea>
+            </div>
+
+            <div>
+                <label for="antiprompt">Reverse prompt:</label>
+                <br />
+                <input type="text" id="antiprompt" value="### Human:" />
+            </div>
+        </div>
     </div>
 
     <button id="send" onclick="send()">Send</button>
     <button id="send" onclick="stopResponse()">Stop</button>
+
+    <span id="status" class="status-disconn">Disconnected</span>
+
+    <hr />
 
     <div id="outputs"></div>
 </body>
@@ -19,6 +44,7 @@
 <script>
     const loc = window.location
     let uri = 'ws:'
+    let history = ""
 
     if (loc.protocol === 'https:') uri = 'wss:'
 
@@ -29,12 +55,34 @@
 
     ws.onopen = function () {
         console.log('Connected')
+
+        const status = document.getElementById('status')
+        status.innerHTML = 'Ready'
+        // change class
+        status.classList.remove('status-disconn')
+        status.classList.add('status-ready')
+    }
+
+    ws.onclose = function () {
+        console.log('Disconnected')
+
+        const status = document.getElementById('status')
+        status.innerHTML = 'Disconnected'
+        // change class
+        status.classList.remove('status-ready')
+        status.classList.remove('status-running')
+        status.classList.add('status-disconn')
     }
 
     ws.onmessage = function (evt) {
-        var out = document.getElementById('outputs')
-        out.innerHTML = evt.data.replace(/\n/g, "<br />")
-        // ws.close()
+        const out = document.getElementById('outputs')
+
+        let response = ""
+        response = evt.data.replace(/\n/g, "<br />")
+        response = response.replace(/\$\$__RESPONSE_DONE__\$\$/g, "END")
+
+        history = response
+        out.innerHTML = response
     }
 
     function send() {
@@ -43,7 +91,12 @@
             return
         }
 
-        ws.send(input.value)
+        const prompt = document.querySelector("#prompt")
+        const antiprompt = document.querySelector("#antiprompt")
+
+        const data = `${input.value}\n$$__SEPARATOR__$$\n${prompt.value}\n$$__SEPARATOR__$$\n${antiprompt.value}`
+
+        ws.send(data)
 
         input.value = ''
         input.focus()
@@ -58,6 +111,58 @@
         input.value = ''
         input.focus()
     }
+
+    function init() {
+        let promptTEXT = `
+A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+
+### Human: Hello, Assistant.
+### Assistant: Hello. How may I help you today?
+### Human: Please tell me the largest city in Europe.
+### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
+### Human:
+    `
+
+        promptTEXT = promptTEXT.trim()
+        document.querySelector("#prompt").value = promptTEXT
+    }
+
+    init()
 </script>
+
+<style>
+    #input-container {
+        width: 100%;
+        display: flex;
+    }
+
+    #input-container > div {
+        width: 100%;
+        height: 100%;
+        padding: 0.1rem;
+    }
+
+    #prompt {
+        width: 100%;
+        height: 200px;
+    }
+    #inputs {
+        width: 100%;
+        height: 100px;
+    }
+    #antiprompt {
+        width: 100%;
+    }
+
+    .status-disconn {
+        color: gray;
+    }
+    .status-ready {
+        color: green;
+    }
+    .status-running {
+        color: red;
+    }
+</style>
 
 </html>

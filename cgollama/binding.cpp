@@ -230,11 +230,12 @@ void llama_free_params(void* params_ptr) {
 }
 
 
-void* llama_allocate_params(const char* prompt, int seed, int threads, int tokens, int top_k,
+void* llama_allocate_params(const char* prompt, const char* antiprompt, int seed, int threads, int tokens, int top_k,
     float top_p, float temp, float repeat_penalty, int repeat_last_n, bool ignore_eos, bool memory_f16) {
 
     gpt_params* params = new gpt_params;
     params->seed = seed;
+    params->n_batch = 512;
     params->n_threads = threads;
     params->n_predict = tokens;
     params->repeat_last_n = repeat_last_n;
@@ -247,6 +248,30 @@ void* llama_allocate_params(const char* prompt, int seed, int threads, int token
 
     params->prompt = prompt;
     params->ignore_eos = ignore_eos;
+
+    // Add anti-prompt
+    params->antiprompt = std::vector<std::string>();
+    if (antiprompt != NULL) {
+        std::string antiprompt_str = antiprompt;
+        std::string delimiter = "|";
+
+        size_t pos = 0;
+        std::string token;
+        while ((pos = antiprompt_str.find(delimiter)) != std::string::npos) {
+            token = antiprompt_str.substr(0, pos);
+            params->antiprompt.push_back(token);
+            antiprompt_str.erase(0, pos + delimiter.length());
+        }
+        params->antiprompt.push_back(antiprompt_str);
+    }
+
+    return params;
+}
+
+void* llama_update_params(void* params_ptr, const char* prompt) {
+    gpt_params* params = (gpt_params*)params_ptr;
+
+    params->prompt = prompt;
 
     return params;
 }
