@@ -89,6 +89,9 @@ int llama_get_embedding_ids(void* params_ptr, void* pred_vars_ptr) {
 
     llama_context* ctx = (llama_context*)(pred_vars_p->context);
 
+    // determine newline token
+    auto llama_token_newline = ::llama_tokenize(ctx, "\n", false);
+
     // predict
     if (embd.size() > 0) {
         // infinite text generation via context swapping
@@ -134,6 +137,16 @@ int llama_get_embedding_ids(void* params_ptr, void* pred_vars_ptr) {
 
             last_n_tokens.erase(last_n_tokens.begin());
             last_n_tokens.push_back(id);
+        }
+
+        // replace end of text token with newline token when in interactive mode
+        if (id == llama_token_eos()) {
+            id = llama_token_newline.front();
+            if (params.antiprompt.size() != 0) {
+                // tokenize and inject first reverse prompt
+                const auto first_antiprompt = ::llama_tokenize(ctx, params.antiprompt.front(), false);
+                embd_inp.insert(embd_inp.end(), first_antiprompt.begin(), first_antiprompt.end());
+            }
         }
 
         embd.push_back(id); // add it to the context

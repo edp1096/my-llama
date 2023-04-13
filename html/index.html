@@ -26,7 +26,7 @@
             <div>
                 <label for="antiprompt">Reverse prompt:</label>
                 <br />
-                <input type="text" id="antiprompt" value="### Human:" />
+                <input type="text" id="antiprompt" value="### Human: " />
             </div>
         </div>
     </div>
@@ -120,10 +120,9 @@ A chat between a curious human and an artificial intelligence assistant. The ass
 ### Assistant: Hello. How may I help you today?
 ### Human: Please tell me the largest city in Europe.
 ### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
-### Human:
-    `
+### Human: `
 
-        promptTEXT = promptTEXT.trim()
+
         document.querySelector("#prompt").value = promptTEXT
     }
 
@@ -136,7 +135,7 @@ A chat between a curious human and an artificial intelligence assistant. The ass
         display: flex;
     }
 
-    #input-container > div {
+    #input-container>div {
         width: 100%;
         height: 100%;
         padding: 0.1rem;
@@ -146,10 +145,12 @@ A chat between a curious human and an artificial intelligence assistant. The ass
         width: 100%;
         height: 200px;
     }
+
     #inputs {
         width: 100%;
         height: 100px;
     }
+
     #antiprompt {
         width: 100%;
     }
@@ -157,9 +158,11 @@ A chat between a curious human and an artificial intelligence assistant. The ass
     .status-disconn {
         color: gray;
     }
+
     .status-ready {
         color: green;
     }
+
     .status-running {
         color: red;
     }

@@ -91,10 +91,11 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 				input := prompt + datas[0]
 				antiprompt := datas[2]
 
-				fmt.Println("Input:", input)
-				fmt.Println("Prompt:", prompt)
-				fmt.Println("Antiprompt:", antiprompt)
+				// fmt.Println("Input:", "'"+input+"'")
+				// fmt.Println("Prompt:", "'"+prompt+"'")
+				// fmt.Println("Antiprompt:", "'"+antiprompt+"'")
 
+				// params, predVARs, remainCOUNT = l.GetInitialParams(input, prompt, antiprompt, po)
 				if requestCount == 0 {
 					params, predVARs, remainCOUNT = l.GetInitialParams(input, prompt, antiprompt, po)
 				} else {
@@ -102,7 +103,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					params, predVARs, remainCOUNT = l.GetContinueParams(input, antiprompt, params, predVARs, po)
 				}
 
-				err = l.Predict(conn, handler, params, predVARs, remainCOUNT)
+				err = l.Predict(conn, handler, input, prompt, antiprompt, params, predVARs, remainCOUNT)
 				if err != nil {
 					fmt.Println("Predict error:" + err.Error())
 					disconnected = true

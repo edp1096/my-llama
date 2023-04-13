@@ -6,6 +6,7 @@ package cgollama
 import "C"
 import (
 	"fmt"
+	"strings"
 	"unicode"
 	"unicode/utf8"
 	"unsafe"
@@ -67,9 +68,12 @@ func (l *LLama) GetContinueParams(text string, antiprompt string, params unsafe.
 	return params, predVARs, remainCOUNT
 }
 
-func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, params unsafe.Pointer, predVARs unsafe.Pointer, remainCOUNT int) error {
+func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, input string, prompt string, antiprompt string, params unsafe.Pointer, predVARs unsafe.Pointer, remainCOUNT int) error {
 	responseBYTEs := []byte{}
 	response := ""
+
+	promptLenth := len(input)
+	isFinish := false
 
 END:
 	for remainCOUNT > 0 {
@@ -83,7 +87,7 @@ END:
 				id := C.llama_get_id(predVARs, C.int(i))
 				embedCSTR := C.llama_get_embed_string(predVARs, id)
 				embedSTR := C.GoString(embedCSTR)
-				fmt.Print(embedSTR)
+				// fmt.Print(embedSTR)
 
 				responseBYTEs = append(responseBYTEs, []byte(embedSTR)...)
 				response = string(responseBYTEs)
@@ -93,9 +97,26 @@ END:
 					continue
 				}
 
+				responseTextSize := len(response)
+				if responseTextSize > promptLenth+1 {
+					responses := strings.Split(response, "\n")
+					responseLAST := responses[len(responses)-1]
+
+					// Remove last line
+					if strings.HasPrefix(responseLAST, antiprompt) {
+						response = strings.Join(responses[:len(responses)-1], "\n")
+						remainCOUNT = 0
+						isFinish = true
+					}
+				}
+
 				err := handler.Send(conn, response)
 				if err != nil {
 					fmt.Println("Send error:", err)
+					break END
+				}
+
+				if isFinish {
 					break END
 				}
 			}
