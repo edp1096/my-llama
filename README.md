@@ -11,7 +11,7 @@ Llama 7B runner on my windows machine
 
 ### Requirements
 * [Go](https://golang.org/dl)
-* [MinGW](https://github.com/brechtsanders/winlibs_mingw)
+* [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
 
 ### Build
 ```powershell
@@ -21,7 +21,6 @@ git submodule update --init --recursive
 
 mingw32-make.exe
 ```
-* About submodule [llama.cpp](https://github.com/ggerganov/llama.cpp), since `<regex>` header is removed and came huge changes from the [commits beyond aaf3b23](https://github.com/ggerganov/llama.cpp/commit/f963b63afa0e057cfb9eba4d88407c6a0850a0d8), you should not only append `<time.h>` to `llama.cpp/llama.cpp` manually but also modify many things in `cgollama/*`. Otherwise, do keep the commit hash as [aaf3b23](https://github.com/ggerganov/llama.cpp/commit/aaf3b23debc1fe1a06733c8c6468fb84233cc44f).
 
 
 ## Usage
