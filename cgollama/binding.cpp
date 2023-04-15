@@ -1,303 +1,427 @@
+/*
+-- prompt/vicuna.txt:
+A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+
+### Human: Hello, Assistant.
+### Assistant: Hello. How may I help you today?
+### Human: Please tell me the largest city in Europe.
+### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
+### Human:
+
+-- Reverse prompt:
+### Human:
+ */
+
 #include "common.h"
 #include "llama.h"
 #include "binding.h"
 
-#include <cassert>
-#include <cinttypes>
-#include <cmath>
-#include <cstdio>
 #include <cstring>
-#include <fstream>
 #include <iostream>
-#include <string>
-#include <vector>
 
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
-#include <signal.h>
-#include <unistd.h>
-#elif defined (_WIN32)
-#include <signal.h>
-#endif
+llama_context *llama_get_context(gpt_params *params) {
+    auto lparams = llama_context_default_params();
 
-#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__)) || defined (_WIN32)
-void sigint_handler(int signo) {
-    if (signo == SIGINT) {
-        _exit(130);
-    }
-}
-#endif
+    lparams.n_ctx = params->n_ctx;
+    lparams.n_parts = params->n_parts;
+    lparams.seed = params->seed;
+    lparams.f16_kv = params->memory_f16;
+    lparams.use_mmap = params->use_mmap;
+    lparams.use_mlock = params->use_mlock;
 
-int llama_get_remain_count(void* pred_vars_v) {
-    pred_variables* pred_vars_p = (pred_variables*)pred_vars_v;
+    llama_context *ctx = llama_init_from_file(params->model.c_str(), lparams);
 
-    return (int)pred_vars_p->n_remain;
+    return ctx;
 }
 
-int llama_get_id(void* pred_vars_ptr, int index) {
-    pred_variables* pred_vars_p = (pred_variables*)pred_vars_ptr;
-
-    std::vector<llama_token>* embedding = (std::vector<llama_token>*)(pred_vars_p->embd);
-    std::vector<llama_token> embd = *embedding;
-
-    return (int)embd[index];
-}
-
-char* llama_get_embed_string(void* pred_vars_ptr, int id) {
-    pred_variables* pred_vars_p = (pred_variables*)pred_vars_ptr;
-    llama_context* ctx = (llama_context*)(pred_vars_p->context);
-
-    std::string predicted = llama_token_to_str(ctx, id);
-
-    return strdup(predicted.c_str());
-}
-
-bool llama_check_token_end(void* pred_vars_ptr) {
-    pred_variables* pred_vars_p = (pred_variables*)pred_vars_ptr;
-
-    std::vector<llama_token>* embedding = (std::vector<llama_token>*)(pred_vars_p->embd);
-    std::vector<llama_token> embd = *embedding;
-
+bool llama_predict_tokens(void *container) {
     bool result = false;
+    variables_container *c = (variables_container *)container;
 
-    // end of text token
-    if (embd.back() == llama_token_eos()) {
-        result = true;
-    }
-
-    return result;
-}
-
-int llama_get_embedding_ids(void* params_ptr, void* pred_vars_ptr) {
-    gpt_params* params_p = (gpt_params*)params_ptr;
-    gpt_params params = *params_p;
-
-    pred_variables* pred_vars_p = (pred_variables*)pred_vars_ptr;
-
-    int n_past = pred_vars_p->n_past;
-    int n_remain = pred_vars_p->n_remain;
-    int n_consumed = pred_vars_p->n_consumed;
-    int n_ctx = pred_vars_p->n_ctx;
-
-    std::vector<llama_token>* embedding = (std::vector<llama_token>*)(pred_vars_p->embd);
-    std::vector<llama_token> embd = *embedding;
-
-    std::vector<llama_token>* embedding_inp = (std::vector<llama_token>*)(pred_vars_p->embedding_inp);
-    std::vector<llama_token> embd_inp = *embedding_inp;
-
-    std::vector<llama_token>* last_n_tokens_p = (std::vector<llama_token>*)(pred_vars_p->last_n_tokens);
-    std::vector<llama_token> last_n_tokens = *last_n_tokens_p;
-
-    llama_context* ctx = (llama_context*)(pred_vars_p->context);
-
-    // determine newline token
-    auto llama_token_newline = ::llama_tokenize(ctx, "\n", false);
+    std::vector<llama_token> *last_n_tokens = (std::vector<llama_token> *)c->last_n_tokens;
+    std::vector<llama_token> *llama_token_newline = (std::vector<llama_token> *)c->llama_token_newline;
+    std::vector<llama_token> *embd = (std::vector<llama_token> *)c->embd;
+    std::vector<llama_token> *embd_inp = (std::vector<llama_token> *)c->embd_inp;
+    llama_context *ctx = (llama_context *)c->ctx;
+    gpt_params *params = (gpt_params *)c->params;
 
     // predict
-    if (embd.size() > 0) {
-        // infinite text generation via context swapping
-        // if we run out of context:
-        // - take the n_keep first tokens from the original prompt (via n_past)
-        // - take half of the last (n_ctx - n_keep) tokens and recompute the logits in a batch
-        if (n_past + (int)embd.size() > n_ctx) {
-            const int n_left = n_past - params.n_keep;
-            n_past = params.n_keep;
+    if (embd->size() > 0) {
+        if (c->n_past + (int)embd->size() > c->n_ctx) {
+            const int n_left = c->n_past - params->n_keep;
+
+            c->n_past = params->n_keep;
 
             // insert n_left/2 tokens at the start of embd from last_n_tokens
-            embd.insert(embd.begin(), last_n_tokens.begin() + n_ctx - n_left / 2 - embd.size(), last_n_tokens.end() - embd.size());
+            embd->insert(embd->begin(), last_n_tokens->begin() + c->n_ctx - n_left / 2 - embd->size(), last_n_tokens->end() - embd->size());
         }
 
-        if (llama_eval(ctx, embd.data(), embd.size(), n_past, params.n_threads)) {
+        if (llama_eval(ctx, embd->data(), embd->size(), c->n_past, params->n_threads)) {
             fprintf(stderr, "%s : failed to eval\n", __func__);
-            return 0;
+            return result;
         }
     }
 
-    n_past += embd.size();
-    embd.clear();
+    c->n_past += embd->size();
+    embd->clear();
 
-    if ((int)embd_inp.size() <= n_consumed) {
+    if ((int)embd_inp->size() <= c->n_consumed) {
         // out of user input, sample next token
-        const int32_t top_k = params.top_k;
-        const float   top_p = params.top_p;
-        const float   temp = params.temp;
-        const float   repeat_penalty = params.repeat_penalty;
+        const int32_t top_k = params->top_k;
+        const float top_p = params->top_p;
+        const float temp = params->temp;
+        const float repeat_penalty = params->repeat_penalty;
 
         llama_token id = 0;
 
         {
             auto logits = llama_get_logits(ctx);
 
-            if (params.ignore_eos) {
+            if (params->ignore_eos) {
                 logits[llama_token_eos()] = 0;
             }
 
             id = llama_sample_top_p_top_k(ctx,
-                last_n_tokens.data() + n_ctx - params.repeat_last_n,
-                params.repeat_last_n, top_k, top_p, temp, repeat_penalty);
+                                          last_n_tokens->data() + c->n_ctx - params->repeat_last_n,
+                                          params->repeat_last_n, top_k, top_p, temp, repeat_penalty);
 
-            last_n_tokens.erase(last_n_tokens.begin());
-            last_n_tokens.push_back(id);
+            last_n_tokens->erase(last_n_tokens->begin());
+            last_n_tokens->push_back(id);
         }
 
         // replace end of text token with newline token when in interactive mode
-        if (id == llama_token_eos()) {
-            id = llama_token_newline.front();
-            if (params.antiprompt.size() != 0) {
+        if (id == llama_token_eos() && params->interactive && !params->instruct) {
+            id = llama_token_newline->front();
+            if (params->antiprompt.size() != 0) {
                 // tokenize and inject first reverse prompt
-                const auto first_antiprompt = ::llama_tokenize(ctx, params.antiprompt.front(), false);
-                embd_inp.insert(embd_inp.end(), first_antiprompt.begin(), first_antiprompt.end());
+                const auto first_antiprompt = ::llama_tokenize(ctx, params->antiprompt.front(), false);
+                embd_inp->insert(embd_inp->end(), first_antiprompt.begin(), first_antiprompt.end());
             }
         }
 
-        embd.push_back(id); // add it to the context
+        embd->push_back(id);  // add it to the context
 
-        --n_remain; // decrement remaining sampling budget
+        c->input_noecho = false;  // echo this to console
+
+        --c->n_remain;  // decrement remaining sampling budget
     } else {
         // some user input remains from prompt or interaction, forward it to processing
-        while ((int)embd_inp.size() > n_consumed) {
-            embd.push_back(embd_inp[n_consumed]);
-            last_n_tokens.erase(last_n_tokens.begin());
-            last_n_tokens.push_back(embd_inp[n_consumed]);
-            ++n_consumed;
-            if ((int)embd.size() >= params.n_batch) {
+        while ((int)embd_inp->size() > c->n_consumed) {
+            embd->push_back((*embd_inp)[c->n_consumed]);
+            last_n_tokens->erase(last_n_tokens->begin());
+            last_n_tokens->push_back((*embd_inp)[c->n_consumed]);
+            ++c->n_consumed;
+            if ((int)embd->size() >= params->n_batch) {
                 break;
             }
         }
     }
 
-    pred_vars_p->n_remain = n_remain;
-    pred_vars_p->n_past = n_past;
-    pred_vars_p->n_consumed = n_consumed;
-
-    *embedding = embd;
-    pred_vars_p->embd = embedding;
-
-    *last_n_tokens_p = last_n_tokens;
-    pred_vars_p->last_n_tokens = last_n_tokens_p;
-
-    std::vector<int> ids = (std::vector<int>)(embd);
-
-    return ids.size();
+    result = true;
+    return result;
 }
 
-void llama_default_signal_action() {
-#if defined (_WIN32)
-    signal(SIGINT, SIG_DFL);
-#endif
-}
+bool llama_receive_input(void *container) {
+    bool result = false;
+    variables_container *c = (variables_container *)container;
 
-void* llama_prepare_pred_vars(void* params_ptr, void* state_pr) {
-    gpt_params* params_p = (gpt_params*)params_ptr;
-    llama_context* ctx = (llama_context*)state_pr;
+    std::vector<llama_token> *embd_inp = (std::vector<llama_token> *)c->embd_inp;
+    llama_context *ctx = (llama_context *)c->ctx;
+    gpt_params *params = (gpt_params *)c->params;
 
-    gpt_params params = *params_p;
-
-    if (params.seed <= 0) {
-        params.seed = time(NULL);
+    std::string buffer;
+    if (!params->input_prefix.empty()) {
+        buffer += params->input_prefix;
+        printf("%s", buffer.c_str());
     }
 
-    std::mt19937 rng(params.seed);
+    std::string line;
+    bool another_line = true;
+    do {
+        std::wstring wline;
+        if (!std::getline(std::wcin, wline)) {
+            result = false;
+            return result;  // input stream is bad or EOF received
+        }
+        win32_utf8_encode(wline, line);
 
-    params.prompt.insert(0, 1, ' '); // Add a space in front of the first character to match OG llama tokenizer behavior
+        if (line.empty() || line.back() != '\\') {
+            another_line = false;
+        } else {
+            line.pop_back();  // Remove the continue character
+        }
+        buffer += line + '\n';  // Append the line to the result
+    } while (another_line);
+    // buffer = "Do you know kimchi?";
 
-    auto embd_inp = ::llama_tokenize(ctx, params.prompt, true); // tokenize the prompt
+    // Add tokens to embd only if the input buffer is non-empty. Entering a empty line lets the user pass control back
+    if (buffer.length() > 1) {
+        auto line_inp = ::llama_tokenize(ctx, buffer, false);
+        embd_inp->insert(embd_inp->end(), line_inp.begin(), line_inp.end());
 
-    const int n_ctx = llama_n_ctx(ctx);
+        c->n_remain -= line_inp.size();
+    }
+
+    c->input_noecho = true;  // do not echo this again
+
+    result = true;
+    return result;
+}
+
+bool llama_append_input(void *container) {
+    bool result = false;
+    variables_container *c = (variables_container *)container;
+
+    std::vector<llama_token> *embd_inp = (std::vector<llama_token> *)c->embd_inp;
+    llama_context *ctx = (llama_context *)c->ctx;
+
+    char *buffer = c->user_input;
+
+    // Add tokens to embd only if the input buffer is non-empty. Entering a empty line lets the user pass control back
+    if (strlen(buffer) > 1) {
+        auto line_inp = ::llama_tokenize(ctx, buffer, false);
+        embd_inp->insert(embd_inp->end(), line_inp.begin(), line_inp.end());
+
+        c->n_remain -= line_inp.size();
+    }
+
+    c->input_noecho = true;  // do not echo this again
+
+    result = true;
+    return result;
+}
+
+bool llama_wait_or_continue(void *container) {
+    variables_container *c = (variables_container *)container;
+    gpt_params *params = (gpt_params *)c->params;
+
+    // check for reverse prompt
+    if (params->antiprompt.size()) {
+        std::string last_output;
+        for (auto id : *(std::vector<llama_token> *)c->last_n_tokens) {
+            last_output += llama_token_to_str((llama_context *)c->ctx, id);
+        }
+
+        // Check if each of the reverse prompts appears at the end of the output.
+        for (std::string &antiprompt : params->antiprompt) {
+            if (last_output.find(antiprompt.c_str(), last_output.length() - antiprompt.length(), antiprompt.length()) != std::string::npos) {
+                c->is_interacting = true;
+                fflush(stdout);
+                break;
+            }
+        }
+    }
+
+    // Receive user input
+    if (c->n_past > 0 && c->is_interacting) {
+        // bool result = llama_receive_input(c);
+        bool result = llama_append_input(c);
+        if (!result) {
+            return false;
+        }
+
+        printf("%s", c->user_input);
+        c->user_input = NULL;
+    }
+
+    if (c->n_past > 0) {
+        c->is_interacting = false;
+    }
+
+    return true;
+}
+
+char *llama_get_embed_string(void *container, int id) {
+    variables_container *siba = (variables_container *)container;
+    return const_cast<char *>(llama_token_to_str((llama_context *)siba->ctx, id));
+}
+
+bool llama_initialize(void *container) {
+    bool result = false;
+    variables_container *c = (variables_container *)container;
+
+    gpt_params *params = (gpt_params *)c->params;
+
+    if (params->seed <= 0) {
+        params->seed = time(NULL);
+    }
+
+    std::mt19937 rng(params->seed);
+    if (params->random_prompt) {
+        params->prompt = gpt_random_prompt(rng);
+    }
+
+    c->is_interacting = false;
+    c->embd = new std::vector<llama_token>;
+
+    c->ctx = llama_get_context(params);  // load model
+    if (c->ctx == NULL) {
+        fprintf(stderr, "%s: error: failed to load model '%s'\n", __func__, params->model.c_str());
+        exit(1);
+    }
+
+    params->prompt.insert(0, 1, ' ');  // Add a space in front of the first character to match OG llama tokenizer behavior
+
+    c->embd_inp = new std::vector<llama_token>(::llama_tokenize((llama_context *)c->ctx, params->prompt, true));  // tokenize the prompt
+    c->n_ctx = llama_n_ctx((llama_context *)c->ctx);
+
+    if ((int)((std::vector<llama_token> *)c->embd_inp)->size() > c->n_ctx - 4) {
+        fprintf(stderr, "%s: error: prompt is too long (%d tokens, max %d)\n", __func__, (int)((std::vector<llama_token> *)c->embd_inp)->size(), c->n_ctx - 4);
+        exit(1);
+    }
 
     // number of tokens to keep when resetting context
-    if (params.n_keep < 0 || params.n_keep >(int)embd_inp.size() || params.instruct) {
-        params.n_keep = (int)embd_inp.size();
+    if (params->n_keep < 0 || params->n_keep > (int)((std::vector<llama_token> *)c->embd_inp)->size() || params->instruct) {
+        params->n_keep = (int)((std::vector<llama_token> *)c->embd_inp)->size();
     }
 
-    std::vector<llama_token>* last_n_tokens_p = new std::vector<llama_token>(n_ctx);
-    std::fill(last_n_tokens_p->begin(), last_n_tokens_p->end(), 0);
+    // enable interactive mode if reverse prompt or interactive start is specified
+    if (params->antiprompt.size() != 0 || params->interactive_start) {
+        params->interactive = true;
+    }
 
-    pred_variables* pred_vars = new pred_variables;
+    // determine newline token
+    c->llama_token_newline = new std::vector<llama_token>(::llama_tokenize((llama_context *)c->ctx, "\n", false));
 
-    pred_vars->n_past = 0;
-    pred_vars->n_remain = params.n_predict;
-    pred_vars->n_consumed = 0;
+    // TODO: replace with ring-buffer
+    c->last_n_tokens = new std::vector<llama_token>(c->n_ctx);
+    std::fill(((std::vector<llama_token> *)c->last_n_tokens)->begin(), ((std::vector<llama_token> *)c->last_n_tokens)->end(), 0);
 
-    std::vector<llama_token>* embd = new std::vector<llama_token>;
-    pred_vars->embd = embd;
+    c->input_noecho = false;
 
-    std::vector<llama_token>* embd_inp_ptr = new std::vector<llama_token>;
-    *embd_inp_ptr = embd_inp;
-    pred_vars->embedding_inp = embd_inp_ptr;
+    c->n_past = 0;
+    c->n_remain = params->n_predict;
+    c->n_consumed = 0;
 
-    pred_vars->context = ctx;
-    pred_vars->last_n_tokens = last_n_tokens_p;
-    pred_vars->n_ctx = n_ctx;
-
-    return pred_vars;
+    result = true;
+    return result;
 }
 
-void llama_free_model(void* state_ptr) {
-    llama_context* ctx = (llama_context*)state_ptr;
-    llama_free(ctx);
+void *llama_init_container() {
+    variables_container *c = new variables_container;
+    return c;
 }
 
-void llama_free_params(void* params_ptr) {
-    gpt_params* params = (gpt_params*)params_ptr;
+bool llama_get_noecho(void *container) {
+    return ((variables_container *)container)->input_noecho;
+}
+
+bool llama_get_interactive(void *container) {
+    return ((gpt_params *)((variables_container *)container)->params)->interactive;
+}
+
+int llama_get_embd_inp_size(void *container) {
+    return ((std::vector<llama_token> *)((variables_container *)container)->embd_inp)->size();
+}
+
+int llama_get_n_remain(void *container) {
+    return ((variables_container *)container)->n_remain;
+}
+
+int llama_get_n_consumed(void *container) {
+    return ((variables_container *)container)->n_consumed;
+}
+
+void llama_setup_params(void *container) {
+    gpt_params *params = (gpt_params *)((variables_container *)container)->params;
+
+    params->interactive = true;
+    params->antiprompt = {};
+
+    // params->prompt = "The quick brown fox jumps over the lazy dog.";
+    // params->n_predict = 100;
+    // params->n_keep = 0;
+    // params->instruct = false;
+    // params->interactive_start = false;
+    // params->temp = 1.0;
+    // params->top_k = 40;
+    // params->top_p = 0.0;
+    // params->seed = 0;
+}
+
+void llama_free_params(void *container) {
+    gpt_params *params = (gpt_params *)((variables_container *)container)->params;
     delete params;
 }
 
+void llama_free_model(void *container) {
+    llama_context *ctx = (llama_context *)((variables_container *)container)->ctx;
+    llama_free(ctx);
+}
 
-void* llama_allocate_params(const char* prompt, const char* antiprompt, int seed, int threads, int tokens, int top_k,
-    float top_p, float temp, float repeat_penalty, int repeat_last_n, bool ignore_eos, bool memory_f16) {
+bool proc_main(void *container) {
+    bool result = false;
+    variables_container *c = (variables_container *)container;
 
-    gpt_params* params = new gpt_params;
-    params->seed = seed;
-    params->n_batch = 512;
-    params->n_threads = threads;
-    params->n_predict = tokens;
-    params->repeat_last_n = repeat_last_n;
-
-    params->top_k = top_k;
-    params->top_p = top_p;
-    params->memory_f16 = memory_f16;
-    params->temp = temp;
-    params->repeat_penalty = repeat_penalty;
-
-    params->prompt = prompt;
-    params->ignore_eos = ignore_eos;
-
-    // Add anti-prompt
-    params->antiprompt = std::vector<std::string>();
-    if (antiprompt != NULL) {
-        std::string antiprompt_str = antiprompt;
-        std::string delimiter = "|";
-
-        size_t pos = 0;
-        std::string token;
-        while ((pos = antiprompt_str.find(delimiter)) != std::string::npos) {
-            token = antiprompt_str.substr(0, pos);
-            params->antiprompt.push_back(token);
-            antiprompt_str.erase(0, pos + delimiter.length());
+    while (c->n_remain != 0) {
+        bool result = llama_predict_tokens(c);
+        if (!result) {
+            printf("Error predicting tokens.\n");
+            return result;
         }
-        params->antiprompt.push_back(antiprompt_str);
+
+        // display text
+        if (!c->input_noecho) {
+            for (auto id : *(std::vector<llama_token> *)c->embd) {
+                printf("%s", llama_get_embed_string(c, id));
+            }
+            fflush(stdout);
+        }
+
+        c->user_input = strdup("Tell me the largest city in Asia.");
+
+        // in interactive mode, and not currently processing queued inputs. check if we should prompt the user for more
+        if (((gpt_params *)c->params)->interactive && (int)((std::vector<llama_token> *)c->embd_inp)->size() <= c->n_consumed) {
+            bool result = llama_wait_or_continue(c);
+            if (!result) {
+                return result;
+            }
+        }
+
+        // In interactive mode, respect the maximum number of tokens and drop back to user input when reached.
+        if (c->n_remain <= 0 && ((gpt_params *)c->params)->n_predict != -1) {
+            c->n_remain = ((gpt_params *)c->params)->n_predict;
+        }
     }
 
-    return params;
+    result = true;
+    return result;
 }
 
-void* llama_update_params(void* params_ptr, const char* prompt) {
-    gpt_params* params = (gpt_params*)params_ptr;
+int main(int argc, char **argv) {
+    bool result = false;
 
-    params->prompt = prompt;
+    // variables_container *c = new variables_container;
+    variables_container *c = (variables_container *)llama_init_container();
+    c->params = new gpt_params;
 
-    return params;
-}
+    ((gpt_params *)c->params)->model = "ggml-vicuna-7b-4bit.bin";
+    if (gpt_params_parse(argc, argv, *(gpt_params *)c->params) == false) {
+        return 1;
+    }
 
-void* load_model(const char* fname, int n_ctx, int n_parts, int n_seed, bool memory_f16, bool mlock) {
-    // load the model
-    auto lparams = llama_context_default_params();
+    llama_setup_params(c);
 
-    lparams.n_ctx = n_ctx;
-    lparams.n_parts = n_parts;
-    lparams.seed = n_seed;
-    lparams.f16_kv = memory_f16;
-    lparams.use_mlock = mlock;
+    ((gpt_params *)c->params)->n_threads = 6;
+    ((gpt_params *)c->params)->n_predict = 512;
+    ((gpt_params *)c->params)->use_mlock = true;
+    ((gpt_params *)c->params)->interactive_start = true;
+    ((gpt_params *)c->params)->antiprompt.push_back("### Human:");
 
-    return llama_init_from_file(fname, lparams);
+    result = llama_initialize(c);
+    if (!result) {
+        return 1;
+    }
+
+    if (((gpt_params *)c->params)->interactive) {
+        fprintf(stderr, " - Press Ctrl+C to interject at any time.\n\n");
+        c->is_interacting = ((gpt_params *)c->params)->interactive_start;
+    }
+
+    result = proc_main(c);
+    if (!result) {
+        return 1;
+    }
+
+    return 0;
 }

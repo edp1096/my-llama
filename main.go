@@ -32,7 +32,7 @@ var (
 	tokens  = 256
 )
 
-var model string
+var modelFNAME string
 
 func wsController(w http.ResponseWriter, req *http.Request) {
 	ws.Handler(func(conn *ws.Conn) {
@@ -40,7 +40,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		requestCount := 0 // to ignore prompt
 
-		l, po := initModel(model)
+		l, po := initModel(modelFNAME)
 		fmt.Printf("Model loaded.\n")
 
 		handler := ws.Message
@@ -139,7 +139,7 @@ func initModel(model string) (*llama.LLama, llama.PredictOptions) {
 
 func main() {
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	flags.StringVar(&model, "m", "./ggml-llama_7b-q4_1.bin", "path to quantized ggml model file to load")
+	flags.StringVar(&modelFNAME, "m", "./ggml-llama_7b-q4_1.bin", "path to quantized ggml model file to load")
 	flags.IntVar(&threads, "t", runtime.NumCPU(), "number of threads to use during computation")
 	flags.IntVar(&tokens, "n", 256, "number of tokens to predict")
 
@@ -149,8 +149,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if _, err := os.Stat(model); os.IsNotExist(err) {
-		fmt.Printf("Model file %s does not exist", model)
+	if _, err := os.Stat(modelFNAME); os.IsNotExist(err) {
+		fmt.Printf("Model file %s does not exist", modelFNAME)
 		os.Exit(1)
 	}
 

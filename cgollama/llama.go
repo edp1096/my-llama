@@ -6,28 +6,23 @@ package cgollama
 import "C"
 import (
 	"fmt"
-	"strings"
 	"unicode"
-	"unicode/utf8"
 	"unsafe"
 
 	ws "golang.org/x/net/websocket"
 )
 
 type LLama struct {
-	state       unsafe.Pointer
+	Container   unsafe.Pointer
+	State       unsafe.Pointer
 	PredictStop chan bool
 }
 
-func New(model string, opts ...ModelOption) (*LLama, error) {
-	mo := NewModelOptions(opts...)
-	modelPath := C.CString(model)
-	result := C.load_model(modelPath, C.int(mo.ContextSize), C.int(mo.Parts), C.int(mo.Seed), C.bool(mo.F16Memory), C.bool(mo.MLock))
-	if result == nil {
-		return nil, fmt.Errorf("failed loading model")
-	}
+func New(modelFNAME string, opts ...ModelOption) (*LLama, error) {
+	// mo := NewModelOptions(opts...)
+	// modelPath := C.CString(modelFNAME)
 
-	return &LLama{state: result}, nil
+	return &LLama{}, nil
 }
 
 func isASCII(s string) bool {
@@ -40,94 +35,37 @@ func isASCII(s string) bool {
 	return true
 }
 
-func (l *LLama) GetInitialParams(text string, prompt string, antiprompt string, po PredictOptions) (unsafe.Pointer, unsafe.Pointer, int) {
+func (l *LLama) GetInitialParams(text string, prompt string, antiprompt string, po PredictOptions) (unsafe.Pointer, int) {
 
-	input := C.CString(text)
-	reversePrompt := C.CString(antiprompt)
+	// input := C.CString(text)
+	// reversePrompt := C.CString(antiprompt)
 
-	params := C.llama_allocate_params(input, reversePrompt, C.int(po.Seed), C.int(po.Threads), C.int(po.Tokens), C.int(po.TopK),
-		C.float(po.TopP), C.float(po.Temperature), C.float(po.Penalty), C.int(po.Repeat), C.bool(po.IgnoreEOS), C.bool(po.F16KV))
+	siba := C.llama_init_container()
 
-	predVARs := C.llama_prepare_pred_vars(params, l.state)
-	remainCOUNT := int(C.llama_get_remain_count(predVARs))
+	remainCOUNT := 0
 
-	return params, predVARs, remainCOUNT
+	return siba, remainCOUNT
 }
 
 func (l *LLama) GetContinueParams(text string, antiprompt string, params unsafe.Pointer, predVARs unsafe.Pointer, po PredictOptions) (unsafe.Pointer, unsafe.Pointer, int) {
-	input := C.CString(text)
-	reversePrompt := C.CString(antiprompt)
+	// input := C.CString(text)
+	// reversePrompt := C.CString(antiprompt)
 
-	// params = C.llama_update_params(params, input)
-	params = C.llama_allocate_params(input, reversePrompt, C.int(po.Seed), C.int(po.Threads), C.int(po.Tokens), C.int(po.TopK),
-		C.float(po.TopP), C.float(po.Temperature), C.float(po.Penalty), C.int(po.Repeat), C.bool(po.IgnoreEOS), C.bool(po.F16KV))
-	predVARs = C.llama_prepare_pred_vars(params, l.state)
-	remainCOUNT := int(C.llama_get_remain_count(predVARs))
-	// remainCOUNT := int(C.llama_get_remain_count(predVARs))
+	remainCOUNT := 0
 
 	return params, predVARs, remainCOUNT
 }
 
-func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, input string, prompt string, antiprompt string, params unsafe.Pointer, predVARs unsafe.Pointer, remainCOUNT int) error {
-	responseBYTEs := []byte{}
+func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, input string, siba unsafe.Pointer, remainCOUNT int) error {
+	// responseBYTEs := []byte{}
 	response := ""
 
-	promptLenth := len(input)
-	isFinish := false
+	// promptLenth := len(input)
+	// isFinish := false
 
 END:
 	for remainCOUNT > 0 {
-		idsSIZE := int(C.llama_get_embedding_ids(params, predVARs))
-
-		for i := 0; i < idsSIZE; i++ {
-			select {
-			case <-l.PredictStop:
-				break END
-			default:
-				id := C.llama_get_id(predVARs, C.int(i))
-				embedCSTR := C.llama_get_embed_string(predVARs, id)
-				embedSTR := C.GoString(embedCSTR)
-				// fmt.Print(embedSTR)
-
-				responseBYTEs = append(responseBYTEs, []byte(embedSTR)...)
-				response = string(responseBYTEs)
-
-				// Because connection is closed, don't send invalid UTF-8
-				if !utf8.ValidString(embedSTR) {
-					continue
-				}
-
-				responseTextSize := len(response)
-				if responseTextSize > promptLenth+1 {
-					responses := strings.Split(response, "\n")
-					responseLAST := responses[len(responses)-1]
-
-					// Remove last line
-					if strings.HasPrefix(responseLAST, antiprompt) {
-						response = strings.Join(responses[:len(responses)-1], "\n")
-						remainCOUNT = 0
-						isFinish = true
-					}
-				}
-
-				err := handler.Send(conn, response)
-				if err != nil {
-					fmt.Println("Send error:", err)
-					break END
-				}
-
-				if isFinish {
-					break END
-				}
-			}
-		}
-
-		remainCOUNT = int(C.llama_get_remain_count(predVARs))
-		isTokenEND := C.llama_check_token_end(predVARs)
-
-		if bool(isTokenEND) {
-			break
-		}
+		break END
 	}
 
 	err := handler.Send(conn, response+"\n$$__RESPONSE_DONE__$$\n")
@@ -135,9 +73,6 @@ END:
 		fmt.Println("Send error:", err)
 		return err
 	}
-
-	C.llama_default_signal_action()
-	C.llama_free_params(params)
 
 	return nil
 }
