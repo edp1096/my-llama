@@ -6,7 +6,7 @@ package cgollama
 import "C"
 import (
 	"fmt"
-	"unicode"
+	"unicode/utf8"
 	"unsafe"
 
 	ws "golang.org/x/net/websocket"
@@ -18,46 +18,53 @@ type LLama struct {
 	PredictStop chan bool
 }
 
-func New(modelFNAME string, opts ...ModelOption) (*LLama, error) {
-	// mo := NewModelOptions(opts...)
-	// modelPath := C.CString(modelFNAME)
-
-	return &LLama{}, nil
-}
-
-func isASCII(s string) bool {
-	for i := 0; i < len(s); i++ {
-		if s[i] > unicode.MaxASCII {
-			return false
-		}
+func New(modelFNAME string) (*LLama, error) {
+	container := C.llama_init_container()
+	if container == nil {
+		return nil, fmt.Errorf("failed to initialize the container")
 	}
 
-	return true
+	return &LLama{Container: container}, nil
 }
 
-func (l *LLama) GetInitialParams(text string, prompt string, antiprompt string, po PredictOptions) (unsafe.Pointer, int) {
+func (l *LLama) LoadModel(modelFNAME string) error {
+	container := l.Container
+	C.llama_set_model_path(container, C.CString(modelFNAME))
 
-	// input := C.CString(text)
-	// reversePrompt := C.CString(antiprompt)
+	result := bool(C.llama_load_model(container))
+	if !result {
+		return fmt.Errorf("failed to load the model")
+	}
 
-	siba := C.llama_init_container()
-
-	remainCOUNT := 0
-
-	return siba, remainCOUNT
+	return nil
 }
 
-func (l *LLama) GetContinueParams(text string, antiprompt string, params unsafe.Pointer, predVARs unsafe.Pointer, po PredictOptions) (unsafe.Pointer, unsafe.Pointer, int) {
-	// input := C.CString(text)
-	// reversePrompt := C.CString(antiprompt)
+func (l *LLama) InitParams() error {
+	container := l.Container
+	result := bool(C.llama_init_params(container))
 
-	remainCOUNT := 0
+	if !result {
+		return fmt.Errorf("failed to initialize the parameters")
+	}
 
-	return params, predVARs, remainCOUNT
+	return nil
 }
 
-func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, input string, siba unsafe.Pointer, remainCOUNT int) error {
-	// responseBYTEs := []byte{}
+func (l *LLama) SetupParams() {
+	container := l.Container
+	C.llama_setup_params(container)
+}
+
+func (l *LLama) GetRemainCount() int {
+	container := l.Container
+	return int(C.llama_get_n_remain(container))
+}
+
+func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, input string) error {
+	container := l.Container
+	remainCOUNT := int(C.llama_get_n_remain(container))
+
+	responseBYTEs := []byte{}
 	response := ""
 
 	// promptLenth := len(input)
@@ -65,7 +72,34 @@ func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, input string, siba unsa
 
 END:
 	for remainCOUNT > 0 {
-		break END
+		embdSIZE := int(C.llama_get_embd_size(container))
+
+		for i := 0; i < embdSIZE; i++ {
+			select {
+			case <-l.PredictStop:
+				break END
+			default:
+				id := C.llama_get_embed_id(container, C.int(i))
+				embedCSTR := C.llama_get_embed_string(container, id)
+				embedSTR := C.GoString(embedCSTR)
+				fmt.Print(embedSTR)
+
+				responseBYTEs = append(responseBYTEs, []byte(embedSTR)...)
+				response = string(responseBYTEs)
+
+				if !utf8.ValidString(embedSTR) {
+					continue // Because connection is closed, don't send invalid UTF-8
+				}
+
+				err := handler.Send(conn, response)
+				if err != nil {
+					fmt.Println("Send error:", err)
+					break END
+				}
+			}
+		}
+
+		remainCOUNT = int(C.llama_get_n_remain(container))
 	}
 
 	err := handler.Send(conn, response+"\n$$__RESPONSE_DONE__$$\n")

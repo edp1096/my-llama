@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
-	"unsafe"
 
 	_ "embed"
 
@@ -34,13 +33,36 @@ var (
 
 var modelFNAME string
 
+func initModel(modelFNAME string) *llama.LLama {
+	l, err := llama.New(modelFNAME)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	return l
+}
+
 func wsController(w http.ResponseWriter, req *http.Request) {
 	ws.Handler(func(conn *ws.Conn) {
 		defer conn.Close()
 
-		requestCount := 0 // to ignore prompt
+		l := initModel(modelFNAME)
 
-		l, po := initModel(modelFNAME)
+		err := l.LoadModel(modelFNAME)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		err = l.InitParams()
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		l.SetupParams()
+
 		fmt.Printf("Model loaded.\n")
 
 		handler := ws.Message
@@ -75,10 +97,6 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 			datas := strings.Split(message, "\n$$__SEPARATOR__$$\n")
 
-			params := unsafe.Pointer(nil)
-			predVARs := unsafe.Pointer(nil)
-			remainCOUNT := 0
-
 			// Predict and Write
 			go func() {
 				predictRunning = true
@@ -89,53 +107,33 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 				prompt := datas[1]
 				input := prompt + datas[0]
-				antiprompt := datas[2]
+				// antiprompt := datas[2]
 
 				// fmt.Println("Input:", "'"+input+"'")
 				// fmt.Println("Prompt:", "'"+prompt+"'")
 				// fmt.Println("Antiprompt:", "'"+antiprompt+"'")
 
-				// params, predVARs, remainCOUNT = l.GetInitialParams(input, prompt, antiprompt, po)
-				if requestCount == 0 {
-					params, predVARs, remainCOUNT = l.GetInitialParams(input, prompt, antiprompt, po)
-				} else {
-					input = datas[0]
-					params, predVARs, remainCOUNT = l.GetContinueParams(input, antiprompt, params, predVARs, po)
-				}
-
-				err = l.Predict(conn, handler, input, prompt, antiprompt, params, predVARs, remainCOUNT)
+				err := l.Predict(conn, handler, input)
 				if err != nil {
 					fmt.Println("Predict error:" + err.Error())
 					disconnected = true
 				}
 
-				predictRunning = false
-				requestCount++
-				fmt.Println("Request count:", requestCount)
+				// params, predVARs, remainCOUNT = l.GetInitialParams(input, prompt, antiprompt, po)
+
+				// err = l.Predict(conn, handler, input, prompt, antiprompt, params, predVARs, remainCOUNT)
+				// if err != nil {
+				// 	fmt.Println("Predict error:" + err.Error())
+				// 	disconnected = true
+				// }
+
+				// predictRunning = false
+				// requestCount++
+				// fmt.Println("Request count:", requestCount)
 			}()
 		}
 	}).ServeHTTP(w, req)
 }
-
-func initModel(model string) (*llama.LLama, llama.PredictOptions) {
-	l, err := llama.New(model, llama.SetContext(128), llama.SetParts(-1))
-	if err != nil {
-		fmt.Println("Loading the model failed:", err.Error())
-		os.Exit(1)
-	}
-
-	po := llama.NewPredictOptions(llama.SetTokens(tokens), llama.SetThreads(threads), llama.SetTopK(90), llama.SetTopP(0.86))
-	if po.Tokens == 0 {
-		po.Tokens = 99999999
-	}
-
-	return l, po
-}
-
-// func changePredictOptions(po *llama.PredictOptions, newTOKEN int, newThreads int) {
-// 	po.Tokens = newTOKEN
-// 	po.Threads = newThreads
-// }
 
 func main() {
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
