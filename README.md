@@ -31,14 +31,13 @@ mingw32-make.exe
 ## https://huggingface.co/Sosaka/Vicuna-7B-4bit-ggml/tree/main
 ## https://huggingface.co/eachadea/ggml-vicuna-7b-4bit/tree/main
 
-./bin/my-llama.exe [-m <ggml_model_file>] [-t <cpu_count>] [-n <token_count>]
+./bin/my-llama.exe [-m <ggml_model_file>]
 ```
 
 
 ## TODO
 * Settings
-    * Model path
-    * GGML Parameters
+    * GGML Parameters - model path, cpu threads, temper, topk..
 * Add Papago, Kakao translator
 
 
