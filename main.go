@@ -17,7 +17,13 @@ import (
 )
 
 //go:embed html/index.html
-var html string
+var index_html string
+
+//go:embed html/style.css
+var style_css string
+
+//go:embed html/script.js
+var script_js string
 
 var (
 	Address      string = "localhost"
@@ -181,7 +187,13 @@ func main() {
 	uri := HttpProtocol + "://" + Address + ":" + Port
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, html)
+		fmt.Fprint(w, index_html)
+	})
+	http.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, style_css)
+	})
+	http.HandleFunc("/script.js", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, script_js)
 	})
 	http.HandleFunc("/ws", wsController)
 
@@ -196,7 +208,7 @@ func main() {
 		fmt.Printf("Finding model files failed: %s", err)
 		os.Exit(1)
 	}
-	fmt.Println(modelFnames)
+	// fmt.Println(modelFnames)
 
 	log.Fatal(http.ListenAndServe(listenURI, nil))
 }
