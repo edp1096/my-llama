@@ -187,7 +187,10 @@ func main() {
 		// fmt.Println(modelFnames)
 
 		if len(modelFnames) == 0 {
-			fmt.Printf("No model files found. Download the model file(s) before launch.")
+			fmt.Println("No model files found. Download the model file(s) before launch.")
+			fmt.Println("Press enter to open the model search page.")
+			fmt.Scanln()
+
 			openBrowser("https://huggingface.co/search/full-text?q=ggml+7b&type=model")
 			os.Exit(1)
 		}
