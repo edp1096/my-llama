@@ -12,6 +12,8 @@ Llama 7B runner on my windows machine
 ### Requirements
 * [Go](https://golang.org/dl)
 * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
+* [Git](https://github.com/git-for-windows/git/releases)
+* Memory >= 12GB
 
 ### Build
 ```powershell
@@ -34,7 +36,11 @@ mingw32-make.exe
 ## https://huggingface.co/Sosaka/Vicuna-7B-4bit-ggml/tree/main
 ## https://huggingface.co/eachadea/ggml-vicuna-7b-4bit/tree/main
 
-./bin/my-llama.exe [-m <ggml_model_file>]
+# Just launch
+./bin/my-llama.exe
+
+# Launch with browser open
+./bin/my-llama.exe -b
 ```
 
 

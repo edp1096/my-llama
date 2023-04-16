@@ -41,7 +41,7 @@ var (
 
 	modelPath = "./"
 
-	modelFNAME  string   = ""
+	modelFname  string   = ""
 	modelFnames []string = []string{}
 )
 
@@ -75,7 +75,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		err = l.LoadModel(modelFNAME)
+		err = l.LoadModel(modelFname)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -169,7 +169,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 func main() {
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flags.BoolVar(&isBrowserOpen, "b", false, "open browser automatically")
-	flags.StringVar(&modelFNAME, "m", "./ggml-llama_7b-q4_1.bin", "path to quantized ggml model file to load")
+	flags.StringVar(&modelFname, "m", "", "path to quantized ggml model file to load")
 	flags.IntVar(&threads, "t", runtime.NumCPU(), "number of threads to use during computation")
 
 	err := flags.Parse(os.Args[1:])
@@ -178,8 +178,25 @@ func main() {
 		os.Exit(1)
 	}
 
-	if _, err := os.Stat(modelFNAME); os.IsNotExist(err) {
-		fmt.Printf("Model file %s does not exist", modelFNAME)
+	if modelFname == "" {
+		modelFnames, err = findModelFiles(modelPath)
+		if err != nil {
+			fmt.Printf("Finding model files failed: %s", err)
+			os.Exit(1)
+		}
+		// fmt.Println(modelFnames)
+
+		if len(modelFnames) == 0 {
+			fmt.Printf("No model files found. Download the model file(s) before launch.")
+			openBrowser("https://huggingface.co/search/full-text?q=ggml+7b&type=model")
+			os.Exit(1)
+		}
+
+		modelFname = modelFnames[0]
+	}
+
+	if _, err := os.Stat(modelFname); os.IsNotExist(err) {
+		fmt.Printf("Model file %s does not exist", modelFname)
 		os.Exit(1)
 	}
 
@@ -202,13 +219,6 @@ func main() {
 	if isBrowserOpen {
 		openBrowser(uri)
 	}
-
-	modelFnames, err = findModelFiles(modelPath)
-	if err != nil {
-		fmt.Printf("Finding model files failed: %s", err)
-		os.Exit(1)
-	}
-	// fmt.Println(modelFnames)
 
 	log.Fatal(http.ListenAndServe(listenURI, nil))
 }
