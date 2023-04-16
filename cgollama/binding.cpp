@@ -1,18 +1,3 @@
-/*
--- prompt/vicuna.txt:
-A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
-
-### Human: Hello, Assistant.
-### Assistant: Hello. How may I help you today?
-### Human: Please tell me the largest city in Europe.
-### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
-### Human:
-
--- Reverse prompt:
-### Human:
- */
-
-
 #include "common.h"
 #include "llama.h"
 #include "binding.h"
@@ -45,7 +30,6 @@ llama_context* llama_get_context(gpt_params* params) {
 
 bool llama_load_model(void* container) {
     bool result = false;
-
     variables_container* c = (variables_container*)container;
     gpt_params* params = (gpt_params*)c->params;
 
@@ -70,7 +54,7 @@ bool llama_load_model(void* container) {
     return result;
 }
 
-bool llama_init_params(void* container) {
+bool llama_make_ready_to_predict(void* container) {
     bool result = false;
     variables_container* c = (variables_container*)container;
     gpt_params* params = (gpt_params*)c->params;
@@ -116,7 +100,7 @@ bool llama_init_params(void* container) {
     return result;
 }
 
-void llama_setup_params(void* container) {
+void llama_init_params(void* container) {
     gpt_params* params = (gpt_params*)((variables_container*)container)->params;
 
     params->interactive = true;
@@ -126,7 +110,6 @@ void llama_setup_params(void* container) {
     params->n_threads = 6;
     params->n_predict = 512;
     params->use_mlock = true;
-    params->antiprompt.push_back("### Human:");
 
     // params->prompt = "The quick brown fox jumps over the lazy dog.";
     // params->n_predict = 100;
@@ -280,15 +263,16 @@ bool llama_append_input(void* container) {
     std::vector<llama_token>* embd_inp = (std::vector<llama_token>*)c->embd_inp;
     llama_context* ctx = (llama_context*)c->ctx;
 
-    char* buffer = c->user_input;
+    char* buffer = (char*)c->user_input;
 
     // Add tokens to embd only if the input buffer is non-empty. Entering a empty line lets the user pass control back
     if (strlen(buffer) > 1) {
-        auto line_inp = ::llama_tokenize(ctx, buffer, false);
+        std::vector<llama_token> line_inp = ::llama_tokenize(ctx, buffer, false);
         embd_inp->insert(embd_inp->end(), line_inp.begin(), line_inp.end());
 
         c->n_remain -= line_inp.size();
     }
+
 
     c->input_noecho = true; // do not echo this again
 
@@ -319,14 +303,15 @@ bool llama_wait_or_continue(void* container) {
 
     // Receive user input
     if (c->n_past > 0 && c->is_interacting) {
-        // bool result = llama_receive_input(c);
-        bool result = llama_append_input(c);
-        if (!result) {
-            return false;
-        }
+        return false;
+        // // bool result = llama_receive_input(c);
+        // bool result = llama_append_input(c);
+        // if (!result) {
+        //     return false;
+        // }
 
-        // printf("%s", c->user_input);
-        c->user_input = NULL;
+        // // printf("%s", c->user_input);
+        // c->user_input = NULL;
     }
 
     if (c->n_past > 0) {
@@ -342,8 +327,8 @@ int llama_get_embed_id(void* container, int index) {
 }
 
 char* llama_get_embed_string(void* container, int id) {
-    variables_container* siba = (variables_container*)container;
-    return const_cast<char*>(llama_token_to_str((llama_context*)siba->ctx, id));
+    variables_container* c = (variables_container*)container;
+    return const_cast<char*>(llama_token_to_str((llama_context*)c->ctx, id));
 }
 
 
@@ -396,6 +381,10 @@ void llama_set_params_interactive_start(void* container) {
     ((gpt_params*)((variables_container*)container)->params)->interactive_start = interactive;
 }
 
+void llama_set_is_interacting(void* container, bool is_interacting) {
+    ((variables_container*)container)->is_interacting = is_interacting;
+}
+
 void llama_set_params_n_remain(void* container, int n_predict) {
     ((variables_container*)container)->n_remain = n_predict;
 }
@@ -412,8 +401,8 @@ void llama_set_params_prompt(void* container, char* prompt) {
     ((gpt_params*)((variables_container*)container)->params)->prompt = strdup(prompt);
 }
 
-void llama_set_user_input(void* container, char* user_input) {
-    ((variables_container*)container)->user_input = user_input;
+void llama_set_user_input(void* container, const char* user_input) {
+    ((variables_container*)container)->user_input = strdup(user_input);
 }
 
 
@@ -423,9 +412,16 @@ bool llama_check_prompt_or_continue(void* container) {
 
     // in interactive mode, and not currently processing queued inputs. check if we should prompt the user for more
     if (((gpt_params*)c->params)->interactive && (int)((std::vector<llama_token>*)c->embd_inp)->size() <= c->n_consumed) {
-        bool result = llama_wait_or_continue(c);
-        if (!result) {
-            return result;
+        result = llama_wait_or_continue(c);
+    }
+
+    if (result) {
+        // end of text token
+        if (((std::vector<llama_token>*)c->embd)->back() == llama_token_eos()) {
+            c->is_interacting = false;
+            result = false;
+
+            printf("DONE?");
         }
     }
 

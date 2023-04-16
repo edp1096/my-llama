@@ -8,9 +8,9 @@ import (
 	"errors"
 )
 
-func (l *LLama) InitParams() (err error) {
+func (l *LLama) MakeReadyToPredict() (err error) {
 	container := l.Container
-	result := bool(C.llama_init_params(container))
+	result := bool(C.llama_make_ready_to_predict(container))
 
 	if !result {
 		err = errors.New("failed to initialize the parameters")
@@ -19,7 +19,7 @@ func (l *LLama) InitParams() (err error) {
 	return err
 }
 
-func (l *LLama) SetupParams() {
+func (l *LLama) InitParams() {
 	container := l.Container
-	C.llama_setup_params(container)
+	C.llama_init_params(container)
 }

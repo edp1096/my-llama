@@ -44,7 +44,12 @@ func (l *LLama) GetRemainCount() int {
 	return int(C.llama_get_n_remain(container))
 }
 
-func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, input string) error {
+func (l *LLama) SetIsInteracting(isInteracting bool) {
+	container := l.Container
+	C.llama_set_is_interacting(container, C.bool(isInteracting))
+}
+
+func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec) error {
 	container := l.Container
 	remainCOUNT := int(C.llama_get_n_remain(container))
 
@@ -52,22 +57,24 @@ func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, input string) error {
 	response := ""
 
 END:
-	for remainCOUNT > 0 {
+	for remainCOUNT != 0 {
 		ok := bool(C.llama_predict_tokens(container))
 		if !ok {
 			return fmt.Errorf("failed to predict the tokens")
 		}
 
+		// display text
 		embdSIZE := int(C.llama_get_embd_size(container))
 		for i := 0; i < embdSIZE; i++ {
 			select {
 			case <-l.PredictStop:
+				remainCOUNT = 0
 				break END
 			default:
 				id := C.llama_get_embed_id(container, C.int(i))
 				embedCSTR := C.llama_get_embed_string(container, id)
 				embedSTR := C.GoString(embedCSTR)
-				fmt.Print(embedSTR)
+				// fmt.Print(embedSTR)
 
 				responseBYTEs = append(responseBYTEs, []byte(embedSTR)...)
 				response = string(responseBYTEs)
@@ -79,6 +86,7 @@ END:
 				err := handler.Send(conn, response)
 				if err != nil {
 					fmt.Println("Send error:", err)
+					remainCOUNT = 0
 					break END
 				}
 			}
@@ -86,6 +94,7 @@ END:
 
 		ok = bool(C.llama_check_prompt_or_continue(container))
 		if !ok {
+			// remainCOUNT = 0
 			break
 		}
 		C.llama_dropback_user_input(container)

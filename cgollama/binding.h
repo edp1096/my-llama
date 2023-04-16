@@ -29,8 +29,8 @@ struct variables_container {
 /* Initialize before main loop */
 void* llama_init_container();
 bool llama_load_model(void* container);
-bool llama_init_params(void* container);
-void llama_setup_params(void* container);
+void llama_init_params(void* container);
+bool llama_make_ready_to_predict(void* container);
 
 /* For main loop */
 bool llama_predict_tokens(void* container);
@@ -56,11 +56,12 @@ bool llama_get_params_interactive(void* container);
 
 /* Setters */
 void llama_set_params_interactive_start(void* container);
+void llama_set_is_interacting(void* container, bool is_interacting);
 void llama_set_params_n_remain(void* container, int n_predict);
 void llama_set_model_path(void* container, char* path);
 void llama_set_params_antiprompt(void* container, char* antiprompt);
 void llama_set_params_prompt(void* container, char* prompt);
-void llama_set_user_input(void* container, char* user_input);
+void llama_set_user_input(void* container, const char* user_input);
 
 /* Others */
 bool llama_check_prompt_or_continue(void* container);

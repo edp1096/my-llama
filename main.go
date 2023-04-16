@@ -28,7 +28,7 @@ var (
 
 var (
 	threads = 4
-	tokens  = 256
+	// tokens  = 256
 )
 
 var modelFNAME string
@@ -36,6 +36,10 @@ var modelFNAME string
 func wsController(w http.ResponseWriter, req *http.Request) {
 	ws.Handler(func(conn *ws.Conn) {
 		defer conn.Close()
+
+		var err error
+
+		requestCount := 0 // to ignore prompt
 
 		l, err := llama.New()
 		if err != nil {
@@ -48,16 +52,13 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			fmt.Println(err.Error())
 			return
 		}
+		l.InitParams()
 
-		err = l.InitParams()
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
+		fmt.Println("Model initialized..")
 
-		l.SetupParams()
-
-		fmt.Printf("Model loaded.\n")
+		reflectionPrompt := ""
+		input := ""
+		antiprompt := ""
 
 		handler := ws.Message
 		l.PredictStop = make(chan bool)
@@ -67,7 +68,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 		for !disconnected {
 			// Read
 			message := ""
-			err := handler.Receive(conn, &message)
+			err = handler.Receive(conn, &message)
 			if err != nil {
 				fmt.Println("Receive error:", err)
 				disconnected = true
@@ -99,34 +100,39 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					return
 				}
 
-				prompt := datas[1]
-				input := prompt + datas[0]
-				// antiprompt := datas[2]
+				reflectionPrompt = datas[1]
+				antiprompt = datas[2]
+				// input = antiprompt + datas[0]
+				input = datas[0]
 
-				// fmt.Println("Input:", "'"+input+"'")
-				// fmt.Println("Prompt:", "'"+prompt+"'")
-				// fmt.Println("Antiprompt:", "'"+antiprompt+"'")
+				if requestCount == 0 {
+					l.SetPrompt(reflectionPrompt)
+					l.SetAntiPrompt(antiprompt)
+
+					err = l.MakeReadyToPredict()
+					if err != nil {
+						fmt.Println(err.Error())
+						return
+					}
+				}
 
 				l.SetUserInput(input)
-				l.SetPrompt(prompt)
+				err = l.AppendInput()
+				if err != nil {
+					fmt.Println(err.Error())
+					return
+				}
 
-				err := l.Predict(conn, handler, input)
+				l.SetIsInteracting(false)
+
+				err = l.Predict(conn, handler)
 				if err != nil {
 					fmt.Println("Predict error:" + err.Error())
 					disconnected = true
 				}
 
-				// params, predVARs, remainCOUNT = l.GetInitialParams(input, prompt, antiprompt, po)
-
-				// err = l.Predict(conn, handler, input, prompt, antiprompt, params, predVARs, remainCOUNT)
-				// if err != nil {
-				// 	fmt.Println("Predict error:" + err.Error())
-				// 	disconnected = true
-				// }
-
-				// predictRunning = false
-				// requestCount++
-				// fmt.Println("Request count:", requestCount)
+				predictRunning = false
+				requestCount++
 			}()
 		}
 	}).ServeHTTP(w, req)
@@ -136,7 +142,7 @@ func main() {
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flags.StringVar(&modelFNAME, "m", "./ggml-llama_7b-q4_1.bin", "path to quantized ggml model file to load")
 	flags.IntVar(&threads, "t", runtime.NumCPU(), "number of threads to use during computation")
-	flags.IntVar(&tokens, "n", 256, "number of tokens to predict")
+	// flags.IntVar(&tokens, "n", 256, "number of tokens to predict")
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {
