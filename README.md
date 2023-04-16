@@ -4,7 +4,7 @@ Llama 7B runner on my windows machine
 
 
 ## Download pre-compiled binary
-* [Windows](https://github.com/edp1096/my-llama/releases/download/v0.0.2/my-llama.exe)
+* [Windows](https://github.com/edp1096/my-llama/releases/download/v0.1.0/my-llama.exe)
 
 
 ## Build from source
@@ -36,8 +36,10 @@ mingw32-make.exe
 
 
 ## TODO
-* Prompt
-* Add Papago, Kakao API
+* Settings
+    * Model path
+    * GGML Parameters
+* Add Papago, Kakao translator
 
 
 ## Source
