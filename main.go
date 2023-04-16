@@ -162,9 +162,9 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	flags.BoolVar(&isBrowserOpen, "b", false, "open browser automatically")
 	flags.StringVar(&modelFNAME, "m", "./ggml-llama_7b-q4_1.bin", "path to quantized ggml model file to load")
 	flags.IntVar(&threads, "t", runtime.NumCPU(), "number of threads to use during computation")
-	flags.BoolVar(&isBrowserOpen, "b", false, "open browser automatically")
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {
