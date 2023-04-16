@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"runtime"
 	"strings"
 
@@ -31,11 +30,34 @@ var (
 	// tokens  = 256
 )
 
-var modelFNAME string
+var (
+	isBrowserOpen = false
+
+	modelPath = "./"
+
+	modelFNAME  string   = ""
+	modelFnames []string = []string{}
+)
 
 func wsController(w http.ResponseWriter, req *http.Request) {
 	ws.Handler(func(conn *ws.Conn) {
 		defer conn.Close()
+
+		req := conn.Request()
+		model_file := req.URL.Query().Get("model_file")
+		if model_file != "" {
+			// modelFNAME = model_file
+			fmt.Println("model_file:", model_file)
+		}
+
+		topk := req.URL.Query().Get("topk")
+		if topk != "" {
+			// tokens, _ = strconv.Atoi(topk)
+			fmt.Println("topk:", topk)
+		} else {
+			// tokens = 256
+			fmt.Println("topk is not set")
+		}
 
 		var err error
 
@@ -142,7 +164,7 @@ func main() {
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flags.StringVar(&modelFNAME, "m", "./ggml-llama_7b-q4_1.bin", "path to quantized ggml model file to load")
 	flags.IntVar(&threads, "t", runtime.NumCPU(), "number of threads to use during computation")
-	// flags.IntVar(&tokens, "n", 256, "number of tokens to predict")
+	flags.BoolVar(&isBrowserOpen, "b", false, "open browser automatically")
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {
@@ -165,16 +187,16 @@ func main() {
 
 	fmt.Printf("Server is running on %s\n\n", uri)
 
-	switch os := runtime.GOOS; os {
-	case "windows":
-		exec.Command("rundll32", "url.dll,FileProtocolHandler", uri).Start()
-	case "linux":
-		exec.Command("xdg-open", uri).Start()
-	case "darwin":
-		exec.Command("open", uri).Start()
-	default:
-		fmt.Printf("%s: unsupported platform", os)
+	if isBrowserOpen {
+		openBrowser(uri)
 	}
+
+	modelFnames, err = findModelFiles(modelPath)
+	if err != nil {
+		fmt.Printf("Finding model files failed: %s", err)
+		os.Exit(1)
+	}
+	fmt.Println(modelFnames)
 
 	log.Fatal(http.ListenAndServe(listenURI, nil))
 }

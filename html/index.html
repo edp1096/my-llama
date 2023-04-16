@@ -41,6 +41,7 @@
 </body>
 
 <script>
+    let history = ""
 
     function statusRemoveAllClasses() {
         const status = document.getElementById('status')
@@ -72,55 +73,58 @@
         document.querySelector("#stop").disabled = false
     }
 
-    const loc = window.location
-    let uri = 'ws:'
-    let history = ""
-    let inputPrompt = ""
+    function websocketSetup() {
+        let param = "model_file=ggml-vicuna-7b-4bit.bin"
 
-    if (loc.protocol === 'https:') uri = 'wss:'
+        const loc = window.location
 
-    uri += '//' + "localhost" + ":1323"
-    uri += "/" + 'ws'
+        let uri = "ws:"
+        if (loc.protocol === 'https:') {
+            uri = "wss:"
+        }
 
-    ws = new WebSocket(uri)
+        uri += `//localhost:1323/ws?${param}`
 
-    ws.onopen = function () {
-        console.log('Connected')
+        ws = new WebSocket(uri)
 
-        statusRemoveAllClasses()
-        statusAddClass('status-ready', 'Ready')
-
-        document.getElementById("send").click()
-    }
-
-    ws.onclose = function () {
-        console.log('Disconnected')
-
-        statusRemoveAllClasses()
-        statusAddClass('status-disconn', 'Disconnected')
-        buttonDisableAll()
-    }
-
-    ws.onmessage = function (evt) {
-        const out = document.getElementById('outputs')
-        buttonStopEnable()
-
-        let response = ""
-        response = evt.data.replace(/\n/g, "<br />")
-
-        // catch the end of the response
-        if (response.includes("$$__RESPONSE_DONE__$$")) {
-            response = response.replace(/\$\$__RESPONSE_DONE__\$\$/g, "")
-            response = response.slice(0, -12) // remove the last <br /><br />, not \n\n
+        ws.onopen = function () {
+            console.log('Connected')
 
             statusRemoveAllClasses()
             statusAddClass('status-ready', 'Ready')
-            buttonSendEnable()
+
+            document.getElementById("send").click()
         }
 
-        out.innerHTML = history + response
+        ws.onclose = function () {
+            console.log('Disconnected')
 
-        out.scrollTop = out.scrollHeight
+            statusRemoveAllClasses()
+            statusAddClass('status-disconn', 'Disconnected')
+            buttonDisableAll()
+        }
+
+        ws.onmessage = function (evt) {
+            const out = document.getElementById('outputs')
+            buttonStopEnable()
+
+            let response = ""
+            response = evt.data.replace(/\n/g, "<br />")
+
+            // catch the end of the response
+            if (response.includes("$$__RESPONSE_DONE__$$")) {
+                response = response.replace(/\$\$__RESPONSE_DONE__\$\$/g, "")
+                response = response.slice(0, -12) // remove the last <br /><br />, not \n\n
+
+                statusRemoveAllClasses()
+                statusAddClass('status-ready', 'Ready')
+                buttonSendEnable()
+            }
+
+            out.innerHTML = history + response
+
+            out.scrollTop = out.scrollHeight
+        }
     }
 
     function send() {
@@ -129,24 +133,18 @@
             return
         }
 
-        inputPrompt = input.value
         history = document.querySelector("#outputs").innerHTML
-        // if (history != "") {
-        //     history += inputPrompt
-        // }
 
         const reflection = document.querySelector("#reflection")
         const antiprompt = document.querySelector("#antiprompt")
 
-        const data = `${inputPrompt}\n$$__SEPARATOR__$$\n${reflection.value}\n$$__SEPARATOR__$$\n${antiprompt.value}`
+        const data = `${input.value}\n$$__SEPARATOR__$$\n${reflection.value}\n$$__SEPARATOR__$$\n${antiprompt.value}`
 
         ws.send(data)
 
         statusRemoveAllClasses()
         statusAddClass('status-running', 'Running')
         buttonStopEnable()
-
-        inputPrompt = ""
 
         input.value = ''
         input.focus()
@@ -167,6 +165,8 @@
     }
 
     function init() {
+        websocketSetup()
+
         let promptTEXT = `
 A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
 
