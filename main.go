@@ -33,23 +33,17 @@ var (
 
 var modelFNAME string
 
-func initModel(modelFNAME string) *llama.LLama {
-	l, err := llama.New(modelFNAME)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	return l
-}
-
 func wsController(w http.ResponseWriter, req *http.Request) {
 	ws.Handler(func(conn *ws.Conn) {
 		defer conn.Close()
 
-		l := initModel(modelFNAME)
+		l, err := llama.New()
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 
-		err := l.LoadModel(modelFNAME)
+		err = l.LoadModel(modelFNAME)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -112,6 +106,9 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 				// fmt.Println("Input:", "'"+input+"'")
 				// fmt.Println("Prompt:", "'"+prompt+"'")
 				// fmt.Println("Antiprompt:", "'"+antiprompt+"'")
+
+				l.SetUserInput(input)
+				l.SetPrompt(prompt)
 
 				err := l.Predict(conn, handler, input)
 				if err != nil {

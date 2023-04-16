@@ -319,8 +319,8 @@ bool llama_wait_or_continue(void* container) {
 
     // Receive user input
     if (c->n_past > 0 && c->is_interacting) {
-        bool result = llama_receive_input(c);
-        // bool result = llama_append_input(c);
+        // bool result = llama_receive_input(c);
+        bool result = llama_append_input(c);
         if (!result) {
             return false;
         }
@@ -400,14 +400,20 @@ void llama_set_params_n_remain(void* container, int n_predict) {
     ((variables_container*)container)->n_remain = n_predict;
 }
 
-
 void llama_set_model_path(void* container, char* path) {
     ((gpt_params*)((variables_container*)container)->params)->model = path;
 }
 
 void llama_set_params_antiprompt(void* container, char* antiprompt) {
-    std::string str_antiprompt = strdup(antiprompt);
-    ((gpt_params*)((variables_container*)container)->params)->antiprompt.push_back(str_antiprompt);
+    ((gpt_params*)((variables_container*)container)->params)->antiprompt.push_back(strdup(antiprompt));
+}
+
+void llama_set_params_prompt(void* container, char* prompt) {
+    ((gpt_params*)((variables_container*)container)->params)->prompt = strdup(prompt);
+}
+
+void llama_set_user_input(void* container, char* user_input) {
+    ((variables_container*)container)->user_input = user_input;
 }
 
 

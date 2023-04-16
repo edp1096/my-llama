@@ -59,6 +59,8 @@ void llama_set_params_interactive_start(void* container);
 void llama_set_params_n_remain(void* container, int n_predict);
 void llama_set_model_path(void* container, char* path);
 void llama_set_params_antiprompt(void* container, char* antiprompt);
+void llama_set_params_prompt(void* container, char* prompt);
+void llama_set_user_input(void* container, char* user_input);
 
 /* Others */
 bool llama_check_prompt_or_continue(void* container);

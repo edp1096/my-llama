@@ -18,7 +18,7 @@ type LLama struct {
 	PredictStop chan bool
 }
 
-func New(modelFNAME string) (*LLama, error) {
+func New() (*LLama, error) {
 	container := C.llama_init_container()
 	if container == nil {
 		return nil, fmt.Errorf("failed to initialize the container")
@@ -39,22 +39,6 @@ func (l *LLama) LoadModel(modelFNAME string) error {
 	return nil
 }
 
-func (l *LLama) InitParams() error {
-	container := l.Container
-	result := bool(C.llama_init_params(container))
-
-	if !result {
-		return fmt.Errorf("failed to initialize the parameters")
-	}
-
-	return nil
-}
-
-func (l *LLama) SetupParams() {
-	container := l.Container
-	C.llama_setup_params(container)
-}
-
 func (l *LLama) GetRemainCount() int {
 	container := l.Container
 	return int(C.llama_get_n_remain(container))
@@ -67,13 +51,14 @@ func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, input string) error {
 	responseBYTEs := []byte{}
 	response := ""
 
-	// promptLenth := len(input)
-	// isFinish := false
-
 END:
 	for remainCOUNT > 0 {
-		embdSIZE := int(C.llama_get_embd_size(container))
+		ok := bool(C.llama_predict_tokens(container))
+		if !ok {
+			return fmt.Errorf("failed to predict the tokens")
+		}
 
+		embdSIZE := int(C.llama_get_embd_size(container))
 		for i := 0; i < embdSIZE; i++ {
 			select {
 			case <-l.PredictStop:
@@ -98,6 +83,12 @@ END:
 				}
 			}
 		}
+
+		ok = bool(C.llama_check_prompt_or_continue(container))
+		if !ok {
+			break
+		}
+		C.llama_dropback_user_input(container)
 
 		remainCOUNT = int(C.llama_get_n_remain(container))
 	}
