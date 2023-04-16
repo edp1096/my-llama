@@ -37,7 +37,7 @@ mingw32-make.exe
 
 ## TODO
 * Settings
-    * GGML Parameters - model path, cpu threads, temper, topk..
+    * GGML Parameters - cpu threads, temper, topk..
 * Add Papago, Kakao translator
 
 
