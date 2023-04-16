@@ -169,7 +169,6 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 func main() {
 	cpuCoreNUM, _ := cpu.Counts(false)
 	cpuLogicalNUM, _ := cpu.Counts(true)
-	fmt.Println("CPU cores/logical:", cpuCoreNUM, "/", cpuLogicalNUM)
 
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flags.BoolVar(&isBrowserOpen, "b", false, "open browser automatically")
@@ -181,6 +180,8 @@ func main() {
 		fmt.Printf("Parsing program arguments failed: %s", err)
 		os.Exit(1)
 	}
+
+	fmt.Println("CPU cores/logical:", cpuCoreNUM, "/", cpuLogicalNUM)
 
 	if modelFname == "" {
 		modelFnames, err = findModelFiles(modelPath)
