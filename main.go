@@ -6,11 +6,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"runtime"
 	"strings"
 
 	_ "embed"
 
+	"github.com/shirou/gopsutil/v3/cpu"
 	ws "golang.org/x/net/websocket"
 
 	llama "my-llama/cgollama"
@@ -167,10 +167,14 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	cpuCoreNUM, _ := cpu.Counts(false)
+	cpuLogicalNUM, _ := cpu.Counts(true)
+	fmt.Println("CPU cores/logical:", cpuCoreNUM, "/", cpuLogicalNUM)
+
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flags.BoolVar(&isBrowserOpen, "b", false, "open browser automatically")
 	flags.StringVar(&modelFname, "m", "", "path to quantized ggml model file to load")
-	flags.IntVar(&threads, "t", runtime.NumCPU(), "number of threads to use during computation")
+	flags.IntVar(&threads, "t", cpuCoreNUM, "number of threads to use during computation")
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {
