@@ -17,6 +17,8 @@ Llama 7B runner on my windows machine
 ```powershell
 git clone https://github.com/edp1096/my-llama.git
 
+cd my-llama
+
 git submodule update --init --recursive
 
 mingw32-make.exe
