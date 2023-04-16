@@ -163,7 +163,7 @@ func main() {
 	})
 	http.HandleFunc("/ws", wsController)
 
-	fmt.Printf("Server is running at %s\n", uri)
+	fmt.Printf("Server is running on %s\n\n", uri)
 
 	switch os := runtime.GOOS; os {
 	case "windows":
