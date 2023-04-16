@@ -6,19 +6,77 @@
 </head>
 
 <body>
-    <div>
-        <textarea id="inputs">Do you know kimchi?</textarea>
+    <div id="input-container">
+        <div>
+            <div>
+                <label for="inputs">Input:</label>
+                <br />
+                <!-- <textarea id="inputs">Do you know kimchi?</textarea> -->
+                <textarea id="inputs">Please tell me the largest city in Asia.</textarea>
+            </div>
+        </div>
+
+        <div>
+            <div>
+                <label for="reflection">Reflection Prompt:</label>
+                <br />
+                <textarea id="reflection"></textarea>
+            </div>
+
+            <div>
+                <label for="antiprompt">Reverse prompt:</label>
+                <br />
+                <input type="text" id="antiprompt" value="" />
+            </div>
+        </div>
     </div>
 
     <button id="send" onclick="send()">Send</button>
-    <button id="send" onclick="stopResponse()">Stop</button>
+    <button id="stop" onclick="stopResponse()">Stop</button>
+
+    <span id="status" class="status-disconn">Disconnected</span>
+
+    <hr />
 
     <div id="outputs"></div>
 </body>
 
 <script>
+
+    function statusRemoveAllClasses() {
+        const status = document.getElementById('status')
+
+        status.classList.remove('status-disconn')
+        status.classList.remove('status-ready')
+        status.classList.remove('status-running')
+    }
+
+    function statusAddClass(className, message) {
+        const status = document.getElementById('status')
+        status.classList.add(className)
+
+        status.innerHTML = message
+    }
+
+    function buttonDisableAll() {
+        document.querySelector("#send").disabled = true
+        document.querySelector("#stop").disabled = true
+    }
+
+    function buttonSendEnable() {
+        document.querySelector("#send").disabled = false
+        document.querySelector("#stop").disabled = true
+    }
+
+    function buttonStopEnable() {
+        document.querySelector("#send").disabled = true
+        document.querySelector("#stop").disabled = false
+    }
+
     const loc = window.location
     let uri = 'ws:'
+    let history = ""
+    let inputPrompt = ""
 
     if (loc.protocol === 'https:') uri = 'wss:'
 
@@ -29,12 +87,37 @@
 
     ws.onopen = function () {
         console.log('Connected')
+
+        statusRemoveAllClasses()
+        statusAddClass('status-ready', 'Ready')
+    }
+
+    ws.onclose = function () {
+        console.log('Disconnected')
+
+        statusRemoveAllClasses()
+        statusAddClass('status-disconn', 'Disconnected')
+        buttonDisableAll()
     }
 
     ws.onmessage = function (evt) {
-        var out = document.getElementById('outputs')
-        out.innerHTML = evt.data.replace(/\n/g, "<br />")
-        // ws.close()
+        const out = document.getElementById('outputs')
+        buttonStopEnable()
+
+        let response = ""
+        response = evt.data.replace(/\n/g, "<br />")
+
+        // catch the end of the response
+        if (response.includes("$$__RESPONSE_DONE__$$")) {
+            response = response.replace(/\$\$__RESPONSE_DONE__\$\$/g, "")
+            response = response.slice(0, -12) // remove the last <br /><br />, not \n\n
+
+            statusRemoveAllClasses()
+            statusAddClass('status-ready', 'Ready')
+            buttonSendEnable()
+        }
+
+        out.innerHTML = history + response
     }
 
     function send() {
@@ -43,7 +126,24 @@
             return
         }
 
-        ws.send(input.value)
+        inputPrompt = input.value
+        history = document.querySelector("#outputs").innerHTML
+        // if (history != "") {
+        //     history += inputPrompt
+        // }
+
+        const reflection = document.querySelector("#reflection")
+        const antiprompt = document.querySelector("#antiprompt")
+
+        const data = `${inputPrompt}\n$$__SEPARATOR__$$\n${reflection.value}\n$$__SEPARATOR__$$\n${antiprompt.value}`
+
+        ws.send(data)
+
+        statusRemoveAllClasses()
+        statusAddClass('status-running', 'Running')
+        buttonStopEnable()
+
+        inputPrompt = ""
 
         input.value = ''
         input.focus()
@@ -55,9 +155,81 @@
 
         ws.send(stopmsg)
 
+        statusRemoveAllClasses()
+        statusAddClass('status-running', 'Running')
+        buttonSendEnable()
+
         input.value = ''
         input.focus()
     }
+
+    function init() {
+        let promptTEXT = `
+A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+
+### Human: Hello, Assistant.
+### Assistant: Hello. How may I help you today?
+### Human: Please tell me the largest city in Europe.
+### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
+### Human:`
+        let antipromptTEXT = `### Human:`
+
+        document.querySelector("#reflection").value = promptTEXT
+        document.querySelector("#antiprompt").value = antipromptTEXT
+
+        buttonSendEnable()
+    }
+
+    init()
 </script>
+
+<style>
+    :root {
+        --prompts_height: 15rem;
+    }
+
+    #input-container {
+        width: 100%;
+        display: flex;
+    }
+
+    #input-container>div {
+        width: 100%;
+        height: 100%;
+        padding: 0.1rem;
+    }
+
+    #reflection {
+        width: 100%;
+        height: var(--prompts_height);
+    }
+
+    #inputs {
+        width: 100%;
+        height: var(--prompts_height);
+    }
+
+    #outputs {
+        width: 100%;
+        height: calc(100vh - var(--prompts_height) - 8rem);
+        overflow: auto;
+    }
+
+    #antiprompt {
+        width: 100%;
+    }
+
+    .status-disconn {
+        color: gray;
+    }
+
+    .status-ready {
+        color: green;
+    }
+
+    .status-running {
+        color: red;
+    }
+</style>
 
 </html>

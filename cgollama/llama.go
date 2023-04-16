@@ -6,7 +6,6 @@ package cgollama
 import "C"
 import (
 	"fmt"
-	"unicode"
 	"unicode/utf8"
 	"unsafe"
 
@@ -14,89 +13,100 @@ import (
 )
 
 type LLama struct {
-	state       unsafe.Pointer
+	Container   unsafe.Pointer
+	State       unsafe.Pointer
 	PredictStop chan bool
 }
 
-func New(model string, opts ...ModelOption) (*LLama, error) {
-	mo := NewModelOptions(opts...)
-	modelPath := C.CString(model)
-	result := C.load_model(modelPath, C.int(mo.ContextSize), C.int(mo.Parts), C.int(mo.Seed), C.bool(mo.F16Memory), C.bool(mo.MLock))
-	if result == nil {
-		return nil, fmt.Errorf("failed loading model")
+func New() (*LLama, error) {
+	container := C.llama_init_container()
+	if container == nil {
+		return nil, fmt.Errorf("failed to initialize the container")
 	}
 
-	return &LLama{state: result}, nil
+	return &LLama{Container: container}, nil
 }
 
-func isASCII(s string) bool {
-	for i := 0; i < len(s); i++ {
-		if s[i] > unicode.MaxASCII {
-			return false
-		}
+func (l *LLama) LoadModel(modelFNAME string) error {
+	container := l.Container
+	C.llama_set_model_path(container, C.CString(modelFNAME))
+
+	result := bool(C.llama_load_model(container))
+	if !result {
+		return fmt.Errorf("failed to load the model")
 	}
 
-	return true
+	return nil
 }
 
-func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, text string, po PredictOptions) error {
-	input := C.CString(text)
+func (l *LLama) GetRemainCount() int {
+	container := l.Container
+	return int(C.llama_get_n_remain(container))
+}
 
-	params := C.llama_allocate_params(input, C.int(po.Seed), C.int(po.Threads), C.int(po.Tokens), C.int(po.TopK),
-		C.float(po.TopP), C.float(po.Temperature), C.float(po.Penalty), C.int(po.Repeat), C.bool(po.IgnoreEOS), C.bool(po.F16KV))
+func (l *LLama) SetIsInteracting(isInteracting bool) {
+	container := l.Container
+	C.llama_set_is_interacting(container, C.bool(isInteracting))
+}
 
-	predVARs := C.llama_prepare_pred_vars(params, l.state)
-	remainCOUNT := int(C.llama_get_remain_count(predVARs))
+func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec) error {
+	container := l.Container
+	remainCOUNT := int(C.llama_get_n_remain(container))
 
 	responseBYTEs := []byte{}
 	response := ""
 
 END:
-	for remainCOUNT > 0 {
-		idsSIZE := int(C.llama_get_embedding_ids(params, predVARs))
+	for remainCOUNT != 0 {
+		ok := bool(C.llama_predict_tokens(container))
+		if !ok {
+			return fmt.Errorf("failed to predict the tokens")
+		}
 
-		for i := 0; i < idsSIZE; i++ {
+		// display text
+		embdSIZE := int(C.llama_get_embd_size(container))
+		for i := 0; i < embdSIZE; i++ {
 			select {
 			case <-l.PredictStop:
+				remainCOUNT = 0
 				break END
 			default:
-				id := C.llama_get_id(predVARs, C.int(i))
-				embedCSTR := C.llama_get_embed_string(predVARs, id)
+				id := C.llama_get_embed_id(container, C.int(i))
+				embedCSTR := C.llama_get_embed_string(container, id)
 				embedSTR := C.GoString(embedCSTR)
 				// fmt.Print(embedSTR)
 
 				responseBYTEs = append(responseBYTEs, []byte(embedSTR)...)
 				response = string(responseBYTEs)
 
-				// Because connection is closed, don't send invalid UTF-8
 				if !utf8.ValidString(embedSTR) {
-					continue
+					continue // Because connection is closed, don't send invalid UTF-8
 				}
 
 				err := handler.Send(conn, response)
 				if err != nil {
 					fmt.Println("Send error:", err)
+					remainCOUNT = 0
 					break END
 				}
 			}
 		}
 
-		remainCOUNT = int(C.llama_get_remain_count(predVARs))
-		isTokenEND := C.llama_check_token_end(predVARs)
-
-		if bool(isTokenEND) {
+		ok = bool(C.llama_check_prompt_or_continue(container))
+		if !ok {
+			// remainCOUNT = 0
 			break
 		}
+		C.llama_dropback_user_input(container)
+
+		remainCOUNT = int(C.llama_get_n_remain(container))
 	}
 
-	err := handler.Send(conn, response+"\nResponse done.\n")
+	err := handler.Send(conn, response+"\n$$__RESPONSE_DONE__$$\n")
 	if err != nil {
 		fmt.Println("Send error:", err)
 		return err
 	}
-
-	C.llama_default_signal_action()
-	C.llama_free_params(params)
 
 	return nil
 }

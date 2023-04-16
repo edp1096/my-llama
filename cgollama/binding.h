@@ -4,38 +4,68 @@ extern "C" {
 
 #include <stdbool.h>
 
-struct pred_variables {
+struct variables_container {
     int n_past;
     int n_remain;
     int n_consumed;
+    int id;
 
+    bool is_interacting;
+    bool input_noecho;
     int n_ctx;
 
-    void* embd;
-    void* embedding_inp;
-    void* context;
-
     void* last_n_tokens;
+    void* llama_token_newline;
+
+    void* embd;
+    void* embd_inp;
+
+    void* ctx;
+    void* params;
+
+    char* user_input;
 };
 
-void* load_model(const char *fname, int n_ctx, int n_parts, int n_seed, bool memory_f16, bool mlock);
+/* Initialize before main loop */
+void* llama_init_container();
+bool llama_load_model(void* container);
+void llama_init_params(void* container);
+bool llama_make_ready_to_predict(void* container);
 
-void* llama_allocate_params(const char *prompt, int seed, int threads, int tokens,
-                            int top_k, float top_p, float temp, float repeat_penalty, int repeat_last_n, bool ignore_eos, bool memory_f16);
+/* For main loop */
+bool llama_predict_tokens(void* container);
+bool llama_receive_input(void* container);
+bool llama_append_input(void* container);
+bool llama_wait_or_continue(void* container);
+int llama_get_embed_id(void* container, int index);
+char* llama_get_embed_string(void* container, int id);
 
-void llama_free_params(void* params_ptr);
+/* Finish loop */
+void llama_free_params(void* container);
+void llama_free_model(void* container);
 
-void llama_free_model(void* state);
+/* Getters */
+int llama_get_n_remain(void* container);
+int llama_get_params_n_predict(void* container);
+bool llama_get_noecho(void* container);
+int llama_get_embd_size(void* container);
+int llama_get_embd_inp_size(void* container);
+int llama_get_n_consumed(void* container);
+bool llama_get_params_interactive_start(void* container);
+bool llama_get_params_interactive(void* container);
 
-int llama_get_remain_count(void* pred_vars_v);
-void llama_default_signal_action();
-void* llama_prepare_pred_vars(void* params_ptr, void* state_pr);
-int llama_get_embedding_ids(void* params_ptr, void* pred_vars_ptr);
-int llama_get_id(void* pred_vars_ptr, int index);
-char* llama_get_embed_string(void* pred_vars_ptr, int id);
-bool llama_check_token_end(void* pred_vars_ptr);
+/* Setters */
+void llama_set_params_interactive_start(void* container);
+void llama_set_is_interacting(void* container, bool is_interacting);
+void llama_set_params_n_remain(void* container, int n_predict);
+void llama_set_model_path(void* container, char* path);
+void llama_set_params_antiprompt(void* container, char* antiprompt);
+void llama_set_params_prompt(void* container, char* prompt);
+void llama_set_user_input(void* container, const char* user_input);
 
-int llama_predict(void* params_ptr, void* state_pr, char* result);
+/* Others */
+bool llama_check_prompt_or_continue(void* container);
+void llama_dropback_user_input(void* container);
 
 #ifdef __cplusplus
 }
