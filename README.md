@@ -51,6 +51,12 @@ mingw32-make.exe
 
 
 ## Source
-* https://github.com/ggerganov/llama.cpp
-* https://github.com/go-skynet/go-llama.cpp
-* https://github.com/cornelk/llama-go
+* Code
+    * https://github.com/ggerganov/llama.cpp
+    * https://github.com/go-skynet/go-llama.cpp
+    * https://github.com/cornelk/llama-go
+* Prompt
+    * https://arca.live/b/alpaca/73449389
+    ```dos
+    main -m ggml-vicuna-7b-4bit-rev1.bin --color -f ./prompts/vicuna.txt -i --n_parts 1 -t 6 --temp 0.15 --top_k 400 -c 2048 --repeat_last_n 2048 --repeat_penalty 1.0 -n 2048 -r "### Human:" -b 512
+    ```
