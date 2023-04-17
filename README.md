@@ -29,13 +29,6 @@ mingw32-make.exe
 
 ## Usage
 ```powershell
-# Download ggml weights - need only file which has .bin extension
-## https://huggingface.co/Drararara/llama-7b-ggml/tree/main
-## https://huggingface.co/maximeseth/alpaca-native-7B-ggml/tree/main
-## https://huggingface.co/Pi3141/alpaca-lora-7B-ggml/tree/main
-## https://huggingface.co/Sosaka/Vicuna-7B-4bit-ggml/tree/main
-## https://huggingface.co/eachadea/ggml-vicuna-7b-4bit/tree/main
-
 # Just launch
 ./bin/my-llama.exe
 
