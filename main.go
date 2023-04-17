@@ -212,8 +212,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("CPU cores physical/logical:", cpuPhysicalNUM, "/", cpuLogicalNUM)
-
 	if modelFname == "" {
 		modelFnames, err = findModelFiles(modelPath)
 		if err != nil {
@@ -223,21 +221,27 @@ func main() {
 		// fmt.Println(modelFnames)
 
 		if len(modelFnames) == 0 {
-			fmt.Println("No model files found. Download the model file(s) before launch.")
-			fmt.Println("Press enter to open the model search page.")
+			fmt.Println("No model files found.")
+			fmt.Println("Press enter to download vicuna model file and to open the model search page.")
+			fmt.Println("Press Ctrl+C, if you want to exit.")
 			fmt.Scanln()
 
-			openBrowser("https://huggingface.co/search/full-text?q=ggml+7b&type=model")
-			os.Exit(1)
+			openBrowser(weightsSearchURL)
+			downloadVicuna()
+
+			modelFnames, _ = findModelFiles(modelPath)
 		}
 
 		modelFname = modelFnames[0]
 	}
 
 	if _, err := os.Stat(modelFname); os.IsNotExist(err) {
+		// Because, model will be downloaded if not exists, may be not reachable here
 		fmt.Printf("Model file %s does not exist", modelFname)
 		os.Exit(1)
 	}
+
+	fmt.Println("CPU cores physical/logical:", cpuPhysicalNUM, "/", cpuLogicalNUM)
 
 	listenURI := Address + ":" + Port
 	uri := HttpProtocol + "://" + Address + ":" + Port
