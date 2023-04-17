@@ -63,6 +63,11 @@ void llama_set_params_antiprompt(void* container, char* antiprompt);
 void llama_set_params_prompt(void* container, char* prompt);
 void llama_set_user_input(void* container, const char* user_input);
 
+/* Setters - gpt_params */
+void llama_set_params_n_threads(void* container, int n_threads);
+void llama_set_params_top_k(void* container, int tok_k);
+
+
 /* Others */
 bool llama_check_prompt_or_continue(void* container);
 void llama_dropback_user_input(void* container);

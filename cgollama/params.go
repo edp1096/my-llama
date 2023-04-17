@@ -19,6 +19,16 @@ func (l *LLama) MakeReadyToPredict() (err error) {
 	return err
 }
 
+func (l *LLama) SetThreadsCount(threads int) {
+	container := l.Container
+	C.llama_set_params_n_threads(container, C.int(threads))
+}
+
+func (l *LLama) SetTopK(topK int) {
+	container := l.Container
+	C.llama_set_params_top_k(container, C.int(topK))
+}
+
 func (l *LLama) InitParams() {
 	container := l.Container
 	C.llama_init_params(container)

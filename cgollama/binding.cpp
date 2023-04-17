@@ -407,6 +407,15 @@ void llama_set_user_input(void* container, const char* user_input) {
 }
 
 
+void llama_set_params_n_threads(void* container, int n_threads) {
+    ((gpt_params*)((variables_container*)container)->params)->n_threads = n_threads;
+}
+
+void llama_set_params_top_k(void* container, int top_k) {
+    ((gpt_params*)((variables_container*)container)->params)->top_k = (int32_t)top_k;
+}
+
+
 bool llama_check_prompt_or_continue(void* container) {
     bool result = true;
     variables_container* c = (variables_container*)container;
