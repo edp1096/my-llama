@@ -7,6 +7,16 @@ Llama 7B runner on my windows machine
 * [Windows](https://github.com/edp1096/my-llama/releases/download/v0.1.1/my-llama.exe)
 
 
+## Usage
+```powershell
+# Just launch
+./bin/my-llama.exe
+
+# Launch with browser open
+./bin/my-llama.exe -b
+```
+
+
 ## Build from source
 
 ### Requirements
@@ -24,16 +34,6 @@ cd my-llama
 git submodule update --init --recursive
 
 mingw32-make.exe
-```
-
-
-## Usage
-```powershell
-# Just launch
-./bin/my-llama.exe
-
-# Launch with browser open
-./bin/my-llama.exe -b
 ```
 
 
