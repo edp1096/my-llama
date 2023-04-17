@@ -1,4 +1,4 @@
-![image description](doc/screencapture.png)
+![image description](doc/screenshot.gif)
 
 Llama 7B runner on my windows machine
 
