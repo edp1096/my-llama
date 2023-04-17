@@ -386,7 +386,7 @@ void llama_set_is_interacting(void* container, bool is_interacting) {
     ((variables_container*)container)->is_interacting = is_interacting;
 }
 
-void llama_set_params_n_remain(void* container, int n_predict) {
+void llama_set_n_remain(void* container, int n_predict) {
     ((variables_container*)container)->n_remain = n_predict;
 }
 

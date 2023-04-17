@@ -37,6 +37,9 @@ var (
 )
 
 var (
+	cpuPhysicalNUM = 0
+	cpuLogicalNUM  = 0
+
 	isBrowserOpen = false
 
 	modelPath = "./"
@@ -56,6 +59,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			fmt.Println("model_file:", model_file)
 		}
 
+		// Todo: settings from query string
 		topk := req.URL.Query().Get("topk")
 		if topk != "" {
 			// tokens, _ = strconv.Atoi(topk)
@@ -102,13 +106,36 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 				disconnected = true
 			}
 
-			// Print received message
+			// Command
 			if len(message) > 0 {
-				if message == "$$__STOP__$$" {
-					if predictRunning {
-						l.PredictStop <- true
+				if strings.HasPrefix(message, "$$__COMMAND__$$") {
+					command := strings.Split(message, "\n$$__SEPARATOR__$$\n")[1]
+
+					switch command {
+					case "$$__STOP__$$":
+						if predictRunning {
+							l.PredictStop <- true
+						}
+						continue
+					case "$$__MAX_CPU_PHYSICAL__$$":
+						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__MAX_CPU_PHYSICAL__$$\n$$__SEPARATOR__$$\n"
+						response := fmt.Sprintf("%s%d", tag, cpuPhysicalNUM)
+						err = handler.Send(conn, response)
+						if err != nil {
+							fmt.Println("Send error:", err)
+							disconnected = true
+						}
+						continue
+					case "$$__MAX_CPU_LOGICAL__$$":
+						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__MAX_CPU_PHYSICAL__$$\n$$__SEPARATOR__$$\n"
+						response := fmt.Sprintf("%s%d", tag, cpuLogicalNUM)
+						err = handler.Send(conn, response)
+						if err != nil {
+							fmt.Println("Send error:", err)
+							disconnected = true
+						}
+						continue
 					}
-					continue
 				}
 
 				// fmt.Printf("%s\n", message) // Print received message from client
@@ -120,7 +147,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 			datas := strings.Split(message, "\n$$__SEPARATOR__$$\n")
 
-			// Predict and Write
+			// Predict and Write responses
 			go func() {
 				predictRunning = true
 
@@ -128,10 +155,14 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					return
 				}
 
-				reflectionPrompt = datas[1]
-				antiprompt = datas[2]
-				// input = antiprompt + datas[0]
-				input = datas[0]
+				if datas[0] != "$$__PROMPT__$$" {
+					return
+				}
+
+				// 0: prompt, 1: input, 2: reflection prompt, 3: antiprompt
+				reflectionPrompt = datas[2]
+				antiprompt = datas[3]
+				input = datas[1]
 
 				if requestCount == 0 {
 					l.SetPrompt(reflectionPrompt)
@@ -167,13 +198,13 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	cpuCoreNUM, _ := cpu.Counts(false)
-	cpuLogicalNUM, _ := cpu.Counts(true)
+	cpuPhysicalNUM, _ = cpu.Counts(false)
+	cpuLogicalNUM, _ = cpu.Counts(true)
 
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flags.BoolVar(&isBrowserOpen, "b", false, "open browser automatically")
 	flags.StringVar(&modelFname, "m", "", "path to quantized ggml model file to load")
-	flags.IntVar(&threads, "t", cpuCoreNUM, "number of threads to use during computation")
+	flags.IntVar(&threads, "t", cpuPhysicalNUM, "number of threads to use during computation")
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {
@@ -181,7 +212,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("CPU cores/logical:", cpuCoreNUM, "/", cpuLogicalNUM)
+	fmt.Println("CPU cores physical/logical:", cpuPhysicalNUM, "/", cpuLogicalNUM)
 
 	if modelFname == "" {
 		modelFnames, err = findModelFiles(modelPath)

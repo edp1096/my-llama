@@ -83,7 +83,7 @@ END:
 					continue // Because connection is closed, don't send invalid UTF-8
 				}
 
-				err := handler.Send(conn, response)
+				err := handler.Send(conn, "$$__RESPONSE_PREDICT__$$\n$$__SEPARATOR__$$\n"+response)
 				if err != nil {
 					fmt.Println("Send error:", err)
 					remainCOUNT = 0
@@ -102,7 +102,7 @@ END:
 		remainCOUNT = int(C.llama_get_n_remain(container))
 	}
 
-	err := handler.Send(conn, response+"\n$$__RESPONSE_DONE__$$\n")
+	err := handler.Send(conn, "$$__RESPONSE_PREDICT__$$\n$$__SEPARATOR__$$\n"+response+"\n$$__RESPONSE_DONE__$$\n")
 	if err != nil {
 		fmt.Println("Send error:", err)
 		return err

@@ -1,5 +1,6 @@
 :root {
     --prompts_height: 15rem;
+    --front_color: #000;
 }
 
 #input-container {
@@ -44,3 +45,36 @@
 .status-running {
     color: red;
 }
+
+/* Cursor **/
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    25% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    75% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.cursor {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.2rem;
+    background-color: var(--front_color);
+    animation: blink 1s steps(2) infinite;
+}
+
+/** Cursor */
