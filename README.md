@@ -4,7 +4,7 @@ Llama 7B runner on my windows machine
 
 
 ## Download pre-compiled binary
-* [Windows](https://github.com/edp1096/my-llama/releases/download/v0.1.0/my-llama.exe)
+* [Windows](https://github.com/edp1096/my-llama/releases/download/v0.1.1/my-llama.exe)
 
 
 ## Build from source
