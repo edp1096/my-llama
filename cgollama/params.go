@@ -19,17 +19,30 @@ func (l *LLama) MakeReadyToPredict() (err error) {
 	return err
 }
 
-func (l *LLama) SetThreadsCount(threads int) {
-	container := l.Container
-	C.llama_set_params_n_threads(container, C.int(threads))
+/* Getters - gpt_params */
+func (l *LLama) GetThreadsCount() int {
+	return int(C.llama_get_params_n_threads(l.Container))
 }
 
+/* Getters - gpt_params / sampling parameters */
+func (l *LLama) GetTopK() int {
+	return int(C.llama_get_params_top_k(l.Container))
+}
+
+func (l *LLama) GetTopP() float64 {
+	return float64(C.llama_get_params_top_p(l.Container))
+}
+
+/* Setters - gpt_params */
+func (l *LLama) SetThreadsCount(threads int) {
+	C.llama_set_params_n_threads(l.Container, C.int(threads))
+}
+
+/* Setters - gpt_params / sampling parameters */
 func (l *LLama) SetTopK(topK int) {
-	container := l.Container
-	C.llama_set_params_top_k(container, C.int(topK))
+	C.llama_set_params_top_k(l.Container, C.int(topK))
 }
 
 func (l *LLama) InitParams() {
-	container := l.Container
-	C.llama_init_params(container)
+	C.llama_init_params(l.Container)
 }

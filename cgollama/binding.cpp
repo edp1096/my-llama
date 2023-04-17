@@ -344,6 +344,7 @@ void llama_free_model(void* container) {
 }
 
 
+/* Getters */
 int llama_get_n_remain(void* container) {
     return ((variables_container*)container)->n_remain;
 }
@@ -376,7 +377,30 @@ bool llama_get_params_interactive(void* container) {
     return ((gpt_params*)((variables_container*)container)->params)->interactive;
 }
 
+/* Getters - gpt_params */
+int llama_get_params_n_threads(void* container) {
+    return ((gpt_params*)((variables_container*)container)->params)->n_threads;
+}
 
+/* Getters - gpt_params / sampling parameters */
+int llama_get_params_top_k(void* container) {
+    return ((gpt_params*)((variables_container*)container)->params)->top_k;
+}
+
+float llama_get_params_top_p(void* container) {
+    return ((gpt_params*)((variables_container*)container)->params)->top_p;
+}
+
+float llama_get_params_temper(void* container) {
+    return ((gpt_params*)((variables_container*)container)->params)->temp;
+}
+
+float llama_get_params_repeat_penalty(void* container) {
+    return ((gpt_params*)((variables_container*)container)->params)->repeat_penalty;
+}
+
+
+/* Setters */
 void llama_set_params_interactive_start(void* container) {
     bool interactive = ((gpt_params*)((variables_container*)container)->params)->interactive;
     ((gpt_params*)((variables_container*)container)->params)->interactive_start = interactive;
@@ -407,12 +431,26 @@ void llama_set_user_input(void* container, const char* user_input) {
 }
 
 
-void llama_set_params_n_threads(void* container, int n_threads) {
-    ((gpt_params*)((variables_container*)container)->params)->n_threads = n_threads;
+/* Setters - gpt_params */
+void llama_set_params_n_threads(void* container, int value) {
+    ((gpt_params*)((variables_container*)container)->params)->n_threads = value;
 }
 
-void llama_set_params_top_k(void* container, int top_k) {
-    ((gpt_params*)((variables_container*)container)->params)->top_k = (int32_t)top_k;
+/* Setters - gpt_params / sampling parameters */
+void llama_set_params_top_k(void* container, int value) {
+    ((gpt_params*)((variables_container*)container)->params)->top_k = value;
+}
+
+void llama_set_params_top_p(void* container, float value) {
+    ((gpt_params*)((variables_container*)container)->params)->top_p = value;
+}
+
+void llama_set_params_temper(void* container, float value) {
+    ((gpt_params*)((variables_container*)container)->params)->temp = value;
+}
+
+void llama_set_params_repeat_penalty(void* container, float value) {
+    ((gpt_params*)((variables_container*)container)->params)->repeat_penalty = value;
 }
 
 
