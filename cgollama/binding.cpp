@@ -1,10 +1,25 @@
 #include "common.h"
 #include "llama.h"
+#include "ggml.h"
 #include "binding.h"
 
 #include <cstring>
 #include <iostream>
 
+struct llama_kv_cache {
+    struct ggml_tensor* k;
+    struct ggml_tensor* v;
+
+    int n;  // number of tokens currently in the cache
+};
+
+struct llama_model {
+    struct llama_kv_cache kv_self;
+};
+
+struct llama_context {
+    llama_model model;
+};
 
 void* llama_init_container() {
     variables_container* c = new variables_container;
@@ -13,7 +28,7 @@ void* llama_init_container() {
     return c;
 }
 
-llama_context* llama_get_context(gpt_params* params) {
+llama_context* llama_init_context(gpt_params* params) {
     auto lparams = llama_context_default_params();
 
     lparams.n_ctx = params->n_ctx;
@@ -42,7 +57,7 @@ bool llama_load_model(void* container) {
         params->prompt = gpt_random_prompt(rng);
     }
 
-    llama_context* ctx = llama_get_context(params);
+    llama_context* ctx = llama_init_context(params);
     if (ctx == nullptr) {
         fprintf(stderr, "%s : failed to load model\n", __func__);
         return result;
@@ -52,6 +67,30 @@ bool llama_load_model(void* container) {
 
     result = true;
     return result;
+}
+
+void llama_save_kv_dump_experiment(void* container) {
+    variables_container* c = (variables_container*)container;
+    llama_context* ctx = (llama_context*)c->ctx;
+
+    // Save ctx->model.kv_self.k->data and ctx->model.kv_self.v->data and ctx->model.kv_self.n to file
+    FILE* fp_write = fopen("dump_kv.bin", "wb");
+    fwrite(ctx->model.kv_self.k->data, ggml_nbytes(ctx->model.kv_self.k), 1, fp_write);
+    fwrite(ctx->model.kv_self.v->data, ggml_nbytes(ctx->model.kv_self.v), 1, fp_write);
+    fwrite(&ctx->model.kv_self.n, sizeof(ctx->model.kv_self.n), 1, fp_write);
+    fclose(fp_write);
+}
+
+void llama_load_kv_dump_experiment(void* container) {
+    variables_container* c = (variables_container*)container;
+    llama_context* ctx = (llama_context*)c->ctx;
+
+    // Load ctx->model.kv_self.k->data and ctx->model.kv_self.v->data and ctx->model.kv_self.n from file
+    FILE* fp_read = fopen("dump_kv.bin", "rb");
+    fread(ctx->model.kv_self.k->data, ggml_nbytes(ctx->model.kv_self.k), 1, fp_read);
+    fread(ctx->model.kv_self.v->data, ggml_nbytes(ctx->model.kv_self.v), 1, fp_read);
+    fread(&ctx->model.kv_self.n, sizeof(ctx->model.kv_self.n), 1, fp_read);
+    fclose(fp_read);
 }
 
 bool llama_make_ready_to_predict(void* container) {

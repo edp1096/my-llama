@@ -136,7 +136,7 @@ $(info )
 
 build:
 	$(MAKE) libbinding.a
-	go build -ldflags="-w -s" -o bin/
+	go build -trimpath -ldflags="-w -s" -o bin/
 
 llama.cpp/ggml.o:
 	$(MAKE) CC=$(CC) -C llama.cpp ggml.o

@@ -39,6 +39,16 @@ func (l *LLama) LoadModel(modelFNAME string) error {
 	return nil
 }
 
+func (l *LLama) SaveKVdump() {
+	container := l.Container
+	C.llama_save_kv_dump_experiment(container)
+}
+
+func (l *LLama) LoadKVdump() {
+	container := l.Container
+	C.llama_load_kv_dump_experiment(container)
+}
+
 func (l *LLama) GetRemainCount() int {
 	container := l.Container
 	return int(C.llama_get_n_remain(container))
