@@ -1,11 +1,17 @@
 #include "common.h"
 #include "llama.h"
+#include "llama_util.h"
 #include "ggml.h"
 #include "binding.h"
 
 #include <cstring>
 #include <iostream>
 
+#include <random>
+#include <unordered_map>
+#include <memory>
+
+/*** Copy types from llama.cpp */
 struct llama_kv_cache {
     struct ggml_tensor* k;
     struct ggml_tensor* v;
@@ -13,13 +19,169 @@ struct llama_kv_cache {
     int n;  // number of tokens currently in the cache
 };
 
+// available llama models
+enum e_model {
+    MODEL_UNKNOWN,
+    MODEL_7B,
+    MODEL_13B,
+    MODEL_30B,
+    MODEL_65B,
+};
+
+// default hparams (LLaMA 7B)
+struct llama_hparams {
+    uint32_t n_vocab = 32000;
+    uint32_t n_ctx = 512;  // this is provided as user input?
+    uint32_t n_embd = 4096;
+    uint32_t n_mult = 256;
+    uint32_t n_head = 32;
+    uint32_t n_layer = 32;
+    uint32_t n_rot = 64;
+    enum llama_ftype ftype = LLAMA_FTYPE_MOSTLY_F16;
+
+    bool operator!=(const llama_hparams& other) const {
+        return memcmp(this, &other, sizeof(llama_hparams));
+    }
+};
+
+struct llama_layer {
+    // normalization
+    struct ggml_tensor* attention_norm;
+
+    // attention
+    struct ggml_tensor* wq;
+    struct ggml_tensor* wk;
+    struct ggml_tensor* wv;
+    struct ggml_tensor* wo;
+
+    // normalization
+    struct ggml_tensor* ffn_norm;
+
+    // ff
+    struct ggml_tensor* w1;
+    struct ggml_tensor* w2;
+    struct ggml_tensor* w3;
+};
+
 struct llama_model {
+    e_model type = MODEL_UNKNOWN;
+
+    llama_hparams hparams;
+
+    struct ggml_tensor* tok_embeddings;
+
+    struct ggml_tensor* norm;
+    struct ggml_tensor* output;
+
+    std::vector<llama_layer> layers;
+
+    // context
+    struct ggml_context* ctx = NULL;
+
+    // key + value cache for the self attention
+    // TODO: move to llama_state
     struct llama_kv_cache kv_self;
+
+    // the model memory buffer
+    llama_buffer buf;
+
+    // model memory mapped file
+    std::unique_ptr<llama_mmap> mapping;
+
+    // objects representing data potentially being locked in memory
+    llama_mlock mlock_buf;
+    llama_mlock mlock_mmap;
+
+    // for quantize-stats only
+    std::vector<std::pair<std::string, struct ggml_tensor*>> tensors_by_name;
+
+    ~llama_model() {
+        if (ctx) {
+            ggml_free(ctx);
+        }
+    }
+};
+
+struct llama_vocab {
+    using id = int32_t;
+    using token = std::string;
+
+    struct token_score {
+        token tok;
+        float score;
+    };
+
+    std::unordered_map<token, id> token_to_id;
+    std::vector<token_score> id_to_token;
 };
 
 struct llama_context {
+    std::mt19937 rng;
+
+    int64_t t_load_us = 0;
+    int64_t t_start_us = 0;
+    bool has_evaluated_once = false;
+
+    int64_t t_sample_us = 0;
+    int64_t t_eval_us = 0;
+    int64_t t_p_eval_us = 0;
+
+    int32_t n_sample = 0;  // number of tokens sampled
+    int32_t n_eval = 0;    // number of eval calls
+    int32_t n_p_eval = 0;  // number of tokens in eval calls for the prompt (with batch size > 1)
+
     llama_model model;
+    llama_vocab vocab;
+
+    size_t mem_per_token = 0;
+
+    // decode output (2-dimensional array: [n_tokens][n_vocab])
+    std::vector<float> logits;
+    bool logits_all = false;
+
+    // input embedding (1-dimensional array: [n_embd])
+    std::vector<float> embedding;
+
+    void use_buf(struct ggml_context* ctx, int i) {
+#if defined(LLAMA_USE_SCRATCH)
+        size_t last_size = 0;
+
+        if (i == -1) {
+            last_size = ggml_set_scratch(ctx, {
+                                                  0,
+                                                  0,
+                                                  nullptr,
+                                              });
+        } else {
+            auto& buf = buf_scratch[i];
+            last_size = ggml_set_scratch(ctx, {
+                                                  0,
+                                                  buf.size,
+                                                  buf.addr,
+                                              });
+        }
+
+        if (buf_last >= 0) {
+            buf_max_size[buf_last] = std::max(buf_max_size[buf_last], last_size);
+        }
+
+        buf_last = i;
+#else
+        (void)i;
+        (void)ctx;
+#endif
+    }
+
+    size_t get_buf_max_mem(int i) const {
+#if defined(LLAMA_USE_SCRATCH)
+        return buf_max_size[i];
+#else
+        (void)i;
+        return 0;
+#endif
+    }
 };
+/* Copy from llama.cpp ***/
 
 void* llama_init_container() {
     variables_container* c = new variables_container;
@@ -101,9 +263,9 @@ bool llama_make_ready_to_predict(void* container) {
     c->is_interacting = false;
     c->embd = new std::vector<llama_token>;
 
-    params->prompt.insert(0, 1, ' '); // Add a space in front of the first character to match OG llama tokenizer behavior
+    params->prompt.insert(0, 1, ' ');  // Add a space in front of the first character to match OG llama tokenizer behavior
 
-    c->embd_inp = new std::vector<llama_token>(::llama_tokenize((llama_context*)c->ctx, params->prompt, true)); // tokenize the prompt
+    c->embd_inp = new std::vector<llama_token>(::llama_tokenize((llama_context*)c->ctx, params->prompt, true));  // tokenize the prompt
     c->n_ctx = llama_n_ctx((llama_context*)c->ctx);
 
     if ((int)((std::vector<llama_token>*)c->embd_inp)->size() > c->n_ctx - 4) {
@@ -112,7 +274,7 @@ bool llama_make_ready_to_predict(void* container) {
     }
 
     // number of tokens to keep when resetting context
-    if (params->n_keep < 0 || params->n_keep >(int)((std::vector<llama_token>*)c->embd_inp)->size() || params->instruct) {
+    if (params->n_keep < 0 || params->n_keep > (int)((std::vector<llama_token>*)c->embd_inp)->size() || params->instruct) {
         params->n_keep = (int)((std::vector<llama_token>*)c->embd_inp)->size();
     }
 
@@ -133,7 +295,6 @@ bool llama_make_ready_to_predict(void* container) {
     c->n_past = 0;
     c->n_remain = params->n_predict;
     c->n_consumed = 0;
-
 
     result = true;
     return result;
@@ -195,9 +356,9 @@ bool llama_predict_tokens(void* container) {
     if ((int)embd_inp->size() <= c->n_consumed) {
         // out of user input, sample next token
         const int32_t top_k = params->top_k;
-        const float   top_p = params->top_p;
-        const float   temp = params->temp;
-        const float   repeat_penalty = params->repeat_penalty;
+        const float top_p = params->top_p;
+        const float temp = params->temp;
+        const float repeat_penalty = params->repeat_penalty;
 
         llama_token id = 0;
 
@@ -209,8 +370,8 @@ bool llama_predict_tokens(void* container) {
             }
 
             id = llama_sample_top_p_top_k(ctx,
-                last_n_tokens->data() + c->n_ctx - params->repeat_last_n,
-                params->repeat_last_n, top_k, top_p, temp, repeat_penalty);
+                                          last_n_tokens->data() + c->n_ctx - params->repeat_last_n,
+                                          params->repeat_last_n, top_k, top_p, temp, repeat_penalty);
 
             last_n_tokens->erase(last_n_tokens->begin());
             last_n_tokens->push_back(id);
@@ -226,11 +387,11 @@ bool llama_predict_tokens(void* container) {
             }
         }
 
-        embd->push_back(id); // add it to the context
+        embd->push_back(id);  // add it to the context
 
-        c->input_noecho = false; // echo this to console
+        c->input_noecho = false;  // echo this to console
 
-        --c->n_remain; // decrement remaining sampling budget
+        --c->n_remain;  // decrement remaining sampling budget
     } else {
         // some user input remains from prompt or interaction, forward it to processing
         while ((int)embd_inp->size() > c->n_consumed) {
@@ -268,16 +429,16 @@ bool llama_receive_input(void* container) {
         std::wstring wline;
         if (!std::getline(std::wcin, wline)) {
             result = false;
-            return result; // input stream is bad or EOF received
+            return result;  // input stream is bad or EOF received
         }
         win32_utf8_encode(wline, line);
 
         if (line.empty() || line.back() != '\\') {
             another_line = false;
         } else {
-            line.pop_back(); // Remove the continue character
+            line.pop_back();  // Remove the continue character
         }
-        buffer += line + '\n'; // Append the line to the result
+        buffer += line + '\n';  // Append the line to the result
     } while (another_line);
     // buffer = "Do you know kimchi?";
 
@@ -289,7 +450,7 @@ bool llama_receive_input(void* container) {
         c->n_remain -= line_inp.size();
     }
 
-    c->input_noecho = true; // do not echo this again
+    c->input_noecho = true;  // do not echo this again
 
     result = true;
     return result;
@@ -312,8 +473,7 @@ bool llama_append_input(void* container) {
         c->n_remain -= line_inp.size();
     }
 
-
-    c->input_noecho = true; // do not echo this again
+    c->input_noecho = true;  // do not echo this again
 
     result = true;
     return result;
@@ -370,7 +530,6 @@ char* llama_get_embed_string(void* container, int id) {
     return const_cast<char*>(llama_token_to_str((llama_context*)c->ctx, id));
 }
 
-
 void llama_free_params(void* container) {
     gpt_params* params = (gpt_params*)((variables_container*)container)->params;
     delete params;
@@ -380,7 +539,6 @@ void llama_free_model(void* container) {
     llama_context* ctx = (llama_context*)((variables_container*)container)->ctx;
     llama_free(ctx);
 }
-
 
 /* Getters */
 int llama_get_n_remain(void* container) {
@@ -437,7 +595,6 @@ float llama_get_params_repeat_penalty(void* container) {
     return ((gpt_params*)((variables_container*)container)->params)->repeat_penalty;
 }
 
-
 /* Setters */
 void llama_set_params_interactive_start(void* container) {
     bool interactive = ((gpt_params*)((variables_container*)container)->params)->interactive;
@@ -468,7 +625,6 @@ void llama_set_user_input(void* container, const char* user_input) {
     ((variables_container*)container)->user_input = strdup(user_input);
 }
 
-
 /* Setters - gpt_params */
 void llama_set_params_n_threads(void* container, int value) {
     ((gpt_params*)((variables_container*)container)->params)->n_threads = value;
@@ -490,7 +646,6 @@ void llama_set_params_temper(void* container, float value) {
 void llama_set_params_repeat_penalty(void* container, float value) {
     ((gpt_params*)((variables_container*)container)->params)->repeat_penalty = value;
 }
-
 
 bool llama_check_prompt_or_continue(void* container) {
     bool result = true;
