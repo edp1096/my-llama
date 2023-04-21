@@ -143,42 +143,13 @@ struct llama_context {
     std::vector<float> embedding;
 
     void use_buf(struct ggml_context* ctx, int i) {
-#if defined(LLAMA_USE_SCRATCH)
-        size_t last_size = 0;
-
-        if (i == -1) {
-            last_size = ggml_set_scratch(ctx, {
-                                                  0,
-                                                  0,
-                                                  nullptr,
-                                              });
-        } else {
-            auto& buf = buf_scratch[i];
-            last_size = ggml_set_scratch(ctx, {
-                                                  0,
-                                                  buf.size,
-                                                  buf.addr,
-                                              });
-        }
-
-        if (buf_last >= 0) {
-            buf_max_size[buf_last] = std::max(buf_max_size[buf_last], last_size);
-        }
-
-        buf_last = i;
-#else
         (void)i;
         (void)ctx;
-#endif
     }
 
     size_t get_buf_max_mem(int i) const {
-#if defined(LLAMA_USE_SCRATCH)
-        return buf_max_size[i];
-#else
         (void)i;
         return 0;
-#endif
     }
 };
 /* Copy from llama.cpp ***/
