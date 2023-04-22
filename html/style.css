@@ -1,0 +1,108 @@
+:root {
+    --front_color: #000;
+    --bg_color: #fff;
+    --prompts_height: 15rem;
+}
+
+#input-container {
+    width: 100%;
+    display: flex;
+}
+
+#input-container>div {
+    width: 100%;
+    height: 100%;
+    padding: 0.1rem;
+}
+
+#reflection {
+    width: 100%;
+    height: var(--prompts_height);
+}
+
+#inputs {
+    width: 100%;
+    height: var(--prompts_height);
+}
+
+#outputs {
+    width: 100%;
+    height: calc(100vh - var(--prompts_height) - 8rem);
+    overflow: auto;
+}
+
+#antiprompt {
+    width: 100%;
+}
+
+.status-disconn {
+    color: gray;
+}
+
+.status-ready {
+    color: green;
+}
+
+.status-running {
+    color: red;
+}
+
+/* Cursor **/
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    25% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    75% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.cursor {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.2rem;
+    background-color: var(--front_color);
+    animation: blink 1s steps(2) infinite;
+}
+
+/** Cursor */
+
+#preferences {
+    background-color: var(--bg_color);
+    width: 15rem;
+    height: 100vh;
+    top: 0;
+    right: 0;
+    position: fixed;
+    display: none;
+    padding: 1rem;
+}
+
+#preferences>div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.2rem;
+}
+
+#preferences>div>label {
+    width: 5rem;
+}
+
+#preferences>div>input {
+    width: 3rem;
+}

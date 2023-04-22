@@ -1,0 +1,78 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" href="data:,">
+    <title>My-llama</title>
+
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div id="input-container">
+        <div>
+            <div>
+                <label for="inputs">Input: click 'Send' button or press ctrl+enter</label>
+                <br />
+                <textarea id="inputs">Please tell me the largest city in Asia.</textarea>
+            </div>
+        </div>
+
+        <div>
+            <div>
+                <label for="reflection">Prefix Prompt:</label>
+                <br />
+                <textarea id="reflection"></textarea>
+            </div>
+
+            <div>
+                <label for="antiprompt">Reverse prompt:</label>
+                <br />
+                <input type="text" id="antiprompt" value="" />
+            </div>
+        </div>
+    </div>
+
+    <button id="send" onclick="send()">Send</button>
+    <button id="stop" onclick="stopResponse()">Stop</button>
+
+    <span id="status" class="status-disconn">Disconnected</span>
+
+    <hr />
+
+    <div id="outputs"></div>
+
+    <div id="preferences">
+        <h2>Parameters</h2>
+
+        <h3>Running</h3>
+
+        <div>
+            <label for="pref_n_threads">Threads:</label>
+            <input type="number" id="pref_n_threads" value="1" step="1" />
+        </div>
+
+        <hr />
+
+        <h3>Sampling</h3>
+
+        <div>
+            <label for="pref_top_p">Top P:</label>
+            <input type="number" id="pref_top_p" value="0.9" step="0.01" />
+        </div>
+
+        <div>
+            <label for="pref_top_k">Top K:</label>
+            <input type="number" id="pref_top_k" value="40" step="1" />
+        </div>
+
+        <div>
+            <label for="temperature">Temperature:</label>
+            <input type="number" id="temperature" value="0.7" />
+        </div>
+    </div>
+</body>
+
+<script src="script.js"></script>
+
+</html>
