@@ -92,9 +92,6 @@ void llama_set_params_repeat_penalty(void* container, int value);
 bool llama_check_prompt_or_continue(void* container);
 void llama_dropback_user_input(void* container);
 
-void llama_save_kv_dump_experiment(void* container);
-void llama_load_kv_dump_experiment(void* container);
-
 #ifdef __cplusplus
 }
 #endif

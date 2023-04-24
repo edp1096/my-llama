@@ -1,7 +1,7 @@
 package cgollama
 
 // #cgo CXXFLAGS: -I../llama.cpp/examples -I../llama.cpp
-// #cgo LDFLAGS: -L../ -lbinding -lm -lstdc++ -static
+// #cgo LDFLAGS: -L../ -lbinding -lllama -lstdc++ -static
 // #include "binding.h"
 import "C"
 import (
@@ -37,16 +37,6 @@ func (l *LLama) LoadModel(modelFNAME string) error {
 	}
 
 	return nil
-}
-
-func (l *LLama) SaveKVdump() {
-	container := l.Container
-	C.llama_save_kv_dump_experiment(container)
-}
-
-func (l *LLama) LoadKVdump() {
-	container := l.Container
-	C.llama_load_kv_dump_experiment(container)
 }
 
 func (l *LLama) GetRemainCount() int {

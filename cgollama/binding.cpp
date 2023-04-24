@@ -1,9 +1,3 @@
-#include "common.h"
-#include "llama.h"
-#include "llama_util.h"
-#include "ggml.h"
-#include "binding.h"
-
 #include <cstring>
 #include <iostream>
 
@@ -11,148 +5,10 @@
 #include <unordered_map>
 #include <memory>
 
-/*** Copy types from llama.cpp */
-struct llama_kv_cache {
-    struct ggml_tensor* k;
-    struct ggml_tensor* v;
+#include "common.h"
+#include "llama.h"
+#include "binding.h"
 
-    int n;  // number of tokens currently in the cache
-};
-
-// available llama models
-enum e_model {
-    MODEL_UNKNOWN,
-    MODEL_7B,
-    MODEL_13B,
-    MODEL_30B,
-    MODEL_65B,
-};
-
-// default hparams (LLaMA 7B)
-struct llama_hparams {
-    uint32_t n_vocab = 32000;
-    uint32_t n_ctx = 512;  // this is provided as user input?
-    uint32_t n_embd = 4096;
-    uint32_t n_mult = 256;
-    uint32_t n_head = 32;
-    uint32_t n_layer = 32;
-    uint32_t n_rot = 64;
-    enum llama_ftype ftype = LLAMA_FTYPE_MOSTLY_F16;
-
-    bool operator!=(const llama_hparams& other) const {
-        return memcmp(this, &other, sizeof(llama_hparams));
-    }
-};
-
-struct llama_layer {
-    // normalization
-    struct ggml_tensor* attention_norm;
-
-    // attention
-    struct ggml_tensor* wq;
-    struct ggml_tensor* wk;
-    struct ggml_tensor* wv;
-    struct ggml_tensor* wo;
-
-    // normalization
-    struct ggml_tensor* ffn_norm;
-
-    // ff
-    struct ggml_tensor* w1;
-    struct ggml_tensor* w2;
-    struct ggml_tensor* w3;
-};
-
-struct llama_model {
-    e_model type = MODEL_UNKNOWN;
-
-    llama_hparams hparams;
-
-    struct ggml_tensor* tok_embeddings;
-
-    struct ggml_tensor* norm;
-    struct ggml_tensor* output;
-
-    std::vector<llama_layer> layers;
-
-    // context
-    struct ggml_context* ctx = NULL;
-
-    // key + value cache for the self attention
-    // TODO: move to llama_state
-    struct llama_kv_cache kv_self;
-
-    // the model memory buffer
-    llama_buffer buf;
-
-    // model memory mapped file
-    std::unique_ptr<llama_mmap> mapping;
-
-    // objects representing data potentially being locked in memory
-    llama_mlock mlock_buf;
-    llama_mlock mlock_mmap;
-
-    // for quantize-stats only
-    std::vector<std::pair<std::string, struct ggml_tensor*>> tensors_by_name;
-
-    ~llama_model() {
-        if (ctx) {
-            ggml_free(ctx);
-        }
-    }
-};
-
-struct llama_vocab {
-    using id = int32_t;
-    using token = std::string;
-
-    struct token_score {
-        token tok;
-        float score;
-    };
-
-    std::unordered_map<token, id> token_to_id;
-    std::vector<token_score> id_to_token;
-};
-
-struct llama_context {
-    std::mt19937 rng;
-
-    int64_t t_load_us = 0;
-    int64_t t_start_us = 0;
-    bool has_evaluated_once = false;
-
-    int64_t t_sample_us = 0;
-    int64_t t_eval_us = 0;
-    int64_t t_p_eval_us = 0;
-
-    int32_t n_sample = 0;  // number of tokens sampled
-    int32_t n_eval = 0;    // number of eval calls
-    int32_t n_p_eval = 0;  // number of tokens in eval calls for the prompt (with batch size > 1)
-
-    llama_model model;
-    llama_vocab vocab;
-
-    size_t mem_per_token = 0;
-
-    // decode output (2-dimensional array: [n_tokens][n_vocab])
-    std::vector<float> logits;
-    bool logits_all = false;
-
-    // input embedding (1-dimensional array: [n_embd])
-    std::vector<float> embedding;
-
-    void use_buf(struct ggml_context* ctx, int i) {
-        (void)i;
-        (void)ctx;
-    }
-
-    size_t get_buf_max_mem(int i) const {
-        (void)i;
-        return 0;
-    }
-};
-/* Copy from llama.cpp ***/
 
 void* llama_init_container() {
     variables_container* c = new variables_container;
@@ -200,30 +56,6 @@ bool llama_load_model(void* container) {
 
     result = true;
     return result;
-}
-
-void llama_save_kv_dump_experiment(void* container) {
-    variables_container* c = (variables_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
-    // Save ctx->model.kv_self.k->data and ctx->model.kv_self.v->data and ctx->model.kv_self.n to file
-    FILE* fp_write = fopen("dump_kv.bin", "wb");
-    fwrite(ctx->model.kv_self.k->data, ggml_nbytes(ctx->model.kv_self.k), 1, fp_write);
-    fwrite(ctx->model.kv_self.v->data, ggml_nbytes(ctx->model.kv_self.v), 1, fp_write);
-    fwrite(&ctx->model.kv_self.n, sizeof(ctx->model.kv_self.n), 1, fp_write);
-    fclose(fp_write);
-}
-
-void llama_load_kv_dump_experiment(void* container) {
-    variables_container* c = (variables_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
-    // Load ctx->model.kv_self.k->data and ctx->model.kv_self.v->data and ctx->model.kv_self.n from file
-    FILE* fp_read = fopen("dump_kv.bin", "rb");
-    fread(ctx->model.kv_self.k->data, ggml_nbytes(ctx->model.kv_self.k), 1, fp_read);
-    fread(ctx->model.kv_self.v->data, ggml_nbytes(ctx->model.kv_self.v), 1, fp_read);
-    fread(&ctx->model.kv_self.n, sizeof(ctx->model.kv_self.n), 1, fp_read);
-    fclose(fp_read);
 }
 
 bool llama_make_ready_to_predict(void* container) {

@@ -147,7 +147,7 @@ llama.cpp/common.o:
 	$(MAKE) CC=$(CC) -C llama.cpp common.o
 
 binding.o: llama.cpp/ggml.o llama.cpp/llama.o llama.cpp/common.o
-	$(CXX) $(CXXFLAGS) -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -static -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
 
 libbinding.a: binding.o
 	ar src libbinding.a llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o cgollama/binding.o
