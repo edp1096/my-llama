@@ -1,14 +1,54 @@
 #include <cstring>
 #include <iostream>
+#include <cassert>
 
 #include <random>
 #include <unordered_map>
 #include <memory>
 
 #include "common.h"
-#include "llama.h"
 #include "binding.h"
 
+// TODO: not great allocating this every time
+std::vector<llama_token> binding_tokenize(struct llama_context* ctx, const std::string& text, bool add_bos) {
+    // initialize to prompt numer of chars, since n_tokens <= n_prompt_chars
+    std::vector<llama_token> res(text.size() + (int)add_bos);
+    int n = llama_tokenize(ctx, text.c_str(), res.data(), res.size(), add_bos);
+    assert(n >= 0);
+    res.resize(n);
+
+    return res;
+}
+
+std::string gpt_random_prompt(std::mt19937& rng) {
+    const int r = rng() % 10;
+    switch (r) {
+        case 0:
+            return "So";
+        case 1:
+            return "Once upon a time";
+        case 2:
+            return "When";
+        case 3:
+            return "The";
+        case 4:
+            return "After";
+        case 5:
+            return "If";
+        case 6:
+            return "import";
+        case 7:
+            return "He";
+        case 8:
+            return "She";
+        case 9:
+            return "They";
+        default:
+            return "To";
+    }
+
+    return "The";
+}
 
 void* llama_init_container() {
     variables_container* c = new variables_container;
@@ -68,7 +108,7 @@ bool llama_make_ready_to_predict(void* container) {
 
     params->prompt.insert(0, 1, ' ');  // Add a space in front of the first character to match OG llama tokenizer behavior
 
-    c->embd_inp = new std::vector<llama_token>(::llama_tokenize((llama_context*)c->ctx, params->prompt, true));  // tokenize the prompt
+    c->embd_inp = new std::vector<llama_token>(::binding_tokenize((llama_context*)c->ctx, params->prompt, true));  // tokenize the prompt
     c->n_ctx = llama_n_ctx((llama_context*)c->ctx);
 
     if ((int)((std::vector<llama_token>*)c->embd_inp)->size() > c->n_ctx - 4) {
@@ -87,7 +127,7 @@ bool llama_make_ready_to_predict(void* container) {
     }
 
     // determine newline token
-    c->llama_token_newline = new std::vector<llama_token>(::llama_tokenize((llama_context*)c->ctx, "\n", false));
+    c->llama_token_newline = new std::vector<llama_token>(::binding_tokenize((llama_context*)c->ctx, "\n", false));
 
     // TODO: replace with ring-buffer
     c->last_n_tokens = new std::vector<llama_token>(c->n_ctx);
@@ -185,7 +225,7 @@ bool llama_predict_tokens(void* container) {
             id = llama_token_newline->front();
             if (params->antiprompt.size() != 0) {
                 // tokenize and inject first reverse prompt
-                const auto first_antiprompt = ::llama_tokenize(ctx, params->antiprompt.front(), false);
+                const auto first_antiprompt = ::binding_tokenize(ctx, params->antiprompt.front(), false);
                 embd_inp->insert(embd_inp->end(), first_antiprompt.begin(), first_antiprompt.end());
             }
         }
@@ -234,7 +274,7 @@ bool llama_receive_input(void* container) {
             result = false;
             return result;  // input stream is bad or EOF received
         }
-        win32_utf8_encode(wline, line);
+        // win32_utf8_encode(wline, line);
 
         if (line.empty() || line.back() != '\\') {
             another_line = false;
@@ -247,7 +287,7 @@ bool llama_receive_input(void* container) {
 
     // Add tokens to embd only if the input buffer is non-empty. Entering a empty line lets the user pass control back
     if (buffer.length() > 1) {
-        auto line_inp = ::llama_tokenize(ctx, buffer, false);
+        auto line_inp = ::binding_tokenize(ctx, buffer, false);
         embd_inp->insert(embd_inp->end(), line_inp.begin(), line_inp.end());
 
         c->n_remain -= line_inp.size();
@@ -270,7 +310,7 @@ bool llama_append_input(void* container) {
 
     // Add tokens to embd only if the input buffer is non-empty. Entering a empty line lets the user pass control back
     if (strlen(buffer) > 1) {
-        std::vector<llama_token> line_inp = ::llama_tokenize(ctx, buffer, false);
+        std::vector<llama_token> line_inp = ::binding_tokenize(ctx, buffer, false);
         embd_inp->insert(embd_inp->end(), line_inp.begin(), line_inp.end());
 
         c->n_remain -= line_inp.size();

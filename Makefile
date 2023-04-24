@@ -1,17 +1,5 @@
 CC = gcc
 
-ifndef UNAME_S
-UNAME_S := $(shell uname -s)
-endif
-
-ifndef UNAME_P
-UNAME_P := $(shell uname -p)
-endif
-
-ifndef UNAME_M
-UNAME_M := $(shell uname -m)
-endif
-
 # Mac OS + Arm can report x86_64
 # ref: https://github.com/ggerganov/whisper.cpp/issues/66#issuecomment-1282546789
 ifeq ($(UNAME_S),Darwin)
@@ -133,10 +121,6 @@ build:
 	$(MAKE) libbinding.a
 	go build -trimpath -ldflags="-w -s" -o bin/
 
-build_for_cuda:
-	$(MAKE) libbinding_for_cuda.a
-	go build -trimpath -ldflags="-w -s" -o bin/
-
 llama.cpp/ggml.o:
 	$(MAKE) CC=$(CC) -C llama.cpp ggml.o
 
@@ -152,8 +136,16 @@ binding.o: llama.cpp/ggml.o llama.cpp/llama.o llama.cpp/common.o
 libbinding.a: binding.o
 	ar src libbinding.a llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o cgollama/binding.o
 
-libbinding_for_cuda.a: binding.o
-	ar src libbinding.a llama.obj cgollama/binding.o
+build_for_cuda:
+	$(MAKE) libbinding.a_for_cuda
+	go build -trimpath -ldflags="-w -s" -o bin/
+
+libbinding.a_for_cuda:
+	$(CXX) $(CXXFLAGS) -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
+#	ar src libbinding.a llama.obj cgollama/binding.o
+#	ar src libbinding.a common.obj ggml.obj llama.obj cgollama/binding.o
+	ar src libbinding.a cgollama/binding.o
+#	ar src libllama.a llama.lib
 
 clean:
 	rm -rf *.o
