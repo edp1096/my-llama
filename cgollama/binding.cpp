@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <memory>
 
+// #include "llama.h"
 #include "common.h"
 #include "binding.h"
 
@@ -122,7 +123,7 @@ bool llama_make_ready_to_predict(void* container) {
     }
 
     // enable interactive mode if reverse prompt or interactive start is specified
-    if (params->antiprompt.size() != 0 || params->interactive_start) {
+    if (params->antiprompt.size() != 0 || params->interactive_first) {
         params->interactive = true;
     }
 
@@ -147,7 +148,7 @@ void llama_init_params(void* container) {
     gpt_params* params = (gpt_params*)((variables_container*)container)->params;
 
     params->interactive = true;
-    params->interactive_start = params->interactive;
+    params->interactive_first = params->interactive;
     params->antiprompt = {};
 
     params->n_threads = 6;
@@ -158,7 +159,7 @@ void llama_init_params(void* container) {
     // params->n_predict = 100;
     // params->n_keep = 0;
     // params->instruct = false;
-    // params->interactive_start = false;
+    // params->interactive_first = false;
     // params->temp = 1.0;
     // params->top_k = 40;
     // params->top_p = 0.0;
@@ -408,8 +409,8 @@ int llama_get_n_consumed(void* container) {
     return ((variables_container*)container)->n_consumed;
 }
 
-bool llama_get_params_interactive_start(void* container) {
-    return ((gpt_params*)((variables_container*)container)->params)->interactive_start;
+bool llama_get_params_interactive_first(void* container) {
+    return ((gpt_params*)((variables_container*)container)->params)->interactive_first;
 }
 
 bool llama_get_params_interactive(void* container) {
@@ -439,9 +440,9 @@ float llama_get_params_repeat_penalty(void* container) {
 }
 
 /* Setters */
-void llama_set_params_interactive_start(void* container) {
+void llama_set_params_interactive_first(void* container) {
     bool interactive = ((gpt_params*)((variables_container*)container)->params)->interactive;
-    ((gpt_params*)((variables_container*)container)->params)->interactive_start = interactive;
+    ((gpt_params*)((variables_container*)container)->params)->interactive_first = interactive;
 }
 
 void llama_set_is_interacting(void* container, bool is_interacting) {
