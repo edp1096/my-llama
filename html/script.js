@@ -167,10 +167,10 @@ function sendPrompt() {
 function applyParameters() {
     const datas = []
 
-    datas["topK"] = document.querySelector("#pref_top_k").value
-    datas["topP"] = document.querySelector("#pref_top_p").value
-    datas["temper"] = document.querySelector("#pref_temper").value
-    datas["repeatPenalty"] = document.querySelector("#pref_repeat_penalty").value
+    datas["TOP_K"] = document.querySelector("#pref_top_k").value
+    datas["TOP_P"] = document.querySelector("#pref_top_p").value
+    datas["TEMPERATURE"] = document.querySelector("#pref_temper").value
+    datas["REPEAT_PENALTY"] = document.querySelector("#pref_repeat_penalty").value
 
     for (const key in datas) {
         preferences[key] = datas[key]
@@ -179,6 +179,9 @@ function applyParameters() {
     }
     savePreferences()
 
+    closePanel()
+
+    const input = document.querySelector("#inputs")
     input.focus()
 }
 

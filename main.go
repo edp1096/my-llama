@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	_ "embed"
@@ -108,7 +109,8 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 			// Command
 			if len(message) > 0 {
-				if strings.HasPrefix(message, "$$__COMMAND__$$") {
+				switch true {
+				case strings.HasPrefix(message, "$$__COMMAND__$$"):
 					command := strings.Split(message, "\n$$__SEPARATOR__$$\n")[1]
 
 					switch command {
@@ -136,6 +138,30 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 						}
 						continue
 					}
+				case strings.HasPrefix(message, "$$__PARAMETER__$$"):
+					paramNAME := strings.Split(message, "\n$$__SEPARATOR__$$\n")[1]
+					paramVALUE := strings.Split(message, "\n$$__SEPARATOR__$$\n")[2]
+
+					switch paramNAME {
+					case "$$__TOP_K__$$":
+						top_k, _ := strconv.Atoi(paramVALUE)
+						fmt.Println("top_k:", top_k)
+					case "$$__TOP_P__$$":
+						top_p, _ := strconv.ParseFloat(paramVALUE, 64)
+						fmt.Println("top_p:", top_p)
+					case "$$__TEMPERATURE__$$":
+						temperature, _ := strconv.ParseFloat(paramVALUE, 64)
+						fmt.Println("temperature:", temperature)
+					case "$$__THREADS__$$":
+						threads, _ = strconv.Atoi(paramVALUE)
+						fmt.Println("threads:", threads)
+					case "$$__N_BATCH__$$":
+						n_batch, _ := strconv.Atoi(paramVALUE)
+						fmt.Println("N_BATCH:", n_batch)
+					default:
+						fmt.Println("Unknown parameter:", paramNAME)
+					}
+
 				}
 
 				// fmt.Printf("%s\n", message) // Print received message from client
