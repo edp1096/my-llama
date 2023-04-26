@@ -60,15 +60,15 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			fmt.Println("model_file:", model_file)
 		}
 
-		// Todo: settings from query string
-		topk := req.URL.Query().Get("topk")
-		if topk != "" {
-			// tokens, _ = strconv.Atoi(topk)
-			fmt.Println("topk:", topk)
-		} else {
-			// tokens = 256
-			fmt.Println("topk is not set")
-		}
+		// // Todo: settings from query string
+		// topk := req.URL.Query().Get("topk")
+		// if topk != "" {
+		// 	// tokens, _ = strconv.Atoi(topk)
+		// 	fmt.Println("topk:", topk)
+		// } else {
+		// 	// tokens = 256
+		// 	fmt.Println("topk is not set")
+		// }
 
 		var err error
 

@@ -6,6 +6,36 @@
 #include "common.h"
 #include "binding.h"
 
+std::string gpt_random_prompt(std::mt19937& rng) {
+    const int r = rng() % 10;
+    switch (r) {
+        case 0:
+            return "So";
+        case 1:
+            return "Once upon a time";
+        case 2:
+            return "When";
+        case 3:
+            return "The";
+        case 4:
+            return "After";
+        case 5:
+            return "If";
+        case 6:
+            return "import";
+        case 7:
+            return "He";
+        case 8:
+            return "She";
+        case 9:
+            return "They";
+        default:
+            return "To";
+    }
+
+    return "The";
+}
+
 // TODO: not great allocating this every time
 std::vector<llama_token> binding_tokenize(struct llama_context* ctx, const std::string& text, bool add_bos) {
     // initialize to prompt numer of chars, since n_tokens <= n_prompt_chars

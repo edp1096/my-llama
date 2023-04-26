@@ -84,7 +84,8 @@ async function websocketSetup() {
         statusRemoveAllClasses()
         statusAddClass('status-ready', 'Ready')
 
-        document.getElementById("send").click()
+        // document.getElementById("send").click()
+        sendPrompt(true)
     }
 
     ws.onclose = function () {
@@ -140,8 +141,14 @@ async function websocketSetup() {
     }
 }
 
-function sendPrompt() {
-    const input = document.querySelector("#inputs")
+function sendPrompt(sendFirstInput = false) {
+    let input = document.querySelector("#inputs")
+    const focusTarget = document.querySelector("#inputs")
+
+    if (sendFirstInput) {
+        input = document.querySelector("#first-input")
+    }
+
     if (input.value === '') {
         return
     }
@@ -160,8 +167,8 @@ function sendPrompt() {
     statusAddClass('status-running', 'Running')
     buttonStopEnable()
 
-    input.value = ''
-    input.focus()
+    focusTarget.value = ''
+    focusTarget.focus()
 }
 
 function applyParameters() {
@@ -234,7 +241,7 @@ A chat between a curious human and an artificial intelligence assistant. The ass
     buttonSendEnable()
 
     document.getElementById("inputs").addEventListener("keydown", function (event) {
-        if (event.ctrlKey && event.keyCode === 13) {
+        if (event.ctrlKey && event.key == "Enter") {
             event.preventDefault();
             document.getElementById("send").click()
         }
