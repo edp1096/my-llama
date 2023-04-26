@@ -1,7 +1,21 @@
 :root {
-    --front_color: #000;
-    --bg_color: #fff;
+    --front_color: #333333;
+    --bg_color: #f0f2f5;
     --prompts_height: 15rem;
+}
+
+body {
+    background-color: var(--bg_color);
+    color: var(--front_color);
+    font-family: monospace;
+    font-size: 1rem;
+    margin: 0;
+    padding: 0;
+}
+
+.dark-mode {
+    --front_color: #f0f2f5;
+    --bg_color: #2c2f33;
 }
 
 #input-container {

@@ -1,6 +1,11 @@
 let preferences = {}
 let history = ""
 
+function toggleDarkMode() {
+    const body = document.body
+    body.classList.toggle('dark-mode')
+}
+
 function loadPreferences() {
     localStorage.getItem('preference') ? preferences = JSON.parse(localStorage.getItem('preference')) : preferences = {}
 
