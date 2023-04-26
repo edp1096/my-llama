@@ -118,7 +118,7 @@ $(info I LDFLAGS:  $(LDFLAGS))
 $(info )
 
 build:
-	$(MAKE) libbinding.a
+	$(MAKE) libbinding.a libllama.a
 	go build -trimpath -ldflags="-w -s" -o bin/
 
 llama.cpp/ggml.o:
@@ -133,8 +133,11 @@ llama.cpp/common.o:
 binding.o: llama.cpp/ggml.o llama.cpp/llama.o llama.cpp/common.o
 	$(CXX) $(CXXFLAGS) -static -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
 
+libllama.a: llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o
+	ar src libllama.a llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o
+
 libbinding.a: binding.o
-	ar src libbinding.a llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o cgollama/binding.o
+	ar src libbinding.a cgollama/binding.o
 
 build_for_cuda:
 	$(MAKE) libbinding.a_for_cuda
@@ -142,10 +145,7 @@ build_for_cuda:
 
 libbinding.a_for_cuda:
 	$(CXX) $(CXXFLAGS) -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
-#	ar src libbinding.a llama.obj cgollama/binding.o
-#	ar src libbinding.a common.obj ggml.obj llama.obj cgollama/binding.o
 	ar src libbinding.a cgollama/binding.o
-#	ar src libllama.a llama.lib
 
 clean:
 	rm -rf *.o

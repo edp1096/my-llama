@@ -37,7 +37,9 @@ func findModelFiles(path string) (result []string, err error) {
 		}
 
 		if strings.HasSuffix(file.Name(), ".bin") {
-			result = append(result, file.Name())
+			if !strings.Contains(file.Name(), "dump_state.bin") {
+				result = append(result, file.Name())
+			}
 		}
 	}
 
