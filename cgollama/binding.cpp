@@ -17,14 +17,14 @@ std::vector<llama_token> binding_tokenize(struct llama_context* ctx, const std::
     return res;
 }
 
-void* llama_init_container() {
+void* bd_init_container() {
     variables_container* c = new variables_container;
     c->params = new gpt_params;
 
     return c;
 }
 
-llama_context* llama_init_context(gpt_params* params) {
+llama_context* binding_init_context(gpt_params* params) {
     auto lparams = llama_context_default_params();
 
     lparams.n_ctx = params->n_ctx;
@@ -39,7 +39,7 @@ llama_context* llama_init_context(gpt_params* params) {
     return ctx;
 }
 
-bool llama_load_model(void* container) {
+bool bd_load_model(void* container) {
     bool result = false;
     variables_container* c = (variables_container*)container;
     gpt_params* params = (gpt_params*)c->params;
@@ -53,7 +53,7 @@ bool llama_load_model(void* container) {
         params->prompt = gpt_random_prompt(rng);
     }
 
-    llama_context* ctx = llama_init_context(params);
+    llama_context* ctx = binding_init_context(params);
     if (ctx == nullptr) {
         fprintf(stderr, "%s : failed to load model\n", __func__);
         return result;
@@ -65,7 +65,7 @@ bool llama_load_model(void* container) {
     return result;
 }
 
-bool llama_make_ready_to_predict(void* container) {
+bool bd_make_ready_to_predict(void* container) {
     bool result = false;
     variables_container* c = (variables_container*)container;
     gpt_params* params = (gpt_params*)c->params;
@@ -110,7 +110,7 @@ bool llama_make_ready_to_predict(void* container) {
     return result;
 }
 
-void llama_init_params(void* container) {
+void bd_init_params(void* container) {
     gpt_params* params = (gpt_params*)((variables_container*)container)->params;
 
     params->interactive = true;
@@ -132,7 +132,7 @@ void llama_init_params(void* container) {
     // params->seed = 0;
 }
 
-bool llama_predict_tokens(void* container) {
+bool bd_predict_tokens(void* container) {
     bool result = false;
     variables_container* c = (variables_container*)container;
 
@@ -219,7 +219,7 @@ bool llama_predict_tokens(void* container) {
     return result;
 }
 
-bool llama_receive_input(void* container) {
+bool bd_receive_input(void* container) {
     bool result = false;
     variables_container* c = (variables_container*)container;
 
@@ -266,7 +266,7 @@ bool llama_receive_input(void* container) {
     return result;
 }
 
-bool llama_append_input(void* container) {
+bool bd_append_input(void* container) {
     bool result = false;
     variables_container* c = (variables_container*)container;
 
@@ -289,7 +289,7 @@ bool llama_append_input(void* container) {
     return result;
 }
 
-bool llama_wait_or_continue(void* container) {
+bool bd_wait_or_continue(void* container) {
     variables_container* c = (variables_container*)container;
     gpt_params* params = (gpt_params*)c->params;
 
@@ -313,8 +313,8 @@ bool llama_wait_or_continue(void* container) {
     // Receive user input
     if (c->n_past > 0 && c->is_interacting) {
         return false;
-        // // bool result = llama_receive_input(c);
-        // bool result = llama_append_input(c);
+        // // bool result = bd_receive_input(c);
+        // bool result = bd_append_input(c);
         // if (!result) {
         //     return false;
         // }
@@ -330,140 +330,140 @@ bool llama_wait_or_continue(void* container) {
     return true;
 }
 
-int llama_get_embed_id(void* container, int index) {
+int bd_get_embed_id(void* container, int index) {
     variables_container* c = (variables_container*)container;
     return ((std::vector<llama_token>*)c->embd)->at(index);
 }
 
-char* llama_get_embed_string(void* container, int id) {
+char* bd_get_embed_string(void* container, int id) {
     variables_container* c = (variables_container*)container;
     return const_cast<char*>(llama_token_to_str((llama_context*)c->ctx, id));
 }
 
-void llama_free_params(void* container) {
+void bd_free_params(void* container) {
     gpt_params* params = (gpt_params*)((variables_container*)container)->params;
     delete params;
 }
 
-void llama_free_model(void* container) {
+void bd_free_model(void* container) {
     llama_context* ctx = (llama_context*)((variables_container*)container)->ctx;
     llama_free(ctx);
 }
 
 /* Getters */
-int llama_get_n_remain(void* container) {
+int bd_get_n_remain(void* container) {
     return ((variables_container*)container)->n_remain;
 }
 
-int llama_get_params_n_predict(void* container) {
+int bd_get_params_n_predict(void* container) {
     return ((gpt_params*)((variables_container*)container)->params)->n_predict;
 }
 
-bool llama_get_noecho(void* container) {
+bool bd_get_noecho(void* container) {
     return ((variables_container*)container)->input_noecho;
 }
 
-int llama_get_embd_size(void* container) {
+int bd_get_embd_size(void* container) {
     return (int)((std::vector<llama_token>*)((variables_container*)container)->embd)->size();
 }
 
-int llama_get_embd_inp_size(void* container) {
+int bd_get_embd_inp_size(void* container) {
     return (int)((std::vector<llama_token>*)((variables_container*)container)->embd_inp)->size();
 }
 
-int llama_get_n_consumed(void* container) {
+int bd_get_n_consumed(void* container) {
     return ((variables_container*)container)->n_consumed;
 }
 
-bool llama_get_params_interactive_first(void* container) {
+bool bd_get_params_interactive_first(void* container) {
     return ((gpt_params*)((variables_container*)container)->params)->interactive_first;
 }
 
-bool llama_get_params_interactive(void* container) {
+bool bd_get_params_interactive(void* container) {
     return ((gpt_params*)((variables_container*)container)->params)->interactive;
 }
 
 /* Getters - gpt_params */
-int llama_get_params_n_threads(void* container) {
+int bd_get_params_n_threads(void* container) {
     return ((gpt_params*)((variables_container*)container)->params)->n_threads;
 }
 
 /* Getters - gpt_params / sampling parameters */
-int llama_get_params_top_k(void* container) {
+int bd_get_params_top_k(void* container) {
     return ((gpt_params*)((variables_container*)container)->params)->top_k;
 }
 
-float llama_get_params_top_p(void* container) {
+float bd_get_params_top_p(void* container) {
     return ((gpt_params*)((variables_container*)container)->params)->top_p;
 }
 
-float llama_get_params_temper(void* container) {
+float bd_get_params_temper(void* container) {
     return ((gpt_params*)((variables_container*)container)->params)->temp;
 }
 
-float llama_get_params_repeat_penalty(void* container) {
+float bd_get_params_repeat_penalty(void* container) {
     return ((gpt_params*)((variables_container*)container)->params)->repeat_penalty;
 }
 
 /* Setters */
-void llama_set_params_interactive_first(void* container) {
+void bd_set_params_interactive_first(void* container) {
     bool interactive = ((gpt_params*)((variables_container*)container)->params)->interactive;
     ((gpt_params*)((variables_container*)container)->params)->interactive_first = interactive;
 }
 
-void llama_set_is_interacting(void* container, bool is_interacting) {
+void bd_set_is_interacting(void* container, bool is_interacting) {
     ((variables_container*)container)->is_interacting = is_interacting;
 }
 
-void llama_set_n_remain(void* container, int n_predict) {
+void bd_set_n_remain(void* container, int n_predict) {
     ((variables_container*)container)->n_remain = n_predict;
 }
 
-void llama_set_model_path(void* container, char* path) {
+void bd_set_model_path(void* container, char* path) {
     ((gpt_params*)((variables_container*)container)->params)->model = path;
 }
 
-void llama_set_params_antiprompt(void* container, char* antiprompt) {
+void bd_set_params_antiprompt(void* container, char* antiprompt) {
     ((gpt_params*)((variables_container*)container)->params)->antiprompt.push_back(strdup(antiprompt));
 }
 
-void llama_set_params_prompt(void* container, char* prompt) {
+void bd_set_params_prompt(void* container, char* prompt) {
     ((gpt_params*)((variables_container*)container)->params)->prompt = strdup(prompt);
 }
 
-void llama_set_user_input(void* container, const char* user_input) {
+void bd_set_user_input(void* container, const char* user_input) {
     ((variables_container*)container)->user_input = strdup(user_input);
 }
 
 /* Setters - gpt_params */
-void llama_set_params_n_threads(void* container, int value) {
+void bd_set_params_n_threads(void* container, int value) {
     ((gpt_params*)((variables_container*)container)->params)->n_threads = value;
 }
 
 /* Setters - gpt_params / sampling parameters */
-void llama_set_params_top_k(void* container, int value) {
+void bd_set_params_top_k(void* container, int value) {
     ((gpt_params*)((variables_container*)container)->params)->top_k = value;
 }
 
-void llama_set_params_top_p(void* container, float value) {
+void bd_set_params_top_p(void* container, float value) {
     ((gpt_params*)((variables_container*)container)->params)->top_p = value;
 }
 
-void llama_set_params_temper(void* container, float value) {
+void bd_set_params_temper(void* container, float value) {
     ((gpt_params*)((variables_container*)container)->params)->temp = value;
 }
 
-void llama_set_params_repeat_penalty(void* container, float value) {
+void bd_set_params_repeat_penalty(void* container, float value) {
     ((gpt_params*)((variables_container*)container)->params)->repeat_penalty = value;
 }
 
-bool llama_check_prompt_or_continue(void* container) {
+bool bd_check_prompt_or_continue(void* container) {
     bool result = true;
     variables_container* c = (variables_container*)container;
 
     // in interactive mode, and not currently processing queued inputs. check if we should prompt the user for more
     if (((gpt_params*)c->params)->interactive && (int)((std::vector<llama_token>*)c->embd_inp)->size() <= c->n_consumed) {
-        result = llama_wait_or_continue(c);
+        result = bd_wait_or_continue(c);
     }
 
     if (result) {
@@ -479,7 +479,7 @@ bool llama_check_prompt_or_continue(void* container) {
     return result;
 }
 
-void llama_dropback_user_input(void* container) {
+void bd_dropback_user_input(void* container) {
     variables_container* c = (variables_container*)container;
 
     // In interactive mode, respect the maximum number of tokens and drop back to user input when reached.

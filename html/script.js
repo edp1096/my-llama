@@ -19,7 +19,16 @@ function closePanel() {
 function loadPreferences() {
     localStorage.getItem('preference') ? preferences = JSON.parse(localStorage.getItem('preference')) : preferences = {}
 
-    return preferences   
+    document.querySelector("#pref_top_k").value = preferences["topK"] ? preferences["topK"] : 40
+    document.querySelector("#pref_top_p").value = preferences["topP"] ? preferences["topP"] : 0.8
+    document.querySelector("#pref_temper").value = preferences["temper"] ? preferences["temper"] : 0.5
+    document.querySelector("#pref_repeat_penalty").value = preferences["repeatPenalty"] ? preferences["repeatPenalty"] : 0.75
+
+    return preferences
+}
+
+function savePreferences() {
+    localStorage.setItem('preference', JSON.stringify(preferences))
 }
 
 function statusRemoveAllClasses() {
@@ -131,7 +140,7 @@ async function websocketSetup() {
     }
 }
 
-function send() {
+function sendPrompt() {
     const input = document.querySelector("#inputs")
     if (input.value === '') {
         return
@@ -152,6 +161,24 @@ function send() {
     buttonStopEnable()
 
     input.value = ''
+    input.focus()
+}
+
+function applyParameters() {
+    const datas = []
+
+    datas["topK"] = document.querySelector("#pref_top_k").value
+    datas["topP"] = document.querySelector("#pref_top_p").value
+    datas["temper"] = document.querySelector("#pref_temper").value
+    datas["repeatPenalty"] = document.querySelector("#pref_repeat_penalty").value
+
+    for (const key in datas) {
+        preferences[key] = datas[key]
+        const data = `$$__PARAMETER__$$\n$$__SEPARATOR__$$\n${key}\n$$__SEPARATOR__$$\n${datas[key]}\n`
+        ws.send(data)
+    }
+    savePreferences()
+
     input.focus()
 }
 

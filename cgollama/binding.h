@@ -29,68 +29,68 @@ struct variables_container {
 
 
 /* Initialize before main loop */
-void* llama_init_container();
-bool llama_load_model(void* container);
-void llama_init_params(void* container);
-bool llama_make_ready_to_predict(void* container);
+void* bd_init_container();
+bool bd_load_model(void* container);
+void bd_init_params(void* container);
+bool bd_make_ready_to_predict(void* container);
 
 
 /* For main loop */
-bool llama_predict_tokens(void* container);
-bool llama_receive_input(void* container);
-bool llama_append_input(void* container);
-bool llama_wait_or_continue(void* container);
-int llama_get_embed_id(void* container, int index);
-char* llama_get_embed_string(void* container, int id);
+bool bd_predict_tokens(void* container);
+bool bd_receive_input(void* container);
+bool bd_append_input(void* container);
+bool bd_wait_or_continue(void* container);
+int bd_get_embed_id(void* container, int index);
+char* bd_get_embed_string(void* container, int id);
 
 
 /* Finish loop */
-void llama_free_params(void* container);
-void llama_free_model(void* container);
+void bd_free_params(void* container);
+void bd_free_model(void* container);
 
 
 /* Getters */
-int llama_get_n_remain(void* container);
-int llama_get_params_n_predict(void* container);
-bool llama_get_noecho(void* container);
-int llama_get_embd_size(void* container);
-int llama_get_embd_inp_size(void* container);
-int llama_get_n_consumed(void* container);
-bool llama_get_params_interactive_start(void* container);
-bool llama_get_params_interactive(void* container);
+int bd_get_n_remain(void* container);
+int bd_get_params_n_predict(void* container);
+bool bd_get_noecho(void* container);
+int bd_get_embd_size(void* container);
+int bd_get_embd_inp_size(void* container);
+int bd_get_n_consumed(void* container);
+bool bd_get_params_interactive_first(void* container);
+bool bd_get_params_interactive(void* container);
 
 /* Getters - gpt_params */
-int llama_get_params_n_threads(void* container);
+int bd_get_params_n_threads(void* container);
 
 /* Getters - gpt_params / sampling parameters */
-int llama_get_params_top_k(void* container);
-float llama_get_params_top_p(void* container);
-float llama_get_params_temper(void* container);
-float llama_get_params_repeat_penalty(void* container);
+int bd_get_params_top_k(void* container);
+float bd_get_params_top_p(void* container);
+float bd_get_params_temper(void* container);
+float bd_get_params_repeat_penalty(void* container);
 
 
 /* Setters */
-void llama_set_params_interactive_start(void* container);
-void llama_set_is_interacting(void* container, bool is_interacting);
-void llama_set_n_remain(void* container, int n_predict);
-void llama_set_model_path(void* container, char* path);
-void llama_set_params_antiprompt(void* container, char* antiprompt);
-void llama_set_params_prompt(void* container, char* prompt);
-void llama_set_user_input(void* container, const char* user_input);
+void bd_set_params_interactive_first(void* container);
+void bd_set_is_interacting(void* container, bool is_interacting);
+void bd_set_n_remain(void* container, int n_predict);
+void bd_set_model_path(void* container, char* path);
+void bd_set_params_antiprompt(void* container, char* antiprompt);
+void bd_set_params_prompt(void* container, char* prompt);
+void bd_set_user_input(void* container, const char* user_input);
 
 /* Setters - gpt_params */
-void llama_set_params_n_threads(void* container, int value);
+void bd_set_params_n_threads(void* container, int value);
 
 /* Setters - gpt_params / sampling parameters */
-void llama_set_params_top_k(void* container, int value);
-void llama_set_params_top_p(void* container, int value);
-void llama_set_params_temper(void* container, int value);
-void llama_set_params_repeat_penalty(void* container, int value);
+void bd_set_params_top_k(void* container, int value);
+void bd_set_params_top_p(void* container, float value);
+void bd_set_params_temper(void* container, float value);
+void bd_set_params_repeat_penalty(void* container, float value);
 
 
 /* Others */
-bool llama_check_prompt_or_continue(void* container);
-void llama_dropback_user_input(void* container);
+bool bd_check_prompt_or_continue(void* container);
+void bd_dropback_user_input(void* container);
 
 #ifdef __cplusplus
 }
