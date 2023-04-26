@@ -1,9 +1,25 @@
 let preferences = {}
 let history = ""
 
-function toggleDarkMode() {
+function toggleDarkMode(isSave = true) {
     const body = document.body
-    body.classList.toggle('dark-mode')
+    const darkmodeSwitch = document.getElementById("switch-shade")
+
+    switch (darkmodeSwitch.checked) {
+        case true:
+            document.getElementById("switch-shade-label").innerHTML = "Dark Mode"
+            body.classList.add("dark-mode")
+            break
+        case false:
+            document.getElementById("switch-shade-label").innerHTML = "Light Mode"
+            body.classList.remove("dark-mode")
+            break
+    }
+
+    if (isSave) {
+        preferences["darkmode"] = darkmodeSwitch.checked
+        savePreferences()
+    }
 }
 
 function openPanel() {
@@ -221,10 +237,6 @@ function stopResponse() {
 }
 
 function init() {
-    preferences = loadPreferences()
-
-    websocketSetup()
-
     let promptTEXT = `
 A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
 
@@ -234,6 +246,14 @@ A chat between a curious human and an artificial intelligence assistant. The ass
 ### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
 ### Human:`
     let antipromptTEXT = `### Human:`
+
+    preferences = loadPreferences()
+
+    if (preferences["darkmode"]) {
+        document.querySelector("#switch-shade").click()
+    }
+
+    websocketSetup()
 
     document.querySelector("#reflection").value = promptTEXT
     document.querySelector("#antiprompt").value = antipromptTEXT
