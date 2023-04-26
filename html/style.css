@@ -2,6 +2,9 @@
     --front_color: #333333;
     --bg_color: #f0f2f5;
     --prompts_height: 15rem;
+
+    --pane-front_color: #3d3d3d;
+    --pane-bg_color: rgb(220, 222, 225);
 }
 
 body {
@@ -16,6 +19,13 @@ body {
 .dark-mode {
     --front_color: #f0f2f5;
     --bg_color: #2c2f33;
+
+    --pane-front_color: #f0f2f5;
+    --pane-bg_color: #404347;
+}
+
+#top-btns {
+    text-align: right;
 }
 
 #input-container {
@@ -95,7 +105,8 @@ body {
 /** Cursor */
 
 #preferences {
-    background-color: var(--bg_color);
+    color: var(--pane-front_color);
+    background-color: var(--pane-bg_color);
     width: 15rem;
     height: 100vh;
     top: 0;

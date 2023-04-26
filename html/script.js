@@ -6,6 +6,16 @@ function toggleDarkMode() {
     body.classList.toggle('dark-mode')
 }
 
+function openPanel() {
+    const panel = document.getElementById("preferences")
+    panel.style.display = "block"
+}
+
+function closePanel() {
+    const panel = document.getElementById("preferences")
+    panel.style.display = "none"
+}
+
 function loadPreferences() {
     localStorage.getItem('preference') ? preferences = JSON.parse(localStorage.getItem('preference')) : preferences = {}
 

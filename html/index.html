@@ -9,7 +9,10 @@
 </head>
 
 <body>
-    <button id="shade" onclick="toggleDarkMode()">Light/Dark</button>
+    <div id="top-btns">
+        <button onclick="toggleDarkMode()">Light/Dark</button>
+        <button onclick="openPanel()">Open panel</button>
+    </div>
 
     <div id="input-container">
         <div>
@@ -45,6 +48,8 @@
     <div id="outputs"></div>
 
     <div id="preferences">
+        <button onclick="closePanel()">Close</button>
+
         <h2>Parameters</h2>
 
         <h3>Running</h3>
