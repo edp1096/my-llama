@@ -5,6 +5,9 @@
 
     --pane-front_color: #3d3d3d;
     --pane-bg_color: rgb(220, 222, 225);
+
+    --prompt-front_color: #515151;
+    --prompt-bg_color: rgb(230, 232, 235);
 }
 
 body {
@@ -22,6 +25,9 @@ body {
 
     --pane-front_color: #f0f2f5;
     --pane-bg_color: #404347;
+
+    --prompt-front_color: #e6e8eb;
+    --prompt-bg_color: #515151;
 }
 
 #top-btns {
@@ -39,12 +45,17 @@ body {
     padding: 0.1rem;
 }
 
-#reflection {
+textarea {
+    color: var(--prompt-front_color);
+    background-color: var(--prompt-bg_color);
+}
+
+#inputs {
     width: 100%;
     height: var(--prompts_height);
 }
 
-#inputs {
+#reflection {
     width: 100%;
     height: var(--prompts_height);
 }
