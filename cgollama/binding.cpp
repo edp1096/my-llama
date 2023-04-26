@@ -21,36 +21,6 @@ std::vector<llama_token> binding_tokenize(struct llama_context* ctx, const std::
     return res;
 }
 
-std::string gpt_random_prompt(std::mt19937& rng) {
-    const int r = rng() % 10;
-    switch (r) {
-        case 0:
-            return "So";
-        case 1:
-            return "Once upon a time";
-        case 2:
-            return "When";
-        case 3:
-            return "The";
-        case 4:
-            return "After";
-        case 5:
-            return "If";
-        case 6:
-            return "import";
-        case 7:
-            return "He";
-        case 8:
-            return "She";
-        case 9:
-            return "They";
-        default:
-            return "To";
-    }
-
-    return "The";
-}
-
 void* llama_init_container() {
     variables_container* c = new variables_container;
     c->params = new gpt_params;
