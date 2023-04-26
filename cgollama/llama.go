@@ -14,7 +14,6 @@ import (
 
 type LLama struct {
 	Container   unsafe.Pointer
-	State       unsafe.Pointer
 	PredictStop chan bool
 }
 
@@ -51,7 +50,7 @@ func (l *LLama) SetIsInteracting(isInteracting bool) {
 
 func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec) error {
 	container := l.Container
-	remainCOUNT := int(C.bd_get_n_remain(container))
+	remainCOUNT := l.GetRemainCount()
 
 	responseBYTEs := []byte{}
 	response := ""
