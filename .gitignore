@@ -1,4 +1,10 @@
+.vscode
 /bin/
 *.a
 *.o
-.vscode
+
+llama.dll
+llama.lib
+llama.obj
+llama.def
+llama.exp

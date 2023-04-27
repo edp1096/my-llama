@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	_ "embed"
@@ -32,8 +33,8 @@ var (
 )
 
 var (
-	threads = 4
-	// tokens  = 256
+	threads  = 4
+	useMlock = true
 )
 
 var (
@@ -59,15 +60,15 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			fmt.Println("model_file:", model_file)
 		}
 
-		// Todo: settings from query string
-		topk := req.URL.Query().Get("topk")
-		if topk != "" {
-			// tokens, _ = strconv.Atoi(topk)
-			fmt.Println("topk:", topk)
-		} else {
-			// tokens = 256
-			fmt.Println("topk is not set")
-		}
+		// // Todo or not: settings from query string
+		// topk := req.URL.Query().Get("topk")
+		// if topk != "" {
+		// 	// tokens, _ = strconv.Atoi(topk)
+		// 	fmt.Println("topk:", topk)
+		// } else {
+		// 	// tokens = 256
+		// 	fmt.Println("topk is not set")
+		// }
 
 		var err error
 
@@ -85,6 +86,9 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		l.InitParams()
+
+		l.SetThreadsCount(threads)
+		l.SetUseMlock(useMlock)
 
 		fmt.Println("Model initialized..")
 
@@ -108,7 +112,8 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 			// Command
 			if len(message) > 0 {
-				if strings.HasPrefix(message, "$$__COMMAND__$$") {
+				switch true {
+				case strings.HasPrefix(message, "$$__COMMAND__$$"):
 					command := strings.Split(message, "\n$$__SEPARATOR__$$\n")[1]
 
 					switch command {
@@ -116,7 +121,6 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 						if predictRunning {
 							l.PredictStop <- true
 						}
-						continue
 					case "$$__MAX_CPU_PHYSICAL__$$":
 						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__MAX_CPU_PHYSICAL__$$\n$$__SEPARATOR__$$\n"
 						response := fmt.Sprintf("%s%d", tag, cpuPhysicalNUM)
@@ -125,17 +129,58 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 							fmt.Println("Send error:", err)
 							disconnected = true
 						}
-						continue
 					case "$$__MAX_CPU_LOGICAL__$$":
-						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__MAX_CPU_PHYSICAL__$$\n$$__SEPARATOR__$$\n"
+						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__MAX_CPU_LOGICAL__$$\n$$__SEPARATOR__$$\n"
 						response := fmt.Sprintf("%s%d", tag, cpuLogicalNUM)
 						err = handler.Send(conn, response)
 						if err != nil {
 							fmt.Println("Send error:", err)
 							disconnected = true
 						}
-						continue
+					case "$$__THREADS__$$":
+						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__THREADS__$$\n$$__SEPARATOR__$$\n"
+						response := fmt.Sprintf("%s%d", tag, threads)
+						err = handler.Send(conn, response)
+						if err != nil {
+							fmt.Println("Send error:", err)
+							disconnected = true
+						}
 					}
+
+					continue
+				case strings.HasPrefix(message, "$$__PARAMETER__$$"):
+					params := strings.Split(message, "\n$$__SEPARATOR__$$\n")
+					paramNAME := params[1]
+					paramVALUE := strings.TrimSpace(params[2])
+
+					switch paramNAME {
+					case "$$__TOP_K__$$":
+						top_k, _ := strconv.Atoi(paramVALUE)
+						fmt.Println("top_k:", top_k)
+						l.SetTopK(top_k)
+					case "$$__TOP_P__$$":
+						top_p, _ := strconv.ParseFloat(paramVALUE, 64)
+						fmt.Println("top_p:", top_p)
+						l.SetTopP(top_p)
+					case "$$__TEMPERATURE__$$":
+						temperature, _ := strconv.ParseFloat(paramVALUE, 64)
+						fmt.Println("temperature:", temperature)
+						l.SetTemperature(temperature)
+					case "$$__REPEAT_PENALTY__$$":
+						penalty, _ := strconv.ParseFloat(paramVALUE, 64)
+						fmt.Println("repeat penalty:", penalty)
+						l.SetRepeatPenalty(penalty)
+					case "$$__THREADS__$$":
+						threads, _ = strconv.Atoi(paramVALUE)
+						fmt.Println("threads:", threads)
+					case "$$__N_BATCH__$$":
+						n_batch, _ := strconv.Atoi(paramVALUE)
+						fmt.Println("N_BATCH:", n_batch)
+					default:
+						fmt.Println("Unknown parameter:", paramNAME)
+					}
+
+					continue
 				}
 
 				// fmt.Printf("%s\n", message) // Print received message from client

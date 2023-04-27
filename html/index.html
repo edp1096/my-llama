@@ -9,12 +9,18 @@
 </head>
 
 <body>
+    <div id="top-btns">
+        <input type="checkbox" id="switch-shade" onclick="toggleDarkMode()" />
+        <label for="switch-shade" id="switch-shade-label">Light Mode</label>
+        <button id="open-panel" onclick="openPanel()">Open panel</button>
+    </div>
+
     <div id="input-container">
         <div>
             <div>
                 <label for="inputs">Input: click 'Send' button or press ctrl+enter</label>
                 <br />
-                <textarea id="inputs">Please tell me the largest city in Asia.</textarea>
+                <textarea id="inputs"></textarea>
             </div>
         </div>
 
@@ -30,10 +36,16 @@
                 <br />
                 <input type="text" id="antiprompt" value="" />
             </div>
+
+            <div>
+                <label for="first-input">First input:</label>
+                <br />
+                <input type="text" id="first-input" value="Please tell me the largest city in Asia." />
+            </div>
         </div>
     </div>
 
-    <button id="send" onclick="send()">Send</button>
+    <button id="send" onclick="sendPrompt()">Send</button>
     <button id="stop" onclick="stopResponse()">Stop</button>
 
     <span id="status" class="status-disconn">Disconnected</span>
@@ -43,13 +55,22 @@
     <div id="outputs"></div>
 
     <div id="preferences">
+        <div>
+            <button onclick="closePanel()">Close</button>
+            <button onclick="applyParameters()">Apply</button>
+        </div>
+
         <h2>Parameters</h2>
 
         <h3>Running</h3>
 
         <div>
-            <label for="pref_n_threads">Threads:</label>
-            <input type="number" id="pref_n_threads" value="1" step="1" />
+            <label>Max CPU counts:</label>
+            <span id="max-cpu-count"></span>
+        </div>
+        <div>
+            <label for="pref_threads">Threads:</label>
+            <input type="number" id="pref_threads" value="1" step="1" disabled />
         </div>
 
         <hr />
@@ -57,19 +78,36 @@
         <h3>Sampling</h3>
 
         <div>
-            <label for="pref_top_p">Top P:</label>
-            <input type="number" id="pref_top_p" value="0.9" step="0.01" />
-        </div>
-
-        <div>
             <label for="pref_top_k">Top K:</label>
             <input type="number" id="pref_top_k" value="40" step="1" />
         </div>
 
         <div>
-            <label for="temperature">Temperature:</label>
-            <input type="number" id="temperature" value="0.7" />
+            <label for="pref_top_p">Top P:</label>
+            <input type="number" id="pref_top_p" value="0.9" step="0.01" />
         </div>
+
+        <div>
+            <label for="pref_temperature">Temperature:</label>
+            <input type="number" id="pref_temperature" value="0.15" step="0.01" />
+        </div>
+
+        <div>
+            <label for="pref_repeat_penalty">Repeat penalty:</label>
+            <input type="number" id="pref_repeat_penalty" value="1.0" step="0.1" />
+        </div>
+
+        <hr />
+
+        <!-- <div>
+            <label for="pref_threads">Threads:</label>
+            <input type="number" id="pref_threads" value="4" step="1" />
+        </div> -->
+
+        <!-- <div>
+            <label for="pref_n_batch">Batch size:</label>
+            <input type="number" id="pref_n_batch" value="512" step="1" />
+        </div> -->
     </div>
 </body>
 

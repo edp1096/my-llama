@@ -21,10 +21,19 @@ Llama 7B runner on my windows machine
 ## Build from source
 
 ### Requirements
-* [Go](https://golang.org/dl)
-* [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
-* [Git](https://github.com/git-for-windows/git/releases)
-* Memory >= 12GB
+* CPU
+    * [Go](https://golang.org/dl)
+    * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
+    * [Git](https://github.com/git-for-windows/git/releases)
+    * Memory >= 12GB
+* GPU
+    * [Go](https://golang.org/dl)
+    * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
+    * [Git](https://github.com/git-for-windows/git/releases)
+    * [Ms Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
+    * [Cmake >= 3.26](https://cmake.org/download)
+    * CPU Memory >= 12GB
+    * Geforce Memory >= 4GB
 
 ### Build
 ```powershell
@@ -39,9 +48,20 @@ mingw32-make.exe
 
 
 ## TODO
-* Settings
+* 
     * GGML Parameters - cpu threads, temper, topk..
-* Add Papago, Kakao translator
+## Todo
+* `binding.cpp`
+    * [ ] Send separated input instead of hard coded prompt when begin in html
+    * [ ] Settings - Set parameters from html to websocket server
+        * [x] topk, topp, temp, repetition_penalty
+        * [ ] Others - ?
+    * [ ] Clean up functions & crash predict function in cgollama.go
+    * [ ] Remove and integrate all unnecessary functions
+    * [v] Replace all `llama_` prefix to `bd_`
+    * [v] Save light/dark mode to localstorage
+* [ ] Save/Load state
+* [ ] Add Papago, Kakao translator
 
 
 ## Source
