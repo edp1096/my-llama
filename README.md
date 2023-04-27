@@ -69,6 +69,7 @@ build.cmd
 * `binding.cpp`
     * [ ] Send separated input instead of hard coded prompt when begin in html
     * [ ] GGML Parameter settings - Set parameters from html to websocket server
+        * [ ] Slider
         * [x] topk, topp, temp, repeat_penalty
         * [ ] Others - ?
     * [ ] Clean up functions & crash predict function in cgollama.go
