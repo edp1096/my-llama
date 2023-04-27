@@ -36,7 +36,7 @@ Llama 7B runner on my windows machine
     * [Go](https://golang.org/dl)
     * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
     * [Git](https://github.com/git-for-windows/git/releases)
-    * [Ms Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
+    * [MS Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
     * [Cmake >= 3.26](https://cmake.org/download)
     * [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
     * CPU Memory >= 12GB
