@@ -38,6 +38,7 @@ Llama 7B runner on my windows machine
     * [Git](https://github.com/git-for-windows/git/releases)
     * [Ms Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
     * [Cmake >= 3.26](https://cmake.org/download)
+    * [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
     * CPU Memory >= 12GB
     * Video Memory >= 4GB
 
