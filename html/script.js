@@ -84,7 +84,8 @@ function buttonStopEnable() {
 }
 
 async function websocketSetup() {
-    let param = "model_file=ggml-vicuna-7b-4bit.bin"
+    // let param = "model_file=ggml-vicuna-7b-4bit.bin"
+    let param = "model_file=not_use_yet"
 
     const loc = window.location
 
