@@ -71,6 +71,7 @@ build.cmd
     * [ ] GGML Parameter settings - Set parameters from html to websocket server
         * [ ] Slider
         * [x] topk, topp, temp, repeat_penalty
+        * [ ] Save/Load prefix prompt, reverse prompt, first input
         * [ ] Others - ?
     * [ ] Clean up functions & crash predict function in cgollama.go
     * [ ] Remove and integrate all unnecessary functions
