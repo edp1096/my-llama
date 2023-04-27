@@ -51,6 +51,8 @@ var (
 
 func wsController(w http.ResponseWriter, req *http.Request) {
 	ws.Handler(func(conn *ws.Conn) {
+		var err error
+
 		defer conn.Close()
 
 		req := conn.Request()
@@ -59,18 +61,6 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			// modelFNAME = model_file
 			fmt.Println("model_file:", model_file)
 		}
-
-		// // Todo or not: settings from query string
-		// topk := req.URL.Query().Get("topk")
-		// if topk != "" {
-		// 	// tokens, _ = strconv.Atoi(topk)
-		// 	fmt.Println("topk:", topk)
-		// } else {
-		// 	// tokens = 256
-		// 	fmt.Println("topk is not set")
-		// }
-
-		var err error
 
 		requestCount := 0 // to ignore prompt
 
