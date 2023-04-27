@@ -147,9 +147,15 @@ void bd_init_params(void* container) {
     params->interactive_first = params->interactive;
     params->antiprompt = {};
 
-    params->n_threads = 6;
+    params->n_threads = 4;
     params->n_predict = 512;
     params->use_mlock = true;
+
+    // print top_k, top_p, temp, repeat_penalty
+    printf("Init top_k: %d\n", params->top_k);
+    printf("Init top_p: %f\n", params->top_p);
+    printf("Init temp: %f\n", params->temp);
+    printf("Init repeat_penalty: %f\n", params->repeat_penalty);
 
     // params->prompt = "The quick brown fox jumps over the lazy dog.";
     // params->n_predict = 100;
@@ -468,6 +474,10 @@ void bd_set_user_input(void* container, const char* user_input) {
 /* Setters - gpt_params */
 void bd_set_params_n_threads(void* container, int value) {
     ((gpt_params*)((variables_container*)container)->params)->n_threads = value;
+}
+
+void bd_set_params_use_mlock(void* container, bool value) {
+    ((gpt_params*)((variables_container*)container)->params)->use_mlock = value;
 }
 
 /* Setters - gpt_params / sampling parameters */

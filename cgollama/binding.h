@@ -80,6 +80,7 @@ void bd_set_user_input(void* container, const char* user_input);
 
 /* Setters - gpt_params */
 void bd_set_params_n_threads(void* container, int value);
+void bd_set_params_use_mlock(void* container, bool value);
 
 /* Setters - gpt_params / sampling parameters */
 void bd_set_params_top_k(void* container, int value);

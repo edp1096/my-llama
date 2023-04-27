@@ -12,7 +12,7 @@
     <div id="top-btns">
         <input type="checkbox" id="switch-shade" onclick="toggleDarkMode()" />
         <label for="switch-shade" id="switch-shade-label">Light Mode</label>
-        <button onclick="openPanel()">Open panel</button>
+        <button id="open-panel" onclick="openPanel()">Open panel</button>
     </div>
 
     <div id="input-container">
@@ -65,8 +65,12 @@
         <h3>Running</h3>
 
         <div>
-            <label for="pref_n_threads">Threads:</label>
-            <input type="number" id="pref_n_threads" value="1" step="1" />
+            <label>Max CPU counts:</label>
+            <span id="max-cpu-count"></span>
+        </div>
+        <div>
+            <label for="pref_threads">Threads:</label>
+            <input type="number" id="pref_threads" value="1" step="1" disabled />
         </div>
 
         <hr />
@@ -75,7 +79,7 @@
 
         <div>
             <label for="pref_top_k">Top K:</label>
-            <input type="number" id="pref_top_k" value="400" step="1" />
+            <input type="number" id="pref_top_k" value="40" step="1" />
         </div>
 
         <div>
@@ -84,8 +88,8 @@
         </div>
 
         <div>
-            <label for="pref_temper">Temperature:</label>
-            <input type="number" id="pref_temper" value="0.15" step="0.01" />
+            <label for="pref_temperature">Temperature:</label>
+            <input type="number" id="pref_temperature" value="0.15" step="0.01" />
         </div>
 
         <div>

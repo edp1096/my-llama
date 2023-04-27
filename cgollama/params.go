@@ -38,9 +38,22 @@ func (l *LLama) SetThreadsCount(threads int) {
 	C.bd_set_params_n_threads(l.Container, C.int(threads))
 }
 
+func (l *LLama) SetUseMlock(useMlock bool) {
+	C.bd_set_params_use_mlock(l.Container, C.bool(useMlock))
+}
+
 /* Setters - gpt_params / sampling parameters */
 func (l *LLama) SetTopK(topK int) {
 	C.bd_set_params_top_k(l.Container, C.int(topK))
+}
+func (l *LLama) SetTopP(topP float64) {
+	C.bd_set_params_top_p(l.Container, C.float(topP))
+}
+func (l *LLama) SetTemperature(temper float64) {
+	C.bd_set_params_temper(l.Container, C.float(temper))
+}
+func (l *LLama) SetRepeatPenalty(penalty float64) {
+	C.bd_set_params_repeat_penalty(l.Container, C.float(penalty))
 }
 
 func (l *LLama) InitParams() {

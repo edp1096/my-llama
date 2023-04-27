@@ -23,11 +23,13 @@ function toggleDarkMode(isSave = true) {
 }
 
 function openPanel() {
+    buttonDisableAll()
     const panel = document.getElementById("preferences")
     panel.style.display = "block"
 }
 
 function closePanel() {
+    buttonSendEnable()
     const panel = document.getElementById("preferences")
     panel.style.display = "none"
 }
@@ -35,10 +37,12 @@ function closePanel() {
 function loadPreferences() {
     localStorage.getItem('preference') ? preferences = JSON.parse(localStorage.getItem('preference')) : preferences = {}
 
-    document.querySelector("#pref_top_k").value = preferences["topK"] ? preferences["topK"] : 40
-    document.querySelector("#pref_top_p").value = preferences["topP"] ? preferences["topP"] : 0.8
-    document.querySelector("#pref_temper").value = preferences["temper"] ? preferences["temper"] : 0.5
-    document.querySelector("#pref_repeat_penalty").value = preferences["repeatPenalty"] ? preferences["repeatPenalty"] : 0.75
+    document.querySelector("#pref_threads").value = preferences["threads"] ? preferences["threads"] : 1
+
+    document.querySelector("#pref_top_k").value = preferences["TOP_K"] ? preferences["TOP_K"] : 40
+    document.querySelector("#pref_top_p").value = preferences["TOP_P"] ? preferences["TOP_P"] : 0.8
+    document.querySelector("#pref_temperature").value = preferences["TEMPERATURE"] ? preferences["TEMPERATURE"] : 0.5
+    document.querySelector("#pref_repeat_penalty").value = preferences["REPEAT_PENALTY"] ? preferences["REPEAT_PENALTY"] : 0.75
 
     return preferences
 }
@@ -65,15 +69,17 @@ function statusAddClass(className, message) {
 function buttonDisableAll() {
     document.querySelector("#send").disabled = true
     document.querySelector("#stop").disabled = true
+    document.querySelector("#open-panel").disabled = true
 }
 
 function buttonSendEnable() {
+    buttonDisableAll()
     document.querySelector("#send").disabled = false
-    document.querySelector("#stop").disabled = true
+    document.querySelector("#open-panel").disabled = false
 }
 
 function buttonStopEnable() {
-    document.querySelector("#send").disabled = true
+    buttonDisableAll()
     document.querySelector("#stop").disabled = false
 }
 
@@ -96,9 +102,12 @@ async function websocketSetup() {
 
         requestMaxPhycalCPU()
         requestMaxLogicalCPU()
+        requestThreads()
 
         statusRemoveAllClasses()
         statusAddClass('status-ready', 'Ready')
+
+        applyParameters()
 
         // document.getElementById("send").click()
         sendPrompt(true)
@@ -144,11 +153,22 @@ async function websocketSetup() {
                 switch (responses[1]) {
                     case "$$__MAX_CPU_PHYSICAL__$$":
                         console.log(`Max physical CPU: ${responses[2]}`)
+                        preferences["maxcpu-physical"] = responses[2]
                         break
                     case "$$__MAX_CPU_LOGICAL__$$":
                         console.log(`Max logical CPU: ${responses[2]}`)
+                        preferences["maxcpu-logical"] = responses[2]
+                        break
+                    case "$$__THREADS__$$":
+                        console.log(`Thread count: ${responses[2]}`)
+                        preferences["threads"] = responses[2]
                         break
                 }
+
+                savePreferences()
+
+                document.querySelector("#max-cpu-count").innerHTML = `${preferences["maxcpu-physical"]} / ${preferences["maxcpu-logical"]}`
+                document.querySelector("#pref_threads").value = preferences["threads"]
 
                 break
             default:
@@ -187,19 +207,22 @@ function sendPrompt(sendFirstInput = false) {
     focusTarget.focus()
 }
 
-function applyParameters() {
+function applyParameters(sendRequired = true) {
     const datas = []
 
     datas["TOP_K"] = document.querySelector("#pref_top_k").value
     datas["TOP_P"] = document.querySelector("#pref_top_p").value
-    datas["TEMPERATURE"] = document.querySelector("#pref_temper").value
+    datas["TEMPERATURE"] = document.querySelector("#pref_temperature").value
     datas["REPEAT_PENALTY"] = document.querySelector("#pref_repeat_penalty").value
 
     for (const key in datas) {
         preferences[key] = datas[key]
-        const data = `$$__PARAMETER__$$\n$$__SEPARATOR__$$\n${key}\n$$__SEPARATOR__$$\n${datas[key]}\n`
-        ws.send(data)
+        const data = `$$__PARAMETER__$$\n$$__SEPARATOR__$$\n$$__${key}__$$\n$$__SEPARATOR__$$\n${datas[key]}\n`
+        if (sendRequired) {
+            ws.send(data)
+        }
     }
+
     savePreferences()
 
     closePanel()
@@ -209,17 +232,18 @@ function applyParameters() {
 }
 
 function requestMaxPhycalCPU() {
-    const input = document.querySelector("#inputs")
     const cpuNummsg = "$$__COMMAND__$$\n$$__SEPARATOR__$$\n$$__MAX_CPU_PHYSICAL__$$"
-
     ws.send(cpuNummsg)
 }
 
 function requestMaxLogicalCPU() {
-    const input = document.querySelector("#inputs")
     const cpuNummsg = "$$__COMMAND__$$\n$$__SEPARATOR__$$\n$$__MAX_CPU_LOGICAL__$$"
-
     ws.send(cpuNummsg)
+}
+
+function requestThreads() {
+    const threadsmsg = "$$__COMMAND__$$\n$$__SEPARATOR__$$\n$$__THREADS__$$"
+    ws.send(threadsmsg)
 }
 
 function stopResponse() {
@@ -248,6 +272,13 @@ A chat between a curious human and an artificial intelligence assistant. The ass
     let antipromptTEXT = `### Human:`
 
     preferences = loadPreferences()
+
+    keys = ["TOP_K", "TOP_P", "TEMPERATURE", "REPEAT_PENALTY"]
+    for (const key of keys) {
+        if (preferences[key] != undefined) {
+            document.querySelector(`#pref_${key.toLowerCase()}`).value = preferences[key]
+        }
+    }
 
     if (preferences["darkmode"]) {
         document.querySelector("#switch-shade").click()
