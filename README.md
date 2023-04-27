@@ -6,7 +6,7 @@ Llama 7B runner on my windows machine
 
 * Go binding for interactive mode of `llama.cpp/examples/main`
 * Websocket server
-* Embedded web ui
+* Go embedded web ui
 
 
 ## Download pre-compiled binary
