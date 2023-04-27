@@ -33,9 +33,10 @@ Llama 7B runner on my windows machine
     * [Ms Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
     * [Cmake >= 3.26](https://cmake.org/download)
     * CPU Memory >= 12GB
-    * Geforce Memory >= 4GB
+    * Video Memory >= 4GB
 
 ### Build
+* CPU
 ```powershell
 git clone https://github.com/edp1096/my-llama.git
 
@@ -44,6 +45,16 @@ cd my-llama
 git submodule update --init --recursive
 
 mingw32-make.exe
+```
+* GPU
+```powershell
+git clone https://github.com/edp1096/my-llama.git
+
+cd my-llama
+
+git submodule update --init --recursive
+
+build.cmd
 ```
 
 
