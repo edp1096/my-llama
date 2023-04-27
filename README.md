@@ -2,6 +2,12 @@
 
 Llama 7B runner on my windows machine
 
+## This is a ..
+
+* Go binding for interactive mode of `llama.cpp/examples/main`
+* Websocket server
+* Embedded web ui
+
 
 ## Download pre-compiled binary
 * [Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.2/my-llama.exe)
@@ -58,13 +64,10 @@ build.cmd
 ```
 
 
-## TODO
-* 
-    * GGML Parameters - cpu threads, temper, topk..
 ## Todo
 * `binding.cpp`
     * [ ] Send separated input instead of hard coded prompt when begin in html
-    * [ ] Settings - Set parameters from html to websocket server
+    * [ ] GGML Parameter settings - Set parameters from html to websocket server
         * [x] topk, topp, temp, repeat_penalty
         * [ ] Others - ?
     * [ ] Clean up functions & crash predict function in cgollama.go
