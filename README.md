@@ -74,8 +74,8 @@ build.cmd
         * [ ] Others - ?
     * [ ] Clean up functions & crash predict function in cgollama.go
     * [ ] Remove and integrate all unnecessary functions
-    * [v] Replace all `llama_` prefix to `bd_`
-    * [v] Save light/dark mode to localstorage
+    * [x] Replace all `llama_` prefix to `bd_`
+    * [x] Save light/dark mode to localstorage
 * [ ] Save/Load state
 * [ ] Add Papago, Kakao translator
 
