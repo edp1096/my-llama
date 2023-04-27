@@ -1,4 +1,4 @@
-@REM @echo off
+@echo off
 
 cd llama.cpp
 
@@ -9,6 +9,8 @@ cmake .. -DLLAMA_CUBLAS=1 -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=1 -DLLAMA
 cmake --build . --config Release
 
 copy bin\Release\llama.dll ..\..
+
+@REM Static not work
 @REM copy Release\llama.lib ..\..
 @REM copy examples\common.dir\Release\common.lib ..\..
 @REM copy ggml.dir\Release\ggml.lib ..\..
@@ -16,6 +18,7 @@ copy bin\Release\llama.dll ..\..
 cd ..\..
 
 
+@REM Static not work
 @REM C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -noe -c "&{Import-Module 'C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Microsoft.VisualStudio.DevShell.dll'; Enter-VsDevShell 4da9a52a} ; lib.exe /OUT:common.obj common.lib; exit"
 @REM C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -noe -c "&{Import-Module 'C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Microsoft.VisualStudio.DevShell.dll'; Enter-VsDevShell 4da9a52a} ; lib.exe /OUT:ggml.obj ggml.lib; exit"
 @REM C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -noe -c "&{Import-Module 'C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Microsoft.VisualStudio.DevShell.dll'; Enter-VsDevShell 4da9a52a} ; lib.exe /OUT:llama.obj llama.lib; exit"

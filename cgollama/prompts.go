@@ -1,10 +1,12 @@
 package cgollama
 
 // #cgo CXXFLAGS: -I../llama.cpp/examples -I../llama.cpp
-// #cgo LDFLAGS: -L../ -lbinding -lm -lstdc++ -static
+// #cgo LDFLAGS: -L../ -static -lstdc++ -lbinding
 // #include "binding.h"
 import "C"
-import "errors"
+import (
+	"errors"
+)
 
 func (l *LLama) SetPrompt(prompt string) {
 	container := l.Container
