@@ -54,7 +54,7 @@ mingw32-make.exe
 * `binding.cpp`
     * [ ] Send separated input instead of hard coded prompt when begin in html
     * [ ] Settings - Set parameters from html to websocket server
-        * [x] topk, topp, temp, repetition_penalty
+        * [x] topk, topp, temp, repeat_penalty
         * [ ] Others - ?
     * [ ] Clean up functions & crash predict function in cgollama.go
     * [ ] Remove and integrate all unnecessary functions
