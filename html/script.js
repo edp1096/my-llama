@@ -298,6 +298,36 @@ A chat between a curious human and an artificial intelligence assistant. The ass
             document.getElementById("send").click()
         }
     })
+
+    document.querySelectorAll(".sample_slider").forEach(function (element) {
+        element.addEventListener("input", function (event) {
+            const id = event.target.id
+            const value = event.target.value
+
+            const idPrefix = id.split("_")[0]
+            const idName = id.split(idPrefix + "_")[1]
+
+            const inputPrefix = "pref_"
+            const inputID = inputPrefix + idName
+
+            document.querySelector(`#${inputID}`).value = value
+        })
+    })
+
+    document.querySelectorAll(".sample_value").forEach(function (element) {
+        element.addEventListener("input", function (event) {
+            const id = event.target.id
+            const value = event.target.value
+
+            const idPrefix = id.split("_")[0]
+            const idName = id.split(idPrefix + "_")[1]
+
+            const sliderPrefix = "sl_"
+            const sliderID = sliderPrefix + idName
+
+            document.querySelector(`#${sliderID}`).value = value
+        })
+    })
 }
 
 document.addEventListener('DOMContentLoaded', init())

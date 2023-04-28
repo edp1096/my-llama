@@ -1,3 +1,5 @@
+@echo off
+
 del /s /q *.o
 del /s /q *.a
 del /s /q cgollama\*.o
