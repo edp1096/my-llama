@@ -76,6 +76,7 @@ build.cmd
     * [ ] Remove and integrate all unnecessary functions
     * [x] Replace all `llama_` prefix to `bd_`
     * [x] Save light/dark mode to localstorage
+* [ ] Send and split per `\n`
 * [ ] Save/Load prefix prompt, reverse prompt, first input and move to preference
 * [ ] Save/Load state
 * [ ] Add Papago, Kakao translator
