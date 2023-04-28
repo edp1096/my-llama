@@ -51,6 +51,10 @@ textarea {
     background-color: var(--prompt-bg_color);
 }
 
+textarea {
+    white-space: pre;
+}
+
 #inputs {
     width: 100%;
     height: var(--prompts_height);
