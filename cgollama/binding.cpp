@@ -190,9 +190,6 @@ bool bd_predict_tokens(void* container) {
                 params->logit_bias[llama_token_eos()] = -INFINITY;
             }
 
-            // id = llama_sample_top_p_top_k(ctx,
-            //                               last_n_tokens->data() + c->n_ctx - params->repeat_last_n,
-            //                               params->repeat_last_n, top_k, top_p, temp, repeat_penalty);
             std::vector<llama_token_data> candidates;
             candidates.reserve(n_vocab);
             for (llama_token token_id = 0; token_id < n_vocab; token_id++) {
