@@ -127,13 +127,14 @@ textarea {
 #preferences {
     color: var(--pane-front_color);
     background-color: var(--pane-bg_color);
-    width: 25rem;
+    width: calc(50vw - 2rem);
     height: 100vh;
     top: 0;
     right: 0;
     position: fixed;
     display: none;
     padding: 1rem;
+    margin: 0rem;
 }
 
 #preferences>div {

@@ -78,6 +78,17 @@
         <h3>Sampling</h3>
 
         <div>
+            <label for="pref_repeat_penalty">Use:</label>
+            <input type="radio" id="pref_mirostat_not_use" name="pref_mirostat" value="not_use" />
+            <label for="pref_mirostat_not_use">Use top_k/top_p</label>
+            <input type="radio" id="pref_mirostat_use_1" name="pref_mirostat" value="1.0" />
+            <label for="pref_mirostat_use_1">Use 1.0</label>
+            <input type="radio" id="pref_mirostat_use_2" name="pref_mirostat" value="2.0" />
+            <label for="pref_mirostat_use_2">Use 2.0</label>
+        </div>
+
+        <h4>Top_k</h4>
+        <div>
             <label for="pref_top_k">Top K:</label>
             <input type="range" id="sl_top_k" class="sample_slider" min="1" max="1000" value="40" step="1" placeholder="range of sample_slider" />
             <input type="number" id="pref_top_k" name="pref_top_k" class="sample_value" value="40" step="1" />
@@ -89,29 +100,7 @@
             <input type="number" id="pref_top_p" name="pref_top_p" class="sample_value" value="0.9" step="0.01" />
         </div>
 
-        <div>
-            <label for="pref_temperature">Temperature:</label>
-            <input type="range" id="sl_temperature" class="sample_slider" min="0.01" max="1.0" value="0.15" step="0.01" placeholder="range of sample_slider" />
-            <input type="number" id="pref_temperature" name="pref_temperature" class="sample_value" value="0.15" step="0.01" />
-        </div>
-
-        <div>
-            <label for="pref_repeat_penalty">Repeat penalty:</label>
-            <input type="range" id="sl_repeat_penalty" class="sample_slider" min="0.01" max="1.5" value="1.0" step="0.01" placeholder="range of sample_slider" />
-            <input type="number" id="pref_repeat_penalty" name="pref_repeat_penalty" class="sample_value" value="1.0" step="0.1" />
-        </div>
-
-        <h4><a href="https://github.com/basusourya/mirostat" target="_blank">Mirostat</a></h4>
-
-        <div>
-            <label for="pref_repeat_penalty">Use:</label>
-            <input type="radio" id="pref_mirostat_not_use" name="pref_mirostat" value="not_use" />
-            <label for="pref_mirostat_not_use">Not use</label>
-            <input type="radio" id="pref_mirostat_use_1" name="pref_mirostat" value="1.0" />
-            <label for="pref_mirostat_use_1">Use 1.0</label>
-            <input type="radio" id="pref_mirostat_use_2" name="pref_mirostat" value="2.0" />
-            <label for="pref_mirostat_use_2">Use 2.0</label>
-        </div>
+        <h4>Mirostat</h4>
 
         <div>
             <!-- mirostat_tau -->
@@ -125,6 +114,18 @@
             <label for="pref_mirostat_lr">Learning rate:</label>
             <input type="range" id="sl_mirostat_lr" class="sample_slider" min="0.1" max="1.0" value="0.1" step="0.1" placeholder="range of sample_slider" />
             <input type="number" id="pref_mirostat_lr" name="pref_mirostat_lr" class="sample_value" value="0.1" step="0.1" />
+        </div>
+
+        <div>
+            <label for="pref_temperature">Temperature:</label>
+            <input type="range" id="sl_temperature" class="sample_slider" min="0.01" max="1.0" value="0.15" step="0.01" placeholder="range of sample_slider" />
+            <input type="number" id="pref_temperature" name="pref_temperature" class="sample_value" value="0.15" step="0.01" />
+        </div>
+
+        <div>
+            <label for="pref_repeat_penalty">Repeat penalty:</label>
+            <input type="range" id="sl_repeat_penalty" class="sample_slider" min="0.01" max="1.5" value="1.0" step="0.01" placeholder="range of sample_slider" />
+            <input type="number" id="pref_repeat_penalty" name="pref_repeat_penalty" class="sample_value" value="1.0" step="0.1" />
         </div>
 
         <hr />
