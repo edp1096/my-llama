@@ -71,12 +71,13 @@ build.cmd
     * [ ] GGML Parameter settings - Set parameters from html to websocket server
         * [x] Slider
         * [x] topk, topp, temp, repeat_penalty
-        * [ ] Need restart - `common.h` / gpt_params, `binding.cpp`:143, `llama.cpp`:808
+        * [ ] mirostat, tail free sampling, penalties(+no pen for new line), ignore_eos
+        * [ ] Maybe need restart - `common.h` / gpt_params, `binding.cpp`:143, `llama.cpp`:808
             * n_threads - cpu threads count
             * n_ctx - context size
             * n_batch - batch size for prompt processing (must be >=32 to use BLAS)
             * n_predict - new tokens to predict
-            * Not care
+            * Not touch
                 * ~~seed, n_keep, f16_kv, use_mmap, use_mlock~~
         * [ ] Check dump state when restart with changed n_ctx, n_batch, n_predict
     * [ ] Clean up functions & crash predict function in cgollama.go
