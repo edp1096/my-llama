@@ -77,6 +77,11 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 	}
 }
 
+func freeALL(l *llama.LLama) {
+	l.FreeParams()
+	l.FreeModel()
+}
+
 func evalAndResponse(l *llama.LLama, conn *ws.Conn, handler ws.Codec) error {
 	remainCOUNT := l.GetRemainCount()
 
@@ -349,6 +354,8 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 				requestCount++
 			}()
 		}
+
+		freeALL(l)
 	}).ServeHTTP(w, req)
 }
 

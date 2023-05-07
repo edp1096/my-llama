@@ -7,6 +7,7 @@ A chat between a curious human and an artificial intelligence assistant. The ass
 ### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
 ### Human:`
 const defaultAntipromptTEXT = `### Human:`
+const defaultResponseNameTEXT = `### Assistant:`
 const defaultFirstInputTEXT = `Please tell me the largest city in Earth.`
 
 let preferences = {}
@@ -46,6 +47,19 @@ function closePanel() {
 
 function loadPreferences() {
     localStorage.getItem('preference') ? preferences = JSON.parse(localStorage.getItem('preference')) : preferences = {}
+
+    if (preferences["REFLECTION_PROMPT"] != undefined) {
+        document.querySelector("#reflection").value = preferences["REFLECTION_PROMPT"]
+    }
+    if (preferences["ANTI_PROMPT"] != undefined) {
+        document.querySelector("#antiprompt").value = preferences["ANTI_PROMPT"]
+    }
+    if (preferences["RESPONSE_NAME"] != undefined) {
+        document.querySelector("#response-name").value = preferences["RESPONSE_NAME"]
+    }
+    if (preferences["FIRST_INPUT"] != undefined) {
+        document.querySelector("#first-input").value = preferences["FIRST_INPUT"]
+    }
 
     document.querySelector("#pref_threads").value = preferences["threads"] ? preferences["threads"] : 1
 
@@ -274,6 +288,15 @@ function applyParameters(sendRequired = true) {
         preferences["MODEL_FILE"] = modelFiles.value
     }
 
+    const reflectionPrompt = document.querySelector("#reflection").value
+    preferences["REFLECTION_PROMPT"] = reflectionPrompt
+    const antiPrompt = document.querySelector("#antiprompt").value
+    preferences["ANTI_PROMPT"] = antiPrompt
+    const responseName = document.querySelector("#response-name").value
+    preferences["RESPONSE_NAME"] = responseName
+    const firstInput = document.querySelector("#first-input").value
+    preferences["FIRST_INPUT"] = firstInput
+
     savePreferences()
 
     closePanel()
@@ -319,11 +342,15 @@ function stopResponse() {
 function init() {
     let promptTEXT = defaultPromptTEXT
     let antipromptTEXT = defaultAntipromptTEXT
+    let responseNameTEXT = defaultResponseNameTEXT
     let firstInputTEXT = defaultFirstInputTEXT
 
-    preferences = loadPreferences()
-
+    document.querySelector("#reflection").value = promptTEXT
+    document.querySelector("#antiprompt").value = antipromptTEXT
+    document.querySelector("#response-name").value = responseNameTEXT
     document.querySelector("#first-input").value = firstInputTEXT
+
+    preferences = loadPreferences()
 
     if (preferences["model_files"] != undefined) {
         document.querySelector("select[name=model_files]").value = preferences["model_files"]
@@ -346,9 +373,6 @@ function init() {
     }
 
     websocketSetup()
-
-    document.querySelector("#reflection").value = promptTEXT
-    document.querySelector("#antiprompt").value = antipromptTEXT
 
     buttonSendEnable()
 

@@ -69,12 +69,12 @@ build_cu.cmd
 ## Todo
 * [ ] Save/Load
     * [ ] CPU count
-    * [ ] prefix prompt, reverse prompt, first input
+    * [x] prefix prompt, reverse prompt, first input
     * [ ] state - dump state when restart with changed n_ctx, n_batch, n_predict
+* [ ] antiprompt, response name
+    * [x] Add response name input - `### Assistant:`
+    * [ ] Parse `### Human:`, `### Assistant:`
 * [ ] Add Papago, Kakao translator
-* [ ] Parse `### Human:`, `### Assistant:`
-    * [ ] Add response name input - `### Assistant:`
-    * [ ] Parse antiprompt, response name
 * `binding.cpp`
     * GGML Parameter settings - Set parameters from html to websocket server
         * Not touch. Probably I can't

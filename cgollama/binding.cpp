@@ -6,7 +6,6 @@
 #include "common.h"
 #include "binding.h"
 
-
 // Windows not yet support so, override it
 #ifdef _WIN32
 int32_t get_num_physical_cores() {
@@ -385,12 +384,16 @@ char* bd_get_embed_string(void* container, int id) {
 
 void bd_free_params(void* container) {
     gpt_params* params = (gpt_params*)((variables_container*)container)->params;
-    delete params;
+    if (params != NULL) {
+        delete params;
+    }
 }
 
 void bd_free_model(void* container) {
     llama_context* ctx = (llama_context*)((variables_container*)container)->ctx;
-    llama_free(ctx);
+    if (ctx != NULL) {
+        llama_free(ctx);
+    }
 }
 
 /* Getters */
