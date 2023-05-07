@@ -7,7 +7,7 @@ A chat between a curious human and an artificial intelligence assistant. The ass
 ### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
 ### Human:`
 const defaultAntipromptTEXT = `### Human:`
-const defaultFirstInputTEXT = `Please tell me the largest city in Asia.`
+const defaultFirstInputTEXT = `Please tell me the largest city in Earth.`
 
 let preferences = {}
 
