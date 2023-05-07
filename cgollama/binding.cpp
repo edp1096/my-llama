@@ -530,8 +530,6 @@ bool bd_check_prompt_or_continue(void* container) {
         if (((std::vector<llama_token>*)c->embd)->back() == llama_token_eos()) {
             c->is_interacting = false;
             result = false;
-
-            printf("DONE?");
         }
     }
 
