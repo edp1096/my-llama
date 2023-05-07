@@ -10,7 +10,7 @@
 
 
 ## 실행파일 다운로드
-* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.3/my-llama.exe)
+* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.3/my-llama_cpu.exe)
 * [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.3/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
 
 
