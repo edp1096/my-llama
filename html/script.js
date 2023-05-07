@@ -1,5 +1,16 @@
+const defaultPromptTEXT = `
+A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+
+### Human: Hello, Assistant.
+### Assistant: Hello. How may I help you today?
+### Human: Please tell me the largest city in Europe.
+### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
+### Human:`
+const defaultAntipromptTEXT = `### Human:`
+const defaultResponseNameTEXT = `### Assistant:`
+const defaultFirstInputTEXT = `Please tell me the largest city in Earth.`
+
 let preferences = {}
-let history = ""
 
 function toggleDarkMode(isSave = true) {
     const body = document.body
@@ -36,6 +47,19 @@ function closePanel() {
 
 function loadPreferences() {
     localStorage.getItem('preference') ? preferences = JSON.parse(localStorage.getItem('preference')) : preferences = {}
+
+    if (preferences["REFLECTION_PROMPT"] != undefined) {
+        document.querySelector("#reflection").value = preferences["REFLECTION_PROMPT"]
+    }
+    if (preferences["ANTI_PROMPT"] != undefined) {
+        document.querySelector("#antiprompt").value = preferences["ANTI_PROMPT"]
+    }
+    if (preferences["RESPONSE_NAME"] != undefined) {
+        document.querySelector("#response-name").value = preferences["RESPONSE_NAME"]
+    }
+    if (preferences["FIRST_INPUT"] != undefined) {
+        document.querySelector("#first-input").value = preferences["FIRST_INPUT"]
+    }
 
     document.querySelector("#pref_threads").value = preferences["threads"] ? preferences["threads"] : 1
 
@@ -145,6 +169,7 @@ async function websocketSetup() {
         switch (true) {
             case responses[0].includes("$$__RESPONSE_PREDICT__$$"): // Response prediction to output screen
                 response = responses[1].replace(/\n/g, "<br />")
+
                 // Catch the end of the response
                 if (response.includes("$$__RESPONSE_DONE__$$")) {
                     response = response.replace(/\$\$__RESPONSE_DONE__\$\$/g, "")
@@ -157,7 +182,8 @@ async function websocketSetup() {
                     break
                 }
 
-                out.innerHTML = history + response + `<span class="cursor"></span>`
+                // -28 for cursor, `<span class="cursor"></span>` removing.
+                out.innerHTML = out.innerHTML.slice(0, -28) + response + `<span class="cursor"></span>`
                 out.scrollTop = out.scrollHeight
 
                 break
@@ -221,9 +247,6 @@ function sendPrompt(sendFirstInput = false) {
         return
     }
 
-    history = document.querySelector("#outputs").innerHTML
-    history = history.slice(0, -28)
-
     const reflection = document.querySelector("#reflection")
     const antiprompt = document.querySelector("#antiprompt")
 
@@ -264,6 +287,15 @@ function applyParameters(sendRequired = true) {
     if (modelFiles.length > 0) {
         preferences["MODEL_FILE"] = modelFiles.value
     }
+
+    const reflectionPrompt = document.querySelector("#reflection").value
+    preferences["REFLECTION_PROMPT"] = reflectionPrompt
+    const antiPrompt = document.querySelector("#antiprompt").value
+    preferences["ANTI_PROMPT"] = antiPrompt
+    const responseName = document.querySelector("#response-name").value
+    preferences["RESPONSE_NAME"] = responseName
+    const firstInput = document.querySelector("#first-input").value
+    preferences["FIRST_INPUT"] = firstInput
 
     savePreferences()
 
@@ -308,15 +340,15 @@ function stopResponse() {
 }
 
 function init() {
-    let promptTEXT = `
-A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+    let promptTEXT = defaultPromptTEXT
+    let antipromptTEXT = defaultAntipromptTEXT
+    let responseNameTEXT = defaultResponseNameTEXT
+    let firstInputTEXT = defaultFirstInputTEXT
 
-### Human: Hello, Assistant.
-### Assistant: Hello. How may I help you today?
-### Human: Please tell me the largest city in Europe.
-### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
-### Human:`
-    let antipromptTEXT = `### Human:`
+    document.querySelector("#reflection").value = promptTEXT
+    document.querySelector("#antiprompt").value = antipromptTEXT
+    document.querySelector("#response-name").value = responseNameTEXT
+    document.querySelector("#first-input").value = firstInputTEXT
 
     preferences = loadPreferences()
 
@@ -341,9 +373,6 @@ A chat between a curious human and an artificial intelligence assistant. The ass
     }
 
     websocketSetup()
-
-    document.querySelector("#reflection").value = promptTEXT
-    document.querySelector("#antiprompt").value = antipromptTEXT
 
     buttonSendEnable()
 

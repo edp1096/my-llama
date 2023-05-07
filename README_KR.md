@@ -24,7 +24,6 @@
 ```
 * 파라미터가 말을 안듣는 것 같으면 브라우저 새로고침 하세요
 
-
 ## 소스 빌드하기
 
 ### 요구사항
@@ -62,7 +61,7 @@ cd my-llama
 
 git submodule update --init --recursive
 
-build.cmd
+build_cu.cmd
 ```
 
 

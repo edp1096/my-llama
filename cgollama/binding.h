@@ -92,6 +92,9 @@ void bd_set_params_top_p(void* container, float value);
 void bd_set_params_temper(void* container, float value);
 void bd_set_params_repeat_penalty(void* container, float value);
 
+/* frees */
+void bd_free_params(void* container);
+void bd_free_model(void* container);
 
 /* Others */
 bool bd_check_prompt_or_continue(void* container);

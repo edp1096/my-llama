@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:,">
     <title>My-llama</title>
 
@@ -12,58 +14,59 @@
     <div id="top-btns">
         <input type="checkbox" id="switch-shade" onclick="toggleDarkMode()" />
         <label for="switch-shade" id="switch-shade-label">Light Mode</label>
-        <button id="open-panel" onclick="openPanel()">Open panel</button>
+        <button id="open-panel" onclick="openPanel()">Panel</button>
     </div>
-
-    <div id="input-container">
-        <div>
-            <div>
-                <label for="inputs">Input: click 'Send' button or press ctrl+enter</label>
-                <br />
-                <textarea id="inputs"></textarea>
-            </div>
-        </div>
-
-        <div>
-            <div>
-                <label for="reflection">Prefix Prompt:</label>
-                <br />
-                <textarea id="reflection"></textarea>
-            </div>
-
-            <div>
-                <label for="antiprompt">Reverse prompt:</label>
-                <br />
-                <input type="text" id="antiprompt" value="" />
-            </div>
-
-            <div>
-                <label for="first-input">First input:</label>
-                <br />
-                <input type="text" id="first-input" value="Please tell me the largest city in Asia." />
-            </div>
-        </div>
-    </div>
-
-    <button id="send" onclick="sendPrompt()">Send</button>
-    <button id="stop" onclick="stopResponse()">Stop</button>
-
-    <span id="status" class="status-disconn">Disconnected</span>
-
-    <hr />
 
     <div id="outputs"></div>
 
+    <hr />
+
+    <div id="input-container">
+        <textarea id="inputs" placeholder="input area"></textarea>
+    </div>
+
+    <button id="send" onclick="sendPrompt()" placeholder="send">Send</button>
+    <button id="stop" onclick="stopResponse()" placeholder="stop">Stop</button>
+
+    <span>Input: click 'Send' button or press ctrl+enter</span>
+    <span id="status" class="status-disconn">Disconnected</span>
+
     <div id="preferences">
-        <div>
-            <button onclick="closePanel()">Close</button>
-            <button onclick="applyParameters()">Apply</button>
+        <div class="buttons">
+            <button onclick="closePanel()" placeholder="close">Close</button>
+            <button onclick="applyParameters()" placeholder="apply">Apply</button>
         </div>
+
+
+        <h2>Prompts</h2>
+
+        <label for="reflection">
+            <h3>Prefix prompt</h3>
+        </label>
+        <textarea id="reflection"></textarea>
+
+        <label for="antiprompt">
+            <h3>Reverse prompt</h3>
+        </label>
+        <input type="text" id="antiprompt" value="" />
+
+        <label for="response-name">
+            <h3>Response name</h3>
+        </label>
+        <input type="text" id="response-name" value="" />
+
+        <label for="first-input">
+            <h3>First input</h3>
+        </label>
+        <input type="text" id="first-input" value="" />
+
+        <hr />
 
         <h2>Parameters</h2>
 
-        <h3>Model</h3>
-        <label for="model_files">Model:</label>
+        <label for="model_files">
+            <h3>Model</h3>
+        </label>
         <select id="model_files" name="model_files" class="select-full-width"></select>
 
         <h3>CPU/Threads</h3>
@@ -79,13 +82,13 @@
 
         <div>
             <label for="pref_n_ctx">Context count:</label>
-            <input type="range" id="sl_n_ctx" class="params_slider" min="32" max="2048" value="512" step="1" placeholder="range of context count" />
-            <input type="number" id="pref_n_ctx" name="pref_n_ctx" class="params_value" value="512" step="1" />
+            <input type="range" id="sl_n_ctx" class="params_slider" min="32" max="2048" value="2048" step="1" placeholder="range of params_slider" />
+            <input type="number" id="pref_n_ctx" name="pref_n_ctx" class="params_value" value="1024" step="1" />
         </div>
 
         <div>
             <label for="pref_n_batch">Batch size:<br />(must be >= 32<br />to use BLAS)</label>
-            <input type="range" id="sl_n_batch" class="params_slider" min="1" max="1024" value="32" step="1" placeholder="range of batch size" />
+            <input type="range" id="sl_n_batch" class="params_slider" min="1" max="1024" value="32" step="1" placeholder="range of params_slider" />
             <input type="number" id="pref_n_batch" name="pref_n_batch" class="params_value" value="32" step="1" />
         </div>
 
@@ -106,8 +109,8 @@
         <h4>Top_k</h4>
         <div>
             <label for="pref_top_k">Top K:</label>
-            <input type="range" id="sl_top_k" class="params_slider" min="1" max="1000" value="40" step="1" placeholder="range of params_slider" />
-            <input type="number" id="pref_top_k" name="pref_top_k" class="params_value" value="40" step="1" />
+            <input type="range" id="sl_top_k" class="params_slider" min="1" max="1000" value="400" step="1" placeholder="range of params_slider" />
+            <input type="number" id="pref_top_k" name="pref_top_k" class="params_value" value="400" step="1" />
         </div>
 
         <div>
@@ -147,16 +150,6 @@
         </div>
 
         <hr />
-
-        <!-- <div>
-            <label for="pref_threads">Threads:</label>
-            <input type="number" id="pref_threads" value="4" step="1" />
-        </div> -->
-
-        <!-- <div>
-            <label for="pref_n_batch">Batch size:</label>
-            <input type="number" id="pref_n_batch" value="512" step="1" />
-        </div> -->
     </div>
 </body>
 

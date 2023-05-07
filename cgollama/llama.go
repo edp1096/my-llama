@@ -6,10 +6,7 @@ package cgollama
 import "C"
 import (
 	"fmt"
-	"unicode/utf8"
 	"unsafe"
-
-	ws "golang.org/x/net/websocket"
 )
 
 type LLama struct {
@@ -27,10 +24,9 @@ func New() (*LLama, error) {
 }
 
 func (l *LLama) LoadModel(modelFNAME string) error {
-	container := l.Container
-	C.bd_set_model_path(container, C.CString(modelFNAME))
+	C.bd_set_model_path(l.Container, C.CString(modelFNAME))
 
-	result := bool(C.bd_load_model(container))
+	result := bool(C.bd_load_model(l.Container))
 	if !result {
 		return fmt.Errorf("failed to load the model")
 	}
@@ -39,73 +35,41 @@ func (l *LLama) LoadModel(modelFNAME string) error {
 }
 
 func (l *LLama) GetRemainCount() int {
-	container := l.Container
-	return int(C.bd_get_n_remain(container))
+	return int(C.bd_get_n_remain(l.Container))
+}
+
+func (l *LLama) PredictTokens() bool {
+	return bool(C.bd_predict_tokens(l.Container))
 }
 
 func (l *LLama) SetIsInteracting(isInteracting bool) {
-	container := l.Container
-	C.bd_set_is_interacting(container, C.bool(isInteracting))
+	C.bd_set_is_interacting(l.Container, C.bool(isInteracting))
 }
 
-func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec) error {
-	container := l.Container
-	remainCOUNT := l.GetRemainCount()
+func (l *LLama) GetEmbedSize() int {
+	return int(C.bd_get_embd_size(l.Container))
+}
 
-	responseBYTEs := []byte{}
-	response := ""
+func (l *LLama) GetEmbedString(idx int) string {
+	id := C.bd_get_embed_id(l.Container, C.int(idx))
+	embedCSTR := C.bd_get_embed_string(l.Container, id)
+	embedSTR := C.GoString(embedCSTR)
 
-END:
-	for remainCOUNT != 0 {
-		ok := bool(C.bd_predict_tokens(container))
-		if !ok {
-			return fmt.Errorf("failed to predict the tokens")
-		}
+	return embedSTR
+}
 
-		// display text
-		embdSIZE := int(C.bd_get_embd_size(container))
-		for i := 0; i < embdSIZE; i++ {
-			select {
-			case <-l.PredictStop:
-				remainCOUNT = 0
-				break END
-			default:
-				id := C.bd_get_embed_id(container, C.int(i))
-				embedCSTR := C.bd_get_embed_string(container, id)
-				embedSTR := C.GoString(embedCSTR)
-				// fmt.Print(embedSTR)
+func (l *LLama) FreeParams() {
+	C.bd_free_params(l.Container)
+}
 
-				responseBYTEs = append(responseBYTEs, []byte(embedSTR)...)
-				response = string(responseBYTEs)
+func (l *LLama) FreeModel() {
+	C.bd_free_model(l.Container)
+}
 
-				if !utf8.ValidString(embedSTR) {
-					continue // Because connection is closed, don't send invalid UTF-8
-				}
+func (l *LLama) CheckPromptOrContinue() bool {
+	return bool(C.bd_check_prompt_or_continue(l.Container))
+}
 
-				err := handler.Send(conn, "$$__RESPONSE_PREDICT__$$\n$$__SEPARATOR__$$\n"+response)
-				if err != nil {
-					fmt.Println("Send error:", err)
-					remainCOUNT = 0
-					break END
-				}
-			}
-		}
-
-		ok = bool(C.bd_check_prompt_or_continue(container))
-		if !ok {
-			// remainCOUNT = 0
-			break
-		}
-		C.bd_dropback_user_input(container)
-
-		remainCOUNT = int(C.bd_get_n_remain(container))
-	}
-
-	err := handler.Send(conn, "$$__RESPONSE_PREDICT__$$\n$$__SEPARATOR__$$\n"+response+"\n$$__RESPONSE_DONE__$$\n")
-	if err != nil {
-		fmt.Println("Send error:", err)
-		return err
-	}
-
-	return nil
+func (l *LLama) DropBackUserInput() {
+	C.bd_dropback_user_input(l.Container)
 }

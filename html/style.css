@@ -1,7 +1,7 @@
 :root {
     --front_color: #333333;
     --bg_color: #f0f2f5;
-    --prompts_height: 10rem;
+    --prompts_height: 6rem;
 
     --pane-front_color: #3d3d3d;
     --pane-bg_color: rgb(220, 222, 225);
@@ -16,7 +16,7 @@ body {
     font-family: monospace;
     font-size: 1rem;
     margin: 0;
-    padding: 0;
+    padding: 0.5rem;
 }
 
 .dark-mode {
@@ -32,11 +32,13 @@ body {
 
 #top-btns {
     text-align: right;
+    padding-bottom: 0.5rem;
 }
 
 #input-container {
     width: 100%;
     display: flex;
+    padding-bottom: 0.5rem;
 }
 
 #input-container>div {
@@ -55,20 +57,23 @@ textarea {
     white-space: pre;
 }
 
-#inputs {
+textarea#inputs {
+    resize: none;
     width: 100%;
     height: var(--prompts_height);
 }
 
-#reflection {
+textarea#reflection {
+    resize: vertical;
     width: 100%;
-    height: var(--prompts_height);
+    height: 17rem;
 }
 
 #outputs {
-    width: 100%;
-    height: calc(100vh - var(--prompts_height) - 11rem);
+    width: calc(100% - 1rem);
+    height: calc(100vh - var(--prompts_height) - 7.5rem);
     overflow: auto;
+    padding: 0.5rem;
 }
 
 #antiprompt {
@@ -128,13 +133,14 @@ textarea {
     color: var(--pane-front_color);
     background-color: var(--pane-bg_color);
     width: calc(50vw - 2rem);
-    height: 100vh;
+    height: calc(100vh - 1rem);
     top: 0;
     right: 0;
     position: fixed;
     display: none;
-    padding: 1rem;
+    padding: 0.8rem;
     margin: 0rem;
+    overflow-y: auto;
 }
 
 #preferences>div {
@@ -142,6 +148,12 @@ textarea {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    padding: 0.2rem;
+}
+
+#preferences>div.buttons {
+    display: block;
+    text-align: right;
     padding: 0.2rem;
 }
 
