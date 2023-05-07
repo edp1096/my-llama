@@ -73,7 +73,10 @@ build_cu.cmd
     * [ ] prefix prompt, reverse prompt, first input
     * [ ] state - dump state when restart with changed n_ctx, n_batch, n_predict
 * [ ] Add Papago, Kakao translator
-* [ ] select tag style
+* [ ] model file select tag style
+* [ ] Parse `### Human:`, `### Assistant:`
+    * [ ] Add response name input - `### Assistant:`
+    * [ ] Parse antiprompt, response name
 * `binding.cpp`
     * [ ] crash loop in `cgollama.go/Predict` function and move to `main.go`
     * [x] GGML Parameter settings - Set parameters from html to websocket server
