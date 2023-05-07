@@ -1,7 +1,7 @@
 @echo off
 
 cmd /c "clean.cmd"
-cmd /c "build.cmd"
+cmd /c "build_cu.cmd"
 move /y bin\my-llama.exe bin\my-llama_cu.exe
 
 cmd /c "clean.cmd"

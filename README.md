@@ -62,7 +62,7 @@ cd my-llama
 
 git submodule update --init --recursive
 
-build.cmd
+build_cu.cmd
 ```
 
 
