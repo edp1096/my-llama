@@ -10,8 +10,8 @@
 
 
 ## 실행파일 다운로드
-* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.2/my-llama.exe)
-* [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.2/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
+* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.3/my-llama_cpu.exe)
+* [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.3/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
 
 
 ## 실행 방법
@@ -22,7 +22,7 @@
 # 실행하면서 웹브라우저 같이 띄우기
 ./bin/my-llama.exe -b
 ```
-
+* 파라미터가 말을 안듣는 것 같으면 브라우저 새로고침 하세요
 
 ## 소스 빌드하기
 
