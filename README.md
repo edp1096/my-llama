@@ -73,6 +73,7 @@ build.cmd
     * [ ] prefix prompt, reverse prompt, first input
     * [ ] state - dump state when restart with changed n_ctx, n_batch, n_predict
 * [ ] Add Papago, Kakao translator
+* [ ] select tag style
 * `binding.cpp`
     * [ ] crash loop in `cgollama.go/Predict` function
     * [x] GGML Parameter settings - Set parameters from html to websocket server
