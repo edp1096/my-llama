@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	_ "embed"
 
@@ -74,6 +75,75 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 			l.SetNBatch(nBATCH)
 		}
 	}
+}
+
+func evalAndResponse(l *llama.LLama, conn *ws.Conn, handler ws.Codec) error {
+	remainCOUNT := l.GetRemainCount()
+
+	responseBufferBytes := []byte{}
+	responseBuffer := ""
+
+END:
+	for remainCOUNT != 0 {
+		ok := l.PredictTokens()
+		if !ok {
+			return fmt.Errorf("failed to predict the tokens")
+		}
+
+		// display text
+		embdSIZE := l.GetEmbedSize()
+		for i := 0; i < embdSIZE; i++ {
+			select {
+			case <-l.PredictStop:
+				remainCOUNT = 0
+				break END
+			default:
+				embedSTR := l.GetEmbedString(i)
+
+				responseBufferBytes = append(responseBufferBytes, []byte(embedSTR)...)
+				if !utf8.ValidString(embedSTR) {
+					continue // Because connection is closed, don't send invalid UTF-8
+				}
+
+				if len(responseBufferBytes) > 0 {
+					responseBuffer = string(responseBufferBytes)
+					if !utf8.ValidString(responseBuffer) {
+						continue
+					}
+				} else {
+					responseBuffer += embedSTR
+				}
+
+				// fmt.Print(responseBuffer)
+
+				err := handler.Send(conn, "$$__RESPONSE_PREDICT__$$\n$$__SEPARATOR__$$\n"+responseBuffer)
+				if err != nil {
+					fmt.Println("Send error:", err)
+					remainCOUNT = 0
+					break END
+				}
+
+				responseBufferBytes = []byte{}
+				responseBuffer = ""
+			}
+		}
+
+		ok = l.CheckPromptOrContinue()
+		if !ok {
+			break
+		}
+		l.DropBackUserInput()
+
+		remainCOUNT = l.GetRemainCount()
+	}
+
+	err := handler.Send(conn, "$$__RESPONSE_PREDICT__$$\n$$__SEPARATOR__$$\n"+"\n$$__RESPONSE_DONE__$$\n")
+	if err != nil {
+		fmt.Println("Send error:", err)
+		return err
+	}
+
+	return nil
 }
 
 func wsController(w http.ResponseWriter, req *http.Request) {
@@ -268,11 +338,10 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 				l.SetIsInteracting(false)
 
-				remainCOUNT := l.GetRemainCount()
-
-				err = l.Predict(conn, handler, remainCOUNT)
+				// err = l.Predict(conn, handler)
+				err = evalAndResponse(l, conn, handler)
 				if err != nil {
-					fmt.Println("Predict error:" + err.Error())
+					fmt.Println("evalAndResponse error:" + err.Error())
 					disconnected = true
 				}
 
@@ -333,12 +402,15 @@ func main() {
 	uri := HttpProtocol + "://" + Address + ":" + Port
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
 		fmt.Fprint(w, index_html)
 	})
 	http.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/css")
 		fmt.Fprint(w, style_css)
 	})
 	http.HandleFunc("/script.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/javascript")
 		fmt.Fprint(w, script_js)
 	})
 	http.HandleFunc("/ws", wsController)

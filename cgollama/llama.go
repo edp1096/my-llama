@@ -69,7 +69,9 @@ func (l *LLama) DropBackUserInput() {
 	C.bd_dropback_user_input(l.Container)
 }
 
-func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec, remainCOUNT int) error {
+func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec) error {
+	remainCOUNT := l.GetRemainCount()
+
 	responseBufferBytes := []byte{}
 	responseBuffer := ""
 
