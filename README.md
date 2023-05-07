@@ -75,7 +75,7 @@ build.cmd
 * [ ] Add Papago, Kakao translator
 * [ ] select tag style
 * `binding.cpp`
-    * [ ] crash loop in `cgollama.go/Predict` function
+    * [ ] crash loop in `cgollama.go/Predict` function and move to `main.go`
     * [x] GGML Parameter settings - Set parameters from html to websocket server
         * [x] Slider
         * [x] topk, topp, temp, repeat_penalty
