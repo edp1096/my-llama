@@ -402,15 +402,15 @@ func main() {
 	uri := HttpProtocol + "://" + Address + ":" + Port
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		fmt.Fprint(w, index_html)
 	})
 	http.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/css")
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 		fmt.Fprint(w, style_css)
 	})
 	http.HandleFunc("/script.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/javascript")
+		w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
 		fmt.Fprint(w, script_js)
 	})
 	http.HandleFunc("/ws", wsController)

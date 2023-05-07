@@ -67,18 +67,15 @@ build_cu.cmd
 
 
 ## Todo
-* [ ] Move `prefix prompt, reverse prompt, first input` to preference
 * [ ] Save/Load
     * [ ] CPU count
     * [ ] prefix prompt, reverse prompt, first input
     * [ ] state - dump state when restart with changed n_ctx, n_batch, n_predict
 * [ ] Add Papago, Kakao translator
-* [ ] model file select tag style
 * [ ] Parse `### Human:`, `### Assistant:`
     * [ ] Add response name input - `### Assistant:`
     * [ ] Parse antiprompt, response name
 * `binding.cpp`
-    * [ ] crash loop in `cgollama.go/Predict` function and move to `main.go`
     * GGML Parameter settings - Set parameters from html to websocket server
         * Not touch. Probably I can't
             * ~~n_predict - new tokens to predict~~
