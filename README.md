@@ -82,7 +82,6 @@ build.cmd
             * Not touch
                 * ~~n_predict - new tokens to predict~~
                 * ~~seed, n_keep, f16_kv, use_mmap, use_mlock~~
-        * [ ] Check dump state when restart with changed n_ctx, n_batch, n_predict
     * [ ] Clean up functions & crash predict function in cgollama.go
     * [ ] Remove and integrate all unnecessary functions
     * [x] Replace all `llama_` prefix to `bd_`
