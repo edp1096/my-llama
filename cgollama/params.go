@@ -43,6 +43,24 @@ func (l *LLama) SetUseMlock(useMlock bool) {
 }
 
 /* Setters - gpt_params / sampling parameters */
+func (l *LLama) SetNCtx(nCtx int) {
+	C.bd_set_params_n_ctx(l.Container, C.int(nCtx))
+}
+func (l *LLama) SetNBatch(nBatch int) {
+	C.bd_set_params_n_batch(l.Container, C.int(nBatch))
+}
+func (l *LLama) SetSamplingMethod(method string) {
+	mirostat := 0
+
+	switch method {
+	case "mirostat1":
+		mirostat = 1
+	case "mirostat2":
+		mirostat = 2
+	}
+
+	C.bd_set_params_top_k(l.Container, C.int(mirostat))
+}
 func (l *LLama) SetTopK(topK int) {
 	C.bd_set_params_top_k(l.Container, C.int(topK))
 }

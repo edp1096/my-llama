@@ -8,9 +8,11 @@
 
 
 // Windows not yet support so, override it
+#ifdef _WIN32
 int32_t get_num_physical_cores() {
     return 1;
 }
+#endif
 
 // TODO: not great allocating this every time
 std::vector<llama_token> binding_tokenize(struct llama_context* ctx, const std::string& text, bool add_bos) {
@@ -118,25 +120,8 @@ void bd_init_params(void* container) {
     params->interactive_first = params->interactive;
     params->antiprompt = {};
 
-    params->n_threads = 4;
-    params->n_predict = 512;
-    params->use_mlock = true;
-
-    // print top_k, top_p, temp, repeat_penalty
-    printf("Init top_k: %d\n", params->top_k);
-    printf("Init top_p: %f\n", params->top_p);
-    printf("Init temp: %f\n", params->temp);
-    printf("Init repeat_penalty: %f\n", params->repeat_penalty);
-
-    // params->prompt = "The quick brown fox jumps over the lazy dog.";
-    // params->n_predict = 100;
-    // params->n_keep = 0;
-    // params->instruct = false;
-    // params->interactive_first = false;
-    // params->temp = 1.0;
-    // params->top_k = 40;
-    // params->top_p = 0.0;
-    // params->seed = 0;
+    // params->n_predict = 512;
+    // params->use_mlock = true;
 }
 
 bool bd_predict_tokens(void* container) {
@@ -232,10 +217,10 @@ bool bd_predict_tokens(void* container) {
                     id = llama_sample_token_mirostat_v2(ctx, &candidates_p, mirostat_tau, mirostat_eta, &mirostat_mu);
                 } else {
                     // Temperature sampling
-                    llama_sample_top_k(ctx, &candidates_p, top_k);
-                    llama_sample_tail_free(ctx, &candidates_p, tfs_z);
-                    llama_sample_typical(ctx, &candidates_p, typical_p);
-                    llama_sample_top_p(ctx, &candidates_p, top_p);
+                    llama_sample_top_k(ctx, &candidates_p, top_k, 1);
+                    llama_sample_tail_free(ctx, &candidates_p, tfs_z, 1);
+                    llama_sample_typical(ctx, &candidates_p, typical_p, 1);
+                    llama_sample_top_p(ctx, &candidates_p, top_p, 1);
                     llama_sample_temperature(ctx, &candidates_p, temp);
                     id = llama_sample_token(ctx, &candidates_p);
                 }
@@ -503,6 +488,18 @@ void bd_set_params_use_mlock(void* container, bool value) {
 }
 
 /* Setters - gpt_params / sampling parameters */
+void bd_set_params_n_ctx(void* container, int value) {
+    ((gpt_params*)((variables_container*)container)->params)->n_ctx = value;
+}
+
+void bd_set_params_n_batch(void* container, int value) {
+    ((gpt_params*)((variables_container*)container)->params)->n_batch = value;
+}
+
+void bd_set_sampling_method(void* container, int value) {
+    ((gpt_params*)((variables_container*)container)->params)->mirostat = value;
+}
+
 void bd_set_params_top_k(void* container, int value) {
     ((gpt_params*)((variables_container*)container)->params)->top_k = value;
 }

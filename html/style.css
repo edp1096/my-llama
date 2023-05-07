@@ -149,6 +149,10 @@ textarea {
     width: 15rem;
 }
 
+.select-full-width {
+    width: 100%;
+}
+
 /* #preferences>div>input.cpu_threads_value { */
 .cpu_threads_value {
     width: 4rem;
@@ -156,13 +160,13 @@ textarea {
     margin-left: 0.5rem;
 }
 
-/* #preferences>div>input.sample_value { */
-.sample_value {
+/* #preferences>div>input.params_value { */
+.params_value {
     width: 4rem;
     padding-left: 0.2rem;
     margin-left: 0.5rem;
 }
 
-.sample_slider {
+.params_slider {
     width: 100%;
 }

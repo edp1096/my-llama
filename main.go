@@ -49,20 +49,38 @@ var (
 	modelFnames []string = []string{}
 )
 
+func setQueryParams(l *llama.LLama, req *http.Request) {
+	// Model file
+	model_file := req.URL.Query().Get("model_file")
+	for _, fname := range modelFnames {
+		if strings.TrimSpace(fname) == strings.TrimSpace(model_file) {
+			modelFname = model_file
+			break
+		}
+	}
+
+	nCtxSTR := req.URL.Query().Get("n_ctx")
+	if nCtxSTR != "" {
+		nCTX, err := strconv.Atoi(nCtxSTR)
+		if err == nil {
+			l.SetNCtx(nCTX)
+		}
+	}
+
+	nBatchSTR := req.URL.Query().Get("n_batch")
+	if nBatchSTR != "" {
+		nBATCH, err := strconv.Atoi(nBatchSTR)
+		if err != nil {
+			l.SetNBatch(nBATCH)
+		}
+	}
+}
+
 func wsController(w http.ResponseWriter, req *http.Request) {
 	ws.Handler(func(conn *ws.Conn) {
 		var err error
 
 		defer conn.Close()
-
-		req := conn.Request()
-		model_file := req.URL.Query().Get("model_file")
-		if model_file != "" {
-			// modelFNAME = model_file
-			fmt.Println("model_file:", model_file)
-		}
-
-		requestCount := 0 // to ignore prompt
 
 		l, err := llama.New()
 		if err != nil {
@@ -70,15 +88,21 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		req := conn.Request()
+		setQueryParams(l, req)
+
+		requestCount := 0 // to ignore prompt
+
+		l.InitParams()
+
+		l.SetThreadsCount(threads)
+		l.SetUseMlock(useMlock)
+
 		err = l.LoadModel(modelFname)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-		l.InitParams()
-
-		l.SetThreadsCount(threads)
-		l.SetUseMlock(useMlock)
 
 		fmt.Println("Model initialized..")
 
@@ -110,6 +134,22 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					case "$$__STOP__$$":
 						if predictRunning {
 							l.PredictStop <- true
+						}
+					case "$$__MODEL_FILE__$$":
+						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__MODEL_FILES__$$\n$$__SEPARATOR__$$\n"
+						response := fmt.Sprintf("%s%s", tag, strings.Join(modelFnames, "\n$$__SEPARATOR__$$\n"))
+						err = handler.Send(conn, response)
+						if err != nil {
+							fmt.Println("Send error:", err)
+							disconnected = true
+						}
+					case "$$__MODEL_FILES__$$":
+						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__MODEL_FILES__$$\n$$__SEPARATOR__$$\n"
+						response := fmt.Sprintf("%s%s", tag, strings.Join(modelFnames, "\n$$__SEPARATOR__$$\n"))
+						err = handler.Send(conn, response)
+						if err != nil {
+							fmt.Println("Send error:", err)
+							disconnected = true
 						}
 					case "$$__MAX_CPU_PHYSICAL__$$":
 						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__MAX_CPU_PHYSICAL__$$\n$$__SEPARATOR__$$\n"
@@ -144,6 +184,21 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					paramVALUE := strings.TrimSpace(params[2])
 
 					switch paramNAME {
+					case "$$__THREADS__$$":
+						threads, _ = strconv.Atoi(paramVALUE)
+						fmt.Println("threads:", threads)
+					case "$$__N_CTX__$$":
+						n_ctx, _ := strconv.Atoi(paramVALUE)
+						fmt.Println("n_ctx:", n_ctx)
+						l.SetNCtx(n_ctx)
+					case "$$__N_BATCH__$$":
+						n_batch, _ := strconv.Atoi(paramVALUE)
+						fmt.Println("n_batch:", n_batch)
+						l.SetNBatch(n_batch)
+					case "$$__SAMPLING_METHOD__$$":
+						samplingMethod := paramVALUE
+						fmt.Println("Sampling method:", samplingMethod)
+						l.SetSamplingMethod(samplingMethod)
 					case "$$__TOP_K__$$":
 						top_k, _ := strconv.Atoi(paramVALUE)
 						fmt.Println("top_k:", top_k)
@@ -160,12 +215,6 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 						penalty, _ := strconv.ParseFloat(paramVALUE, 64)
 						fmt.Println("repeat penalty:", penalty)
 						l.SetRepeatPenalty(penalty)
-					case "$$__THREADS__$$":
-						threads, _ = strconv.Atoi(paramVALUE)
-						fmt.Println("threads:", threads)
-					case "$$__N_BATCH__$$":
-						n_batch, _ := strconv.Atoi(paramVALUE)
-						fmt.Println("N_BATCH:", n_batch)
 					default:
 						fmt.Println("Unknown parameter:", paramNAME)
 					}

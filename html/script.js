@@ -85,21 +85,34 @@ function buttonStopEnable() {
 
 async function websocketSetup() {
     // let param = "model_file=ggml-vicuna-7b-4bit.bin"
-    let param = "model_file=not_use_yet"
+    let modelFile = "not_use_yet"
+
+    if (preferences["MODEL_FILE"] != undefined && preferences["MODEL_FILE"] != "") {
+        modelFile = preferences["MODEL_FILE"]
+    }
 
     const loc = window.location
 
-    let uri = "ws:"
+    let base = "ws:"
     if (loc.protocol === 'https:') {
-        uri = "wss:"
+        base = "wss:"
     }
 
-    uri += `//localhost:1323/ws?${param}`
+    base += `//localhost:1323/ws`
+    const params = new URLSearchParams({
+        model_file: modelFile,
+        n_ctx: preferences["N_CTX"] ? preferences["N_CTX"] : 512,
+        n_batch: preferences["N_BATCH"] ? preferences["N_BATCH"] : 32,
+    })
+
+    const uri = new URL(`${base}?${params}`)
 
     ws = new WebSocket(uri)
 
     ws.onopen = function () {
         console.log('Connected')
+
+        requestModelFiles()
 
         requestMaxPhycalCPU()
         requestMaxLogicalCPU()
@@ -152,17 +165,35 @@ async function websocketSetup() {
             case responses[0].includes("$$__RESPONSE_INFO__$$"): // Response info to console log
                 // 0: $$__RESPONSE_INFO__$$, 1: $$__MAX_CPU_PHYSICAL__$$ or $$__MAX_CPU_LOGICAL__$$, 2: number
                 switch (responses[1]) {
+                    case "$$__MODEL_FILES__$$":
+                        for (let i = 2; i < responses.length; i++) {
+                            const option = document.createElement("option")
+                            option.text = responses[i]
+                            option.value = responses[i]
+                            document.querySelector("select[name=model_files]").add(option)
+
+                            if (i == 2) {
+                                document.querySelector("select[name=model_files]").value = responses[i]
+                            }
+                        }
+
+                        if (preferences["MODEL_FILE"] != undefined && preferences["MODEL_FILE"] != "") {
+                            document.querySelector("select[name=model_files]").value = preferences["MODEL_FILE"]
+                        }
+
+                        break
                     case "$$__MAX_CPU_PHYSICAL__$$":
-                        console.log(`Max physical CPU: ${responses[2]}`)
+                        // console.log(`Max physical CPU: ${responses[2]}`)
                         preferences["maxcpu-physical"] = responses[2]
                         break
                     case "$$__MAX_CPU_LOGICAL__$$":
-                        console.log(`Max logical CPU: ${responses[2]}`)
+                        // console.log(`Max logical CPU: ${responses[2]}`)
                         preferences["maxcpu-logical"] = responses[2]
                         break
                     case "$$__THREADS__$$":
-                        console.log(`Thread count: ${responses[2]}`)
+                        // console.log(`Thread count: ${responses[2]}`)
                         preferences["threads"] = responses[2]
+                        document.querySelector("#pref_threads").value = preferences["threads"] ? preferences["threads"] : 1
                         break
                 }
 
@@ -211,6 +242,11 @@ function sendPrompt(sendFirstInput = false) {
 function applyParameters(sendRequired = true) {
     const datas = []
 
+    datas["N_CTX"] = document.querySelector("#pref_n_ctx").value
+    datas["N_BATCH"] = document.querySelector("#pref_n_batch").value
+
+    datas["SAMPLING_METHOD"] = document.querySelector("input[name='pref_sampling_method']:checked").value
+
     datas["TOP_K"] = document.querySelector("#pref_top_k").value
     datas["TOP_P"] = document.querySelector("#pref_top_p").value
     datas["TEMPERATURE"] = document.querySelector("#pref_temperature").value
@@ -224,12 +260,22 @@ function applyParameters(sendRequired = true) {
         }
     }
 
+    const modelFiles = document.querySelector("select[name=model_files]")
+    if (modelFiles.length > 0) {
+        preferences["MODEL_FILE"] = modelFiles.value
+    }
+
     savePreferences()
 
     closePanel()
 
     const input = document.querySelector("#inputs")
     input.focus()
+}
+
+function requestModelFiles() {
+    const payload = "$$__COMMAND__$$\n$$__SEPARATOR__$$\n$$__MODEL_FILES__$$"
+    ws.send(payload)
 }
 
 function requestMaxPhycalCPU() {
@@ -274,10 +320,19 @@ A chat between a curious human and an artificial intelligence assistant. The ass
 
     preferences = loadPreferences()
 
-    keys = ["TOP_K", "TOP_P", "TEMPERATURE", "REPEAT_PENALTY"]
+    if (preferences["model_files"] != undefined) {
+        document.querySelector("select[name=model_files]").value = preferences["model_files"]
+    }
+
+    if (preferences["SAMPLING_METHOD"] != undefined) {
+        document.querySelector("input[name='pref_sampling_method'][value='" + preferences["SAMPLING_METHOD"] + "']").checked = true
+    }
+
+    keys = ["N_CTX", "N_BATCH", "TOP_K", "TOP_P", "TEMPERATURE", "REPEAT_PENALTY"]
     for (const key of keys) {
         if (preferences[key] != undefined) {
             document.querySelector(`#pref_${key.toLowerCase()}`).value = preferences[key]
+            document.querySelector(`#sl_${key.toLowerCase()}`).value = preferences[key]
         }
     }
 
@@ -299,7 +354,7 @@ A chat between a curious human and an artificial intelligence assistant. The ass
         }
     })
 
-    document.querySelectorAll(".sample_slider").forEach(function (element) {
+    document.querySelectorAll(".params_slider").forEach(function (element) {
         element.addEventListener("input", function (event) {
             const id = event.target.id
             const value = event.target.value
@@ -314,7 +369,7 @@ A chat between a curious human and an artificial intelligence assistant. The ass
         })
     })
 
-    document.querySelectorAll(".sample_value").forEach(function (element) {
+    document.querySelectorAll(".params_value").forEach(function (element) {
         element.addEventListener("input", function (event) {
             const id = event.target.id
             const value = event.target.value
