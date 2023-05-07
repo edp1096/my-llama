@@ -67,30 +67,33 @@ build.cmd
 
 
 ## Todo
+* [ ] Move `prefix prompt, reverse prompt, first input` to preference
+* [ ] Save/Load
+    * [ ] CPU count
+    * [ ] prefix prompt, reverse prompt, first input
+    * [ ] state - dump state when restart with changed n_ctx, n_batch, n_predict
+* [ ] Add Papago, Kakao translator
 * `binding.cpp`
-    * [ ] Send separated input instead of hard coded prompt when begin in html
+    * [ ] crash loop in `cgollama.go/Predict` function
     * [x] GGML Parameter settings - Set parameters from html to websocket server
         * [x] Slider
         * [x] topk, topp, temp, repeat_penalty
         * [x] mirostat
-            * Not touch
+            * Not touch. Probably I can't
                 * ~~tail free sampling, penalties(+no pen for new line), ignore_eos~~
         * [x] Maybe need restart - `common.h` / gpt_params, `binding.cpp`:143, `llama.cpp`:808
             * n_threads - cpu threads count
             * n_ctx - context size
             * n_batch - batch size for prompt processing (must be >=32 to use BLAS)
-            * Not touch
+            * Not touch. Probably I can't
                 * ~~n_predict - new tokens to predict~~
                 * ~~seed, n_keep, f16_kv, use_mmap, use_mlock~~
-        * [ ] Check dump state when restart with changed n_ctx, n_batch, n_predict
-    * [ ] Clean up functions & crash predict function in cgollama.go
-    * [ ] Remove and integrate all unnecessary functions
     * [x] Replace all `llama_` prefix to `bd_`
     * [x] Save light/dark mode to localstorage
-* [ ] Send and split per `\n`
-* [ ] Save/Load prefix prompt, reverse prompt, first input and move to preference
-* [ ] Save/Load state
-* [ ] Add Papago, Kakao translator
+    * Not touch. Probably I can't
+        * ~~Clean up functions~~
+        * ~~Remove and integrate all unnecessary functions~~
+* [x] Send partial string instead of whole string parcel. ~~Send and split per `\n`~~
 
 
 ## Source

@@ -1,5 +1,15 @@
+const defaultPromptTEXT = `
+A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+
+### Human: Hello, Assistant.
+### Assistant: Hello. How may I help you today?
+### Human: Please tell me the largest city in Europe.
+### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
+### Human:`
+const defaultAntipromptTEXT = `### Human:`
+const defaultFirstInputTEXT = `Please tell me the largest city in Asia.`
+
 let preferences = {}
-let history = ""
 
 function toggleDarkMode(isSave = true) {
     const body = document.body
@@ -145,6 +155,7 @@ async function websocketSetup() {
         switch (true) {
             case responses[0].includes("$$__RESPONSE_PREDICT__$$"): // Response prediction to output screen
                 response = responses[1].replace(/\n/g, "<br />")
+
                 // Catch the end of the response
                 if (response.includes("$$__RESPONSE_DONE__$$")) {
                     response = response.replace(/\$\$__RESPONSE_DONE__\$\$/g, "")
@@ -157,7 +168,8 @@ async function websocketSetup() {
                     break
                 }
 
-                out.innerHTML = history + response + `<span class="cursor"></span>`
+                // -28 for cursor, `<span class="cursor"></span>` removing.
+                out.innerHTML = out.innerHTML.slice(0, -28) + response + `<span class="cursor"></span>`
                 out.scrollTop = out.scrollHeight
 
                 break
@@ -220,9 +232,6 @@ function sendPrompt(sendFirstInput = false) {
     if (input.value === '') {
         return
     }
-
-    history = document.querySelector("#outputs").innerHTML
-    history = history.slice(0, -28)
 
     const reflection = document.querySelector("#reflection")
     const antiprompt = document.querySelector("#antiprompt")
@@ -308,17 +317,13 @@ function stopResponse() {
 }
 
 function init() {
-    let promptTEXT = `
-A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
-
-### Human: Hello, Assistant.
-### Assistant: Hello. How may I help you today?
-### Human: Please tell me the largest city in Europe.
-### Assistant: Sure. The largest city in Europe is Moscow, the capital of Russia.
-### Human:`
-    let antipromptTEXT = `### Human:`
+    let promptTEXT = defaultPromptTEXT
+    let antipromptTEXT = defaultAntipromptTEXT
+    let firstInputTEXT = defaultFirstInputTEXT
 
     preferences = loadPreferences()
+
+    document.querySelector("#first-input").value = firstInputTEXT
 
     if (preferences["model_files"] != undefined) {
         document.querySelector("select[name=model_files]").value = preferences["model_files"]

@@ -268,7 +268,9 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 				l.SetIsInteracting(false)
 
-				err = l.Predict(conn, handler)
+				remainCOUNT := l.GetRemainCount()
+
+				err = l.Predict(conn, handler, remainCOUNT)
 				if err != nil {
 					fmt.Println("Predict error:" + err.Error())
 					disconnected = true
