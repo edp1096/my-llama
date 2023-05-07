@@ -22,7 +22,7 @@ Llama 7B runner on my windows machine
 # Launch with browser open
 ./bin/my-llama.exe -b
 ```
-* When modified parameters in panel seem not working, try refresh
+* When modified parameters in panel seem not working, try refresh the browser screen
 
 
 ## Build from source
