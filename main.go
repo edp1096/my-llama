@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	_ "embed"
@@ -75,11 +76,6 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 			l.SetNBatch(nBATCH)
 		}
 	}
-}
-
-func freeALL(l *llama.LLama) {
-	l.FreeParams()
-	l.FreeModel()
 }
 
 func evalAndResponse(l *llama.LLama, conn *ws.Conn, handler ws.Codec) error {
@@ -153,15 +149,14 @@ END:
 
 func wsController(w http.ResponseWriter, req *http.Request) {
 	ws.Handler(func(conn *ws.Conn) {
-		var err error
-
-		defer conn.Close()
-
 		l, err := llama.New()
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
+		defer l.FreeALL()
+
+		defer conn.Close()
 
 		req := conn.Request()
 		setQueryParams(l, req)
@@ -355,7 +350,10 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			}()
 		}
 
-		freeALL(l)
+		for predictRunning {
+			time.Sleep(100 * time.Millisecond)
+		}
+
 	}).ServeHTTP(w, req)
 }
 
