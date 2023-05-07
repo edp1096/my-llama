@@ -6,7 +6,7 @@
 
 * `llama.cpp/examples/main`에 있는 코드 interactive 모드를 흉내낸 Go언어 바인딩
 * 간단한 웹소켓 서버
-* 간단한 embed 웹ui
+* 간단한 Go언어 embed 웹ui
 
 
 ## 실행파일 다운로드
