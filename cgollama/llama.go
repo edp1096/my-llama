@@ -6,10 +6,7 @@ package cgollama
 import "C"
 import (
 	"fmt"
-	"unicode/utf8"
 	"unsafe"
-
-	ws "golang.org/x/net/websocket"
 )
 
 type LLama struct {
@@ -67,73 +64,4 @@ func (l *LLama) CheckPromptOrContinue() bool {
 
 func (l *LLama) DropBackUserInput() {
 	C.bd_dropback_user_input(l.Container)
-}
-
-func (l *LLama) Predict(conn *ws.Conn, handler ws.Codec) error {
-	remainCOUNT := l.GetRemainCount()
-
-	responseBufferBytes := []byte{}
-	responseBuffer := ""
-
-END:
-	for remainCOUNT != 0 {
-		ok := l.PredictTokens()
-		if !ok {
-			return fmt.Errorf("failed to predict the tokens")
-		}
-
-		// display text
-		embdSIZE := l.GetEmbedSize()
-		for i := 0; i < embdSIZE; i++ {
-			select {
-			case <-l.PredictStop:
-				remainCOUNT = 0
-				break END
-			default:
-				embedSTR := l.GetEmbedString(i)
-
-				responseBufferBytes = append(responseBufferBytes, []byte(embedSTR)...)
-				if !utf8.ValidString(embedSTR) {
-					continue // Because connection is closed, don't send invalid UTF-8
-				}
-
-				if len(responseBufferBytes) > 0 {
-					responseBuffer = string(responseBufferBytes)
-					if !utf8.ValidString(responseBuffer) {
-						continue
-					}
-				} else {
-					responseBuffer += embedSTR
-				}
-
-				// fmt.Print(responseBuffer)
-
-				err := handler.Send(conn, "$$__RESPONSE_PREDICT__$$\n$$__SEPARATOR__$$\n"+responseBuffer)
-				if err != nil {
-					fmt.Println("Send error:", err)
-					remainCOUNT = 0
-					break END
-				}
-
-				responseBufferBytes = []byte{}
-				responseBuffer = ""
-			}
-		}
-
-		ok = l.CheckPromptOrContinue()
-		if !ok {
-			break
-		}
-		l.DropBackUserInput()
-
-		remainCOUNT = l.GetRemainCount()
-	}
-
-	err := handler.Send(conn, "$$__RESPONSE_PREDICT__$$\n$$__SEPARATOR__$$\n"+"\n$$__RESPONSE_DONE__$$\n")
-	if err != nil {
-		fmt.Println("Send error:", err)
-		return err
-	}
-
-	return nil
 }
