@@ -51,6 +51,10 @@ textarea {
     background-color: var(--prompt-bg_color);
 }
 
+textarea {
+    white-space: pre;
+}
+
 #inputs {
     width: 100%;
     height: var(--prompts_height);
@@ -123,13 +127,14 @@ textarea {
 #preferences {
     color: var(--pane-front_color);
     background-color: var(--pane-bg_color);
-    width: 15rem;
+    width: calc(50vw - 2rem);
     height: 100vh;
     top: 0;
     right: 0;
     position: fixed;
     display: none;
     padding: 1rem;
+    margin: 0rem;
 }
 
 #preferences>div {
@@ -141,9 +146,27 @@ textarea {
 }
 
 #preferences>div>label {
-    width: 5rem;
+    width: 15rem;
 }
 
-#preferences>div>input {
-    width: 3rem;
+.select-full-width {
+    width: 100%;
+}
+
+/* #preferences>div>input.cpu_threads_value { */
+.cpu_threads_value {
+    width: 4rem;
+    padding-left: 0.2rem;
+    margin-left: 0.5rem;
+}
+
+/* #preferences>div>input.params_value { */
+.params_value {
+    width: 4rem;
+    padding-left: 0.2rem;
+    margin-left: 0.5rem;
+}
+
+.params_slider {
+    width: 100%;
 }

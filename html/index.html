@@ -62,15 +62,31 @@
 
         <h2>Parameters</h2>
 
-        <h3>Running</h3>
+        <h3>Model</h3>
+        <label for="model_files">Model:</label>
+        <select id="model_files" name="model_files" class="select-full-width"></select>
+
+        <h3>CPU/Threads</h3>
 
         <div>
             <label>Max CPU counts:</label>
             <span id="max-cpu-count"></span>
         </div>
         <div>
-            <label for="pref_threads">Threads:</label>
-            <input type="number" id="pref_threads" value="1" step="1" disabled />
+            <label for="pref_threads">Defined threads:</label>
+            <input type="number" id="pref_threads" name="pref_threads" class="cpu_threads_value" value="1" step="1" disabled />
+        </div>
+
+        <div>
+            <label for="pref_n_ctx">Context count:</label>
+            <input type="range" id="sl_n_ctx" class="params_slider" min="32" max="2048" value="512" step="1" placeholder="range of context count" />
+            <input type="number" id="pref_n_ctx" name="pref_n_ctx" class="params_value" value="512" step="1" />
+        </div>
+
+        <div>
+            <label for="pref_n_batch">Batch size:<br />(must be >= 32<br />to use BLAS)</label>
+            <input type="range" id="sl_n_batch" class="params_slider" min="1" max="1024" value="32" step="1" placeholder="range of batch size" />
+            <input type="number" id="pref_n_batch" name="pref_n_batch" class="params_value" value="32" step="1" />
         </div>
 
         <hr />
@@ -78,23 +94,56 @@
         <h3>Sampling</h3>
 
         <div>
+            <label for="pref_repeat_penalty">Use:</label>
+            <input type="radio" id="pref_topk_topp_use" name="pref_sampling_method" value="not_use" checked="checked" />
+            <label for="pref_topk_topp_use">Use top_k/top_p</label>
+            <input type="radio" id="pref_mirostat_use_1" name="pref_sampling_method" value="mirostat1" />
+            <label for="pref_mirostat_use_1">Use 1.0</label>
+            <input type="radio" id="pref_mirostat_use_2" name="pref_sampling_method" value="mirostat2" />
+            <label for="pref_mirostat_use_2">Use 2.0</label>
+        </div>
+
+        <h4>Top_k</h4>
+        <div>
             <label for="pref_top_k">Top K:</label>
-            <input type="number" id="pref_top_k" value="40" step="1" />
+            <input type="range" id="sl_top_k" class="params_slider" min="1" max="1000" value="40" step="1" placeholder="range of params_slider" />
+            <input type="number" id="pref_top_k" name="pref_top_k" class="params_value" value="40" step="1" />
         </div>
 
         <div>
             <label for="pref_top_p">Top P:</label>
-            <input type="number" id="pref_top_p" value="0.9" step="0.01" />
+            <input type="range" id="sl_top_p" class="params_slider" min="0.01" max="1.0" value="0.9" step="0.01" placeholder="range of params_slider" />
+            <input type="number" id="pref_top_p" name="pref_top_p" class="params_value" value="0.9" step="0.01" />
+        </div>
+
+        <h4>Mirostat</h4>
+
+        <div>
+            <!-- mirostat_tau -->
+            <label for="pref_mirostat_ent">Target<br />Cross entropy:</label>
+            <input type="range" id="sl_mirostat_ent" class="params_slider" min="0.1" max="5.0" value="3.0" step="0.1" placeholder="range of params_slider" />
+            <input type="number" id="pref_mirostat_ent" name="pref_mirostat_ent" class="params_value" value="3.0" step="0.1" />
         </div>
 
         <div>
+            <!-- mirostat_eta -->
+            <label for="pref_mirostat_lr">Learning rate:</label>
+            <input type="range" id="sl_mirostat_lr" class="params_slider" min="0.1" max="1.0" value="0.1" step="0.1" placeholder="range of params_slider" />
+            <input type="number" id="pref_mirostat_lr" name="pref_mirostat_lr" class="params_value" value="0.1" step="0.1" />
+        </div>
+
+        <h4>Common params</h4>
+
+        <div>
             <label for="pref_temperature">Temperature:</label>
-            <input type="number" id="pref_temperature" value="0.15" step="0.01" />
+            <input type="range" id="sl_temperature" class="params_slider" min="0.01" max="1.0" value="0.15" step="0.01" placeholder="range of params_slider" />
+            <input type="number" id="pref_temperature" name="pref_temperature" class="params_value" value="0.15" step="0.01" />
         </div>
 
         <div>
             <label for="pref_repeat_penalty">Repeat penalty:</label>
-            <input type="number" id="pref_repeat_penalty" value="1.0" step="0.1" />
+            <input type="range" id="sl_repeat_penalty" class="params_slider" min="0.01" max="1.5" value="1.0" step="0.01" placeholder="range of params_slider" />
+            <input type="number" id="pref_repeat_penalty" name="pref_repeat_penalty" class="params_value" value="1.0" step="0.1" />
         </div>
 
         <hr />

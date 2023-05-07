@@ -83,6 +83,10 @@ void bd_set_params_n_threads(void* container, int value);
 void bd_set_params_use_mlock(void* container, bool value);
 
 /* Setters - gpt_params / sampling parameters */
+
+void bd_set_params_n_ctx(void* container, int value);
+void bd_set_params_n_batch(void* container, int value);
+void bd_set_sampling_method(void* container, int value);
 void bd_set_params_top_k(void* container, int value);
 void bd_set_params_top_p(void* container, float value);
 void bd_set_params_temper(void* container, float value);
