@@ -79,25 +79,13 @@ build_cu.cmd
     * [ ] Parse antiprompt, response name
 * `binding.cpp`
     * [ ] crash loop in `cgollama.go/Predict` function and move to `main.go`
-    * [x] GGML Parameter settings - Set parameters from html to websocket server
-        * [x] Slider
-        * [x] topk, topp, temp, repeat_penalty
-        * [x] mirostat
-            * Not touch. Probably I can't
-                * ~~tail free sampling, penalties(+no pen for new line), ignore_eos~~
-        * [x] Maybe need restart - `common.h` / gpt_params, `binding.cpp`:143, `llama.cpp`:808
-            * n_threads - cpu threads count
-            * n_ctx - context size
-            * n_batch - batch size for prompt processing (must be >=32 to use BLAS)
-            * Not touch. Probably I can't
-                * ~~n_predict - new tokens to predict~~
-                * ~~seed, n_keep, f16_kv, use_mmap, use_mlock~~
-    * [x] Replace all `llama_` prefix to `bd_`
-    * [x] Save light/dark mode to localstorage
+    * GGML Parameter settings - Set parameters from html to websocket server
+        * Not touch. Probably I can't
+            * ~~n_predict - new tokens to predict~~
+            * ~~seed, n_keep, f16_kv, use_mmap, use_mlock~~
     * Not touch. Probably I can't
         * ~~Clean up functions~~
         * ~~Remove and integrate all unnecessary functions~~
-* [x] Send partial string instead of whole string parcel. ~~Send and split per `\n`~~
 
 
 ## Source
