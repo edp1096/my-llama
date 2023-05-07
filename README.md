@@ -65,6 +65,9 @@ git submodule update --init --recursive
 build_cu.cmd
 ```
 
+### Use binding
+See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama/cgollama.svg" alt="Go Reference"></a>
+
 
 ## Todo
 * [ ] Save/Load
