@@ -40,6 +40,13 @@
 
         <h2>Prompts</h2>
 
+        <h3>
+            <label for="use_dump_state">
+                Dump state
+            </label>
+            <input type="checkbox" id="use_dump_state" onclick="toggleDumpState()" />
+        </h3>
+
         <label for="reflection">
             <h3>Prefix prompt</h3>
         </label>
@@ -77,6 +84,7 @@
         </div>
         <div>
             <label for="pref_threads">Defined threads:</label>
+            <input type="range" id="sl_threads" class="params_slider" min="1" max="4" value="1" step="1" placeholder="range of params_slider" />
             <input type="number" id="pref_threads" name="pref_threads" class="cpu_threads_value" value="1" step="1" disabled />
         </div>
 

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -61,6 +62,22 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 		}
 	}
 
+	nThreadsSTR := req.URL.Query().Get("threads")
+	if nThreadsSTR != "" {
+		nThreads, err := strconv.Atoi(nThreadsSTR)
+		if err != nil {
+			l.Threads = nThreads
+		}
+	}
+
+	useDumpStateSTR := req.URL.Query().Get("use_dump_state")
+	if useDumpStateSTR != "" {
+		l.UseDumpState = false
+		if useDumpStateSTR == "true" {
+			l.UseDumpState = true
+		}
+	}
+
 	nCtxSTR := req.URL.Query().Get("n_ctx")
 	if nCtxSTR != "" {
 		nCTX, err := strconv.Atoi(nCtxSTR)
@@ -76,6 +93,7 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 			l.SetNBatch(nBATCH)
 		}
 	}
+
 }
 
 func evalAndResponse(l *llama.LLama, conn *ws.Conn, handler ws.Codec) error {
@@ -158,6 +176,8 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		defer conn.Close()
 
+		l.Threads = threads
+
 		req := conn.Request()
 		setQueryParams(l, req)
 
@@ -165,8 +185,10 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		l.InitParams()
 
-		l.SetThreadsCount(threads)
+		l.SetThreadsCount(l.Threads)
 		l.SetUseMlock(useMlock)
+
+		fmt.Println("Threads:", l.Threads)
 
 		err = l.LoadModel(modelFname)
 		if err != nil {
@@ -175,6 +197,18 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 		}
 
 		fmt.Println("Model initialized..")
+
+		dumpFname := `dumpstate_` + modelFname + `.hex`
+		dumpInitialLoaded := false
+
+		// Load dump_state
+		if l.UseDumpState {
+			if _, err := os.Stat(dumpFname); err == nil {
+				fmt.Println("Load", dumpFname)
+				l.LoadState(dumpFname)
+				dumpInitialLoaded = true
+			}
+		}
 
 		reflectionPrompt := ""
 		input := ""
@@ -204,6 +238,21 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					case "$$__STOP__$$":
 						if predictRunning {
 							l.PredictStop <- true
+						}
+					case "$$__DUMPSTATE_EXIST__$$":
+						// Check dumpstate file exists
+						if _, err := os.Stat(dumpFname); err == nil {
+							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSTATE_EXIST__$$\n$$__SEPARATOR__$$\ntrue")
+							if err != nil {
+								fmt.Println("Send error:", err)
+								disconnected = true
+							}
+						} else {
+							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSTATE_EXIST__$$\n$$__SEPARATOR__$$\nfalse")
+							if err != nil {
+								fmt.Println("Send error:", err)
+								disconnected = true
+							}
 						}
 					case "$$__MODEL_FILE__$$":
 						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__MODEL_FILES__$$\n$$__SEPARATOR__$$\n"
@@ -239,7 +288,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 						}
 					case "$$__THREADS__$$":
 						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__THREADS__$$\n$$__SEPARATOR__$$\n"
-						response := fmt.Sprintf("%s%d", tag, threads)
+						response := fmt.Sprintf("%s%d", tag, l.Threads)
 						err = handler.Send(conn, response)
 						if err != nil {
 							fmt.Println("Send error:", err)
@@ -255,6 +304,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 					switch paramNAME {
 					case "$$__THREADS__$$":
+						// Maybe not needed
 						threads, _ = strconv.Atoi(paramVALUE)
 						fmt.Println("threads:", threads)
 					case "$$__N_CTX__$$":
@@ -303,6 +353,8 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 			// Predict and Write responses
 			go func() {
+				runtime.LockOSThread()
+
 				predictRunning = true
 
 				if len(datas) < 3 {
@@ -319,7 +371,12 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 				input = datas[1]
 
 				if requestCount == 0 {
-					l.SetPrompt(reflectionPrompt)
+					if dumpInitialLoaded {
+						// Because the prompt is not needed after the reload dump_state
+						l.SetPrompt(antiprompt)
+					} else {
+						l.SetPrompt(reflectionPrompt)
+					}
 					l.SetAntiPrompt(antiprompt)
 
 					err = l.MakeReadyToPredict()
@@ -345,6 +402,12 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					disconnected = true
 				}
 
+				// Save dump_state
+				if l.UseDumpState {
+					fmt.Println("Save", dumpFname)
+					l.SaveState(dumpFname)
+				}
+
 				predictRunning = false
 				requestCount++
 			}()
@@ -363,8 +426,8 @@ func main() {
 
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flags.BoolVar(&isBrowserOpen, "b", false, "open browser automatically")
-	flags.StringVar(&modelFname, "m", "", "path to quantized ggml model file to load")
-	flags.IntVar(&threads, "t", cpuPhysicalNUM, "number of threads to use during computation")
+
+	threads = cpuPhysicalNUM
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {
