@@ -10,9 +10,10 @@ import (
 )
 
 type LLama struct {
-	Container   unsafe.Pointer
-	PredictStop chan bool
-	Threads     int
+	Container    unsafe.Pointer
+	PredictStop  chan bool
+	Threads      int
+	UseDumpState bool
 }
 
 func New() (*LLama, error) {
@@ -72,12 +73,12 @@ func (l *LLama) SetIsInteracting(isInteracting bool) {
 	C.bd_set_is_interacting(l.Container, C.bool(isInteracting))
 }
 
-func (l *LLama) SaveState() {
-	C.bd_save_state(l.Container)
+func (l *LLama) SaveState(fname string) {
+	C.bd_save_state(l.Container, C.CString(fname))
 }
 
-func (l *LLama) LoadState() {
-	C.bd_load_state(l.Container)
+func (l *LLama) LoadState(fname string) {
+	C.bd_load_state(l.Container, C.CString(fname))
 }
 
 func (l *LLama) CheckPromptOrContinue() bool {

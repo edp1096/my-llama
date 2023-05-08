@@ -521,7 +521,7 @@ void bd_set_params_repeat_penalty(void* container, float value) {
 }
 
 /* State dump */
-void bd_save_state(void* container) {
+void bd_save_state(void* container, char* fname) {
     variables_container* c = (variables_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
 
@@ -529,19 +529,19 @@ void bd_save_state(void* container) {
     uint8_t* state_mem = new uint8_t[state_size];
     llama_copy_state_data(ctx, state_mem);
 
-    FILE* fp_write = fopen("dump_state.bin", "wb");
+    FILE* fp_write = fopen(fname, "wb");
     fwrite(state_mem, 1, state_size, fp_write);
     fclose(fp_write);
 
     delete[] state_mem;
 }
 
-void bd_load_state(void* container) {
+void bd_load_state(void* container, char* fname) {
     variables_container* c = (variables_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
+    // llama_context* ctx = (llama_context*)c->ctx;
 
-    FILE* fp_read = fopen("dump_state.bin", "rb");
-    size_t state_size = llama_get_state_size(ctx);
+    FILE* fp_read = fopen(fname, "rb");
+    size_t state_size = llama_get_state_size((llama_context*)c->ctx);
 
     // Todo: check if state size matches
     // if (state_size != state_size2) {
@@ -552,7 +552,7 @@ void bd_load_state(void* container) {
     fread(state_mem, 1, state_size, fp_read);
     fclose(fp_read);
 
-    llama_set_state_data(ctx, state_mem);
+    llama_set_state_data((llama_context*)c->ctx, state_mem);
     delete[] state_mem;
 }
 

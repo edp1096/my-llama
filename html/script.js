@@ -33,6 +33,13 @@ function toggleDarkMode(isSave = true) {
     }
 }
 
+function toggleDumpState() {
+    const dumpstateSwitch = document.getElementById("use_dump_state")
+
+    preferences["DUMP_STATE"] = dumpstateSwitch.checked
+    savePreferences()
+}
+
 function openPanel() {
     buttonDisableAll()
     const panel = document.getElementById("preferences")
@@ -126,6 +133,7 @@ async function websocketSetup() {
     const params = new URLSearchParams({
         model_file: modelFile,
         threads: preferences["threads"] ? preferences["threads"] : 1,
+        use_dump_state: preferences["DUMP_STATE"] ? preferences["DUMP_STATE"] : false,
         n_ctx: preferences["N_CTX"] ? preferences["N_CTX"] : 512,
         n_batch: preferences["N_BATCH"] ? preferences["N_BATCH"] : 32,
     })
@@ -135,21 +143,26 @@ async function websocketSetup() {
     ws = new WebSocket(uri)
 
     ws.onopen = function () {
-        console.log('Connected')
-
         requestModelFiles()
 
         requestMaxPhycalCPU()
         requestMaxLogicalCPU()
         requestThreads()
 
-        statusRemoveAllClasses()
-        statusAddClass('status-ready', 'Ready')
-
         applyParameters()
 
-        // document.getElementById("send").click()
-        sendPrompt(true)
+        statusRemoveAllClasses()
+        statusAddClass('status-running', 'Running')
+        buttonDisableAll()
+
+        console.log('Connected')
+
+        // Check dumpstate
+        if (preferences["DUMP_STATE"] != undefined && preferences["DUMP_STATE"] == true) {
+            ws.send("$$__COMMAND__$$\n$$__SEPARATOR__$$\n$$__DUMPSTATE_EXIST__$$")
+        } else {
+            sendPrompt(true) // Send always first input with prefix prompt
+        }
     }
 
     ws.onclose = function () {
@@ -161,14 +174,17 @@ async function websocketSetup() {
     }
 
     ws.onmessage = function (evt) {
+        buttonDisableAll()
+
         const out = document.getElementById('outputs')
-        buttonStopEnable()
 
         const responses = evt.data.split("\n$$__SEPARATOR__$$\n") // Split by separator
         let response = ""
 
         switch (true) {
             case responses[0].includes("$$__RESPONSE_PREDICT__$$"): // Response prediction to output screen
+                buttonStopEnable()
+
                 response = responses[1].replace(/\n/g, "<br />")
 
                 // Catch the end of the response
@@ -209,6 +225,24 @@ async function websocketSetup() {
                         }
 
                         break
+                    case "$$__DUMPSTATE_EXIST__$$":
+                        console.log(`Dumpstate exist: ${responses[2]}`)
+                        dumpstateFileExist = JSON.parse(responses[2])
+                        if (dumpstateFileExist) {
+                            const focusTarget = document.querySelector("#inputs")
+
+                            statusRemoveAllClasses()
+                            statusAddClass('status-ready', 'Ready')
+                            buttonSendEnable()
+
+                            focusTarget.value = ''
+                            focusTarget.focus()
+                        } else {
+                            console.log("Dumpstate file not exist, send first prompt")
+                            sendPrompt(true)
+                        }
+
+                        return false
                     case "$$__MAX_CPU_PHYSICAL__$$":
                         // console.log(`Max physical CPU: ${responses[2]}`)
                         preferences["maxcpu-physical"] = responses[2]
@@ -267,13 +301,17 @@ function sendPrompt(sendFirstInput = false) {
 
     statusRemoveAllClasses()
     statusAddClass('status-running', 'Running')
-    buttonStopEnable()
+
+    buttonDisableAll()
+    if (!sendFirstInput) {
+        buttonStopEnable()
+    }
 
     focusTarget.value = ''
     focusTarget.focus()
 }
 
-function applyParameters(sendRequired = true) {
+function applyParameters() {
     const datas = []
 
     datas["threads"] = document.querySelector("#pref_threads").value
@@ -290,9 +328,7 @@ function applyParameters(sendRequired = true) {
     for (const key in datas) {
         preferences[key] = datas[key]
         const data = `$$__PARAMETER__$$\n$$__SEPARATOR__$$\n$$__${key.toUpperCase()}__$$\n$$__SEPARATOR__$$\n${datas[key]}\n`
-        if (sendRequired) {
-            ws.send(data)
-        }
+        ws.send(data)
     }
 
     const modelFiles = document.querySelector("select[name=model_files]")
@@ -345,13 +381,15 @@ function stopResponse() {
 
     statusRemoveAllClasses()
     statusAddClass('status-running', 'Running')
-    buttonSendEnable()
+    buttonDisableAll()
 
     input.value = ''
     input.focus()
 }
 
 function init() {
+    buttonDisableAll()
+
     let promptTEXT = defaultPromptTEXT
     let antipromptTEXT = defaultAntipromptTEXT
     let responseNameTEXT = defaultResponseNameTEXT
@@ -383,10 +421,11 @@ function init() {
     if (preferences["darkmode"]) {
         document.querySelector("#switch-shade").click()
     }
+    if (preferences["DUMP_STATE"]) {
+        document.querySelector("#use_dump_state").checked = true
+    }
 
     websocketSetup()
-
-    buttonSendEnable()
 
     document.getElementById("inputs").addEventListener("keydown", function (event) {
         if (event.ctrlKey && event.key == "Enter") {

@@ -70,6 +70,14 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 		}
 	}
 
+	useDumpStateSTR := req.URL.Query().Get("use_dump_state")
+	if useDumpStateSTR != "" {
+		l.UseDumpState = false
+		if useDumpStateSTR == "true" {
+			l.UseDumpState = true
+		}
+	}
+
 	nCtxSTR := req.URL.Query().Get("n_ctx")
 	if nCtxSTR != "" {
 		nCTX, err := strconv.Atoi(nCtxSTR)
@@ -190,6 +198,18 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		fmt.Println("Model initialized..")
 
+		dumpFname := `dumpstate_` + modelFname + `.hex`
+		dumpInitialLoaded := false
+
+		// Load dump_state
+		if l.UseDumpState {
+			if _, err := os.Stat(dumpFname); err == nil {
+				fmt.Println("Load", dumpFname)
+				l.LoadState(dumpFname)
+				dumpInitialLoaded = true
+			}
+		}
+
 		reflectionPrompt := ""
 		input := ""
 		antiprompt := ""
@@ -218,6 +238,21 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					case "$$__STOP__$$":
 						if predictRunning {
 							l.PredictStop <- true
+						}
+					case "$$__DUMPSTATE_EXIST__$$":
+						// Check dumpstate file exists
+						if _, err := os.Stat(dumpFname); err == nil {
+							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSTATE_EXIST__$$\n$$__SEPARATOR__$$\ntrue")
+							if err != nil {
+								fmt.Println("Send error:", err)
+								disconnected = true
+							}
+						} else {
+							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSTATE_EXIST__$$\n$$__SEPARATOR__$$\nfalse")
+							if err != nil {
+								fmt.Println("Send error:", err)
+								disconnected = true
+							}
 						}
 					case "$$__MODEL_FILE__$$":
 						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__MODEL_FILES__$$\n$$__SEPARATOR__$$\n"
@@ -336,7 +371,12 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 				input = datas[1]
 
 				if requestCount == 0 {
-					l.SetPrompt(reflectionPrompt)
+					if dumpInitialLoaded {
+						// Because the prompt is not needed after the reload dump_state
+						l.SetPrompt(antiprompt)
+					} else {
+						l.SetPrompt(reflectionPrompt)
+					}
 					l.SetAntiPrompt(antiprompt)
 
 					err = l.MakeReadyToPredict()
@@ -360,6 +400,12 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 				if err != nil {
 					fmt.Println("evalAndResponse error:" + err.Error())
 					disconnected = true
+				}
+
+				// Save dump_state
+				if l.UseDumpState {
+					fmt.Println("Save", dumpFname)
+					l.SaveState(dumpFname)
 				}
 
 				predictRunning = false
