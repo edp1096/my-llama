@@ -125,6 +125,7 @@ async function websocketSetup() {
     base += `//localhost:1323/ws`
     const params = new URLSearchParams({
         model_file: modelFile,
+        threads: preferences["threads"] ? preferences["threads"] : 1,
         n_ctx: preferences["N_CTX"] ? preferences["N_CTX"] : 512,
         n_batch: preferences["N_BATCH"] ? preferences["N_BATCH"] : 32,
     })
@@ -215,18 +216,28 @@ async function websocketSetup() {
                     case "$$__MAX_CPU_LOGICAL__$$":
                         // console.log(`Max logical CPU: ${responses[2]}`)
                         preferences["maxcpu-logical"] = responses[2]
+
+                        document.querySelector("#pref_threads").setAttribute("max", responses[2])
+                        document.querySelector("#sl_threads").setAttribute("max", responses[2])
                         break
                     case "$$__THREADS__$$":
                         // console.log(`Thread count: ${responses[2]}`)
-                        preferences["threads"] = responses[2]
-                        document.querySelector("#pref_threads").value = preferences["threads"] ? preferences["threads"] : 1
+                        if (preferences["threads"] == undefined || preferences["threads"] == "") {
+                            preferences["threads"] = responses[2]
+                        }
                         break
+                }
+
+                // Set threads to physical cores when threads is greater than logical cores
+                if (parseInt(preferences["threads"]) > parseInt(preferences["maxcpu-logical"])) {
+                    preferences["threads"] = preferences["maxcpu-physical"]
                 }
 
                 savePreferences()
 
                 document.querySelector("#max-cpu-count").innerHTML = `${preferences["maxcpu-physical"]} / ${preferences["maxcpu-logical"]}`
                 document.querySelector("#pref_threads").value = preferences["threads"]
+                document.querySelector("#sl_threads").value = preferences["threads"] ? preferences["threads"] : 1
 
                 break
             default:
@@ -265,6 +276,7 @@ function sendPrompt(sendFirstInput = false) {
 function applyParameters(sendRequired = true) {
     const datas = []
 
+    datas["threads"] = document.querySelector("#pref_threads").value
     datas["N_CTX"] = document.querySelector("#pref_n_ctx").value
     datas["N_BATCH"] = document.querySelector("#pref_n_batch").value
 
@@ -277,7 +289,7 @@ function applyParameters(sendRequired = true) {
 
     for (const key in datas) {
         preferences[key] = datas[key]
-        const data = `$$__PARAMETER__$$\n$$__SEPARATOR__$$\n$$__${key}__$$\n$$__SEPARATOR__$$\n${datas[key]}\n`
+        const data = `$$__PARAMETER__$$\n$$__SEPARATOR__$$\n$$__${key.toUpperCase()}__$$\n$$__SEPARATOR__$$\n${datas[key]}\n`
         if (sendRequired) {
             ws.send(data)
         }
@@ -360,7 +372,7 @@ function init() {
         document.querySelector("input[name='pref_sampling_method'][value='" + preferences["SAMPLING_METHOD"] + "']").checked = true
     }
 
-    keys = ["N_CTX", "N_BATCH", "TOP_K", "TOP_P", "TEMPERATURE", "REPEAT_PENALTY"]
+    keys = ["threads", "N_CTX", "N_BATCH", "TOP_K", "TOP_P", "TEMPERATURE", "REPEAT_PENALTY"]
     for (const key of keys) {
         if (preferences[key] != undefined) {
             document.querySelector(`#pref_${key.toLowerCase()}`).value = preferences[key]

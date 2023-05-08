@@ -2,7 +2,6 @@
 extern "C" {
 #endif
 
-
 #include <stdbool.h>
 
 struct variables_container {
@@ -27,13 +26,11 @@ struct variables_container {
     char* user_input;
 };
 
-
 /* Initialize before main loop */
 void* bd_init_container();
 bool bd_load_model(void* container);
 void bd_init_params(void* container);
 bool bd_make_ready_to_predict(void* container);
-
 
 /* For main loop */
 bool bd_predict_tokens(void* container);
@@ -43,11 +40,13 @@ bool bd_wait_or_continue(void* container);
 int bd_get_embed_id(void* container, int index);
 char* bd_get_embed_string(void* container, int id);
 
-
 /* Finish loop */
 void bd_free_params(void* container);
 void bd_free_model(void* container);
 
+/* Frees */
+void bd_free_params(void* container);
+void bd_free_model(void* container);
 
 /* Getters */
 int bd_get_n_remain(void* container);
@@ -68,7 +67,6 @@ float bd_get_params_top_p(void* container);
 float bd_get_params_temper(void* container);
 float bd_get_params_repeat_penalty(void* container);
 
-
 /* Setters */
 void bd_set_params_interactive_first(void* container);
 void bd_set_is_interacting(void* container, bool is_interacting);
@@ -83,7 +81,6 @@ void bd_set_params_n_threads(void* container, int value);
 void bd_set_params_use_mlock(void* container, bool value);
 
 /* Setters - gpt_params / sampling parameters */
-
 void bd_set_params_n_ctx(void* container, int value);
 void bd_set_params_n_batch(void* container, int value);
 void bd_set_sampling_method(void* container, int value);
@@ -92,9 +89,9 @@ void bd_set_params_top_p(void* container, float value);
 void bd_set_params_temper(void* container, float value);
 void bd_set_params_repeat_penalty(void* container, float value);
 
-/* frees */
-void bd_free_params(void* container);
-void bd_free_model(void* container);
+/* State dump */
+void bd_save_state(void* container);
+void bd_load_state(void* container);
 
 /* Others */
 bool bd_check_prompt_or_continue(void* container);

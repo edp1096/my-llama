@@ -62,6 +62,14 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 		}
 	}
 
+	nThreadsSTR := req.URL.Query().Get("threads")
+	if nThreadsSTR != "" {
+		nThreads, err := strconv.Atoi(nThreadsSTR)
+		if err != nil {
+			l.Threads = nThreads
+		}
+	}
+
 	nCtxSTR := req.URL.Query().Get("n_ctx")
 	if nCtxSTR != "" {
 		nCTX, err := strconv.Atoi(nCtxSTR)
@@ -77,6 +85,7 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 			l.SetNBatch(nBATCH)
 		}
 	}
+
 }
 
 func evalAndResponse(l *llama.LLama, conn *ws.Conn, handler ws.Codec) error {
@@ -159,6 +168,8 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		defer conn.Close()
 
+		l.Threads = threads
+
 		req := conn.Request()
 		setQueryParams(l, req)
 
@@ -166,8 +177,10 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		l.InitParams()
 
-		l.SetThreadsCount(threads)
+		l.SetThreadsCount(l.Threads)
 		l.SetUseMlock(useMlock)
+
+		fmt.Println("Threads:", l.Threads)
 
 		err = l.LoadModel(modelFname)
 		if err != nil {
@@ -240,7 +253,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 						}
 					case "$$__THREADS__$$":
 						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__THREADS__$$\n$$__SEPARATOR__$$\n"
-						response := fmt.Sprintf("%s%d", tag, threads)
+						response := fmt.Sprintf("%s%d", tag, l.Threads)
 						err = handler.Send(conn, response)
 						if err != nil {
 							fmt.Println("Send error:", err)
@@ -256,6 +269,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 					switch paramNAME {
 					case "$$__THREADS__$$":
+						// Maybe not needed
 						threads, _ = strconv.Atoi(paramVALUE)
 						fmt.Println("threads:", threads)
 					case "$$__N_CTX__$$":
@@ -366,8 +380,8 @@ func main() {
 
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flags.BoolVar(&isBrowserOpen, "b", false, "open browser automatically")
-	flags.StringVar(&modelFname, "m", "", "path to quantized ggml model file to load")
-	flags.IntVar(&threads, "t", cpuPhysicalNUM, "number of threads to use during computation")
+
+	threads = cpuPhysicalNUM
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {

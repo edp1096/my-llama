@@ -12,6 +12,7 @@ import (
 type LLama struct {
 	Container   unsafe.Pointer
 	PredictStop chan bool
+	Threads     int
 }
 
 func New() (*LLama, error) {
@@ -34,16 +35,25 @@ func (l *LLama) LoadModel(modelFNAME string) error {
 	return nil
 }
 
-func (l *LLama) GetRemainCount() int {
-	return int(C.bd_get_n_remain(l.Container))
-}
-
 func (l *LLama) PredictTokens() bool {
 	return bool(C.bd_predict_tokens(l.Container))
 }
 
-func (l *LLama) SetIsInteracting(isInteracting bool) {
-	C.bd_set_is_interacting(l.Container, C.bool(isInteracting))
+func (l *LLama) FreeParams() {
+	C.bd_free_params(l.Container)
+}
+
+func (l *LLama) FreeModel() {
+	C.bd_free_model(l.Container)
+}
+
+func (l *LLama) FreeALL() {
+	l.FreeParams()
+	l.FreeModel()
+}
+
+func (l *LLama) GetRemainCount() int {
+	return int(C.bd_get_n_remain(l.Container))
 }
 
 func (l *LLama) GetEmbedSize() int {
@@ -58,17 +68,16 @@ func (l *LLama) GetEmbedString(idx int) string {
 	return embedSTR
 }
 
-func (l *LLama) FreeParams() {
-	C.bd_free_params(l.Container)
+func (l *LLama) SetIsInteracting(isInteracting bool) {
+	C.bd_set_is_interacting(l.Container, C.bool(isInteracting))
 }
 
-func (l *LLama) FreeModel() {
-	C.bd_free_model(l.Container)
+func (l *LLama) SaveState() {
+	C.bd_save_state(l.Container)
 }
 
-func (l *LLama) FreeALL() {
-	l.FreeParams()
-	l.FreeModel()
+func (l *LLama) LoadState() {
+	C.bd_load_state(l.Container)
 }
 
 func (l *LLama) CheckPromptOrContinue() bool {

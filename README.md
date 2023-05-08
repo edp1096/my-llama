@@ -71,7 +71,7 @@ See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="
 
 ## Todo
 * [ ] Save/Load
-    * [ ] CPU count
+    * [x] CPU count
     * [x] prefix prompt, reverse prompt, first input
     * [ ] state - dump state when restart with changed n_ctx, n_batch, n_predict
 * [ ] antiprompt, response name
