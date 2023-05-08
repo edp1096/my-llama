@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -303,6 +304,8 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 			// Predict and Write responses
 			go func() {
+				runtime.LockOSThread()
+
 				predictRunning = true
 
 				if len(datas) < 3 {
