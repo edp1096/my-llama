@@ -66,6 +66,11 @@ func (l *LLama) FreeModel() {
 	C.bd_free_model(l.Container)
 }
 
+func (l *LLama) FreeALL() {
+	l.FreeParams()
+	l.FreeModel()
+}
+
 func (l *LLama) CheckPromptOrContinue() bool {
 	return bool(C.bd_check_prompt_or_continue(l.Container))
 }

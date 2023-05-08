@@ -10,8 +10,8 @@ Llama 7B runner on my windows machine
 
 
 ## Download pre-compiled binary
-* [Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.3/my-llama_cpu.exe)
-* [Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.3/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
+* [Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.4/my-llama_cpu.exe)
+* [Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.4/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
 
 
 ## Usage
@@ -64,6 +64,9 @@ git submodule update --init --recursive
 
 build_cu.cmd
 ```
+
+### Use binding
+See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama/cgollama.svg" alt="Go Reference"></a> and [`main.go`](main.go)
 
 
 ## Todo

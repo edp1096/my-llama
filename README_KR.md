@@ -6,12 +6,12 @@
 
 * `llama.cpp/examples/main`에 있는 코드 interactive 모드를 흉내낸 Go언어 바인딩
 * 간단한 웹소켓 서버
-* 간단한 embed 웹ui
+* 간단한 Go언어 embed 웹ui
 
 
 ## 실행파일 다운로드
-* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.3/my-llama_cpu.exe)
-* [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.3/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
+* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.4/my-llama_cpu.exe)
+* [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.4/my-llama_cu.zip) - [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)를 설치해야됩니다
 
 
 ## 실행 방법
