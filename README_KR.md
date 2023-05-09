@@ -10,8 +10,8 @@
 
 
 ## 실행파일 다운로드
-* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.4/my-llama_cpu.exe)
-* [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.4/my-llama_cu.zip) - [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)를 설치해야됩니다
+* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.5/my-llama_cpu.exe)
+* [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.5/my-llama_cu.zip) - [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)를 설치해야됩니다
 
 
 ## 실행 방법
