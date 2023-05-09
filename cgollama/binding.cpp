@@ -134,20 +134,67 @@ bool bd_predict_tokens(void* container) {
     llama_context* ctx = (llama_context*)c->ctx;
     gpt_params* params = (gpt_params*)c->params;
 
-    // predict
-    if (embd->size() > 0) {
+    std::vector<llama_token>* session_tokens = (std::vector<llama_token>*)c->session_tokens;
+
+        // predict
+        if (embd->size() > 0) {
         if (c->n_past + (int)embd->size() > c->n_ctx) {
             const int n_left = c->n_past - params->n_keep;
 
-            c->n_past = params->n_keep;
+            // c->n_past = params->n_keep;
+            // always keep the first token - BOS
+            c->n_past = std::max(1, params->n_keep);
 
             // insert n_left/2 tokens at the start of embd from last_n_tokens
             embd->insert(embd->begin(), last_n_tokens->begin() + c->n_ctx - n_left / 2 - embd->size(), last_n_tokens->end() - embd->size());
         }
 
-        if (llama_eval(ctx, embd->data(), embd->size(), c->n_past, params->n_threads)) {
-            fprintf(stderr, "%s : failed to eval\n", __func__);
-            return result;
+        // if (llama_eval(ctx, embd->data(), embd->size(), c->n_past, params->n_threads)) {
+        //     fprintf(stderr, "%s : failed to eval\n", __func__);
+        //     return result;
+        // }
+
+        // try to reuse a matching prefix from the loaded session instead of re-eval (via n_past)
+        if (c->n_session_consumed < (int)session_tokens->size()) {
+            size_t i = 0;
+            for (; i < embd->size(); i++) {
+                if (embd[i] != session_tokens[c->n_session_consumed]) {
+                    session_tokens->resize(c->n_session_consumed);
+                    break;
+                }
+
+                c->n_past++;
+                c->n_session_consumed++;
+
+                if (c->n_session_consumed >= (int)session_tokens->size()) {
+                    ++i;
+                    break;
+                }
+            }
+            if (i > 0) {
+                embd->erase(embd->begin(), embd->begin() + i);
+            }
+        }
+
+        // evaluate tokens in batches
+        // embd is typically prepared beforehand to fit within a batch, but not always
+        for (int i = 0; i < (int)embd->size(); i += params->n_batch) {
+            int n_eval = (int)embd->size() - i;
+            if (n_eval > params->n_batch) {
+                n_eval = params->n_batch;
+            }
+
+            if (llama_eval(ctx, embd->data()+i, n_eval, c->n_past, params->n_threads)) {
+                fprintf(stderr, "%s : failed to eval\n", __func__);
+                return 1;
+            }
+            c->n_past += n_eval;
+        }
+
+        // if (embd->size() > 0 && !path_session.empty()) {
+        if (embd->size() > 0) {
+            session_tokens->insert(session_tokens->end(), embd->begin(), embd->end());
+            c->n_session_consumed = session_tokens->size();
         }
     }
 
@@ -525,12 +572,15 @@ void bd_save_state(void* container, char* fname) {
     variables_container* c = (variables_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
 
-    size_t state_size = llama_get_state_size(ctx);
-    uint8_t* state_mem = new uint8_t[state_size];
+    size_t ctx_size = llama_get_state_size(ctx);
+    uint8_t* state_mem = new uint8_t[ctx_size];
     llama_copy_state_data(ctx, state_mem);
 
     FILE* fp_write = fopen(fname, "wb");
-    fwrite(state_mem, 1, state_size, fp_write);
+    fwrite(&ctx_size, 1, sizeof(size_t), fp_write);
+    fwrite(state_mem, 1, ctx_size, fp_write);
+    fwrite(&c->last_n_tokens, 1, sizeof(int), fp_write);
+    fwrite(&c->n_past, 1, sizeof(int), fp_write);
     fclose(fp_write);
 
     delete[] state_mem;
@@ -541,19 +591,52 @@ void bd_load_state(void* container, char* fname) {
     // llama_context* ctx = (llama_context*)c->ctx;
 
     FILE* fp_read = fopen(fname, "rb");
-    size_t state_size = llama_get_state_size((llama_context*)c->ctx);
+    size_t ctx_size = llama_get_state_size((llama_context*)c->ctx);
 
-    // Todo: check if state size matches
-    // if (state_size != state_size2) {
-    //     cerr << "state size differs\n";
-    // }
+    size_t state_size;
+    uint8_t* state_mem = new uint8_t[ctx_size];
+    fread(&state_size, 1, sizeof(size_t), fp_read);
 
-    uint8_t* state_mem = new uint8_t[state_size];
+    if (state_size != ctx_size) {
+        printf("Error: state size mismatch. Expected %zu, got %zu\n", ctx_size, state_size);
+    }
+
     fread(state_mem, 1, state_size, fp_read);
+    fread(&c->last_n_tokens, 1, sizeof(int), fp_read);
+    fread(&c->n_past, 1, sizeof(int), fp_read);
     fclose(fp_read);
 
     llama_set_state_data((llama_context*)c->ctx, state_mem);
     delete[] state_mem;
+}
+
+void bd_save_session(void* container, char* fname) {
+    variables_container* c = (variables_container*)container;
+    llama_context* ctx = (llama_context*)c->ctx;
+
+    llama_save_session_file(ctx, fname, ((std::vector<llama_token>*)c->session_tokens)->data(), ((std::vector<llama_token>*)c->session_tokens)->size());
+}
+void bd_load_session(void* container, char* fname) {
+    variables_container* c = (variables_container*)container;
+    llama_context* ctx = (llama_context*)c->ctx;
+
+    // fopen to check for existing session
+    FILE* fp = std::fopen(fname, "rb");
+    if (fp != NULL) {
+        std::fclose(fp);
+
+        ((std::vector<llama_token>*)c->session_tokens)->resize(((gpt_params*)c->params)->n_ctx);
+        size_t n_token_count_out = 0;
+        if (!llama_load_session_file(ctx, fname, ((std::vector<llama_token>*)c->session_tokens)->data(), ((std::vector<llama_token>*)c->session_tokens)->capacity(), &n_token_count_out)) {
+            fprintf(stderr, "%s: error: failed to load session file '%s'\n", __func__, fname);
+            return;
+        }
+        ((std::vector<llama_token>*)c->session_tokens)->resize(n_token_count_out);
+
+        fprintf(stderr, "%s: loaded a session with prompt size of %d tokens\n", __func__, (int)((std::vector<llama_token>*)c->session_tokens)->size());
+    } else {
+        fprintf(stderr, "%s: session file does not exist, will create\n", __func__);
+    }
 }
 
 /* Others */
