@@ -235,7 +235,7 @@ async function websocketSetup() {
                             statusAddClass('status-ready', 'Ready')
                             buttonSendEnable()
 
-                            focusTarget.value = ''
+                            // focusTarget.value = ''
                             focusTarget.focus()
                         } else {
                             console.log("Dumpstate file not exist, send first prompt")
@@ -383,7 +383,7 @@ function stopResponse() {
     statusAddClass('status-running', 'Running')
     buttonDisableAll()
 
-    input.value = ''
+    // input.value = ''
     input.focus()
 }
 
