@@ -8,9 +8,9 @@ import (
 	"errors"
 )
 
-func (l *LLama) MakeReadyToPredict() (err error) {
+func (l *LLama) AllocateVariables() (err error) {
 	container := l.Container
-	result := bool(C.bd_make_ready_to_predict(container))
+	result := bool(C.bd_allocate_variables(container))
 
 	if !result {
 		err = errors.New("failed to initialize the parameters")

@@ -102,7 +102,7 @@ bool bd_load_model(void* container) {
     return result;
 }
 
-bool bd_make_ready_to_predict(void* container) {
+bool bd_allocate_variables(void* container) {
     bool result = false;
     variables_container* c = (variables_container*)container;
     gpt_params* params = (gpt_params*)c->params;
