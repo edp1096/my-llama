@@ -198,7 +198,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		fmt.Println("Model initialized..")
 
-		dumpFname := `dumpsession_` + modelFname + `.hex`
+		dumpFname := `dumpsession_` + modelFname + `.session`
 		dumpInitialLoaded := false
 
 		// Load dump_session
