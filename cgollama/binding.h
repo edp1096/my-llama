@@ -95,6 +95,8 @@ void bd_set_params_repeat_penalty(void* container, float value);
 /* State dump */
 void bd_save_state(void* container, char* fname);
 void bd_load_state(void* container, char* fname);
+void bd_save_session(void* container, char* fname);
+void bd_load_session(void* container, char* fname);
 
 /* Others */
 bool bd_check_prompt_or_continue(void* container);

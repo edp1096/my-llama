@@ -205,7 +205,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 		if l.UseDumpState {
 			if _, err := os.Stat(dumpFname); err == nil {
 				fmt.Println("Load", dumpFname)
-				l.LoadState(dumpFname)
+				l.LoadSession(dumpFname)
 				dumpInitialLoaded = true
 			}
 		}
@@ -405,7 +405,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 				// Save dump_state
 				if l.UseDumpState {
 					fmt.Println("Save", dumpFname)
-					l.SaveState(dumpFname)
+					l.SaveSession(dumpFname)
 				}
 
 				predictRunning = false

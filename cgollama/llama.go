@@ -81,6 +81,14 @@ func (l *LLama) LoadState(fname string) {
 	C.bd_load_state(l.Container, C.CString(fname))
 }
 
+func (l *LLama) SaveSession(fname string) {
+	C.bd_save_session(l.Container, C.CString(fname))
+}
+
+func (l *LLama) LoadSession(fname string) {
+	C.bd_load_session(l.Container, C.CString(fname))
+}
+
 func (l *LLama) CheckPromptOrContinue() bool {
 	return bool(C.bd_check_prompt_or_continue(l.Container))
 }
