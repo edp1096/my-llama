@@ -27,23 +27,57 @@ std::vector<llama_token> binding_tokenize(struct llama_context* ctx, const std::
 void* bd_init_container() {
     variables_container* c = new variables_container;
     c->params = new gpt_params;
+    c->session_tokens = new std::vector<llama_token>;
 
     return c;
 }
 
-llama_context* binding_init_context(gpt_params* params) {
+// llama_context* binding_init_context(gpt_params* params) {
+//     auto lparams = llama_context_default_params();
+
+//     lparams.n_ctx = params->n_ctx;
+//     lparams.n_parts = params->n_parts;
+//     lparams.seed = params->seed;
+//     lparams.f16_kv = params->memory_f16;
+//     lparams.use_mmap = params->use_mmap;
+//     lparams.use_mlock = params->use_mlock;
+
+//     llama_context* ctx = llama_init_from_file(params->model.c_str(), lparams);
+
+//     return ctx;
+// }
+
+struct llama_context* llama_init_from_gpt_params(const gpt_params& params) {
     auto lparams = llama_context_default_params();
 
-    lparams.n_ctx = params->n_ctx;
-    lparams.n_parts = params->n_parts;
-    lparams.seed = params->seed;
-    lparams.f16_kv = params->memory_f16;
-    lparams.use_mmap = params->use_mmap;
-    lparams.use_mlock = params->use_mlock;
+    lparams.n_ctx = params.n_ctx;
+    lparams.n_parts = params.n_parts;
+    lparams.seed = params.seed;
+    lparams.f16_kv = params.memory_f16;
+    lparams.use_mmap = params.use_mmap;
+    lparams.use_mlock = params.use_mlock;
+    lparams.logits_all = params.perplexity;
+    lparams.embedding = params.embedding;
 
-    llama_context* ctx = llama_init_from_file(params->model.c_str(), lparams);
+    llama_context* lctx = llama_init_from_file(params.model.c_str(), lparams);
 
-    return ctx;
+    if (lctx == NULL) {
+        fprintf(stderr, "%s: error: failed to load model '%s'\n", __func__, params.model.c_str());
+        return NULL;
+    }
+
+    if (!params.lora_adapter.empty()) {
+        int err = llama_apply_lora_from_file(lctx,
+                                             params.lora_adapter.c_str(),
+                                             params.lora_base.empty() ? NULL : params.lora_base.c_str(),
+                                             params.n_threads);
+        if (err != 0) {
+            fprintf(stderr, "%s: error: failed to apply lora adapter\n", __func__);
+            return NULL;
+        }
+    }
+
+    return lctx;
 }
 
 bool bd_load_model(void* container) {
@@ -51,11 +85,12 @@ bool bd_load_model(void* container) {
     variables_container* c = (variables_container*)container;
     gpt_params* params = (gpt_params*)c->params;
 
-    if (params->seed <= 0) {
+    if (params->seed < 0) {
         params->seed = time(NULL);
     }
 
-    llama_context* ctx = binding_init_context(params);
+    // llama_context* ctx = binding_init_context(params);
+    llama_context* ctx = llama_init_from_gpt_params(*params);
     if (ctx == nullptr) {
         fprintf(stderr, "%s : failed to load model\n", __func__);
         return result;
@@ -107,6 +142,7 @@ bool bd_make_ready_to_predict(void* container) {
     c->n_past = 0;
     c->n_remain = params->n_predict;
     c->n_consumed = 0;
+    c->n_session_consumed = 0;
 
     result = true;
     return result;
@@ -136,8 +172,8 @@ bool bd_predict_tokens(void* container) {
 
     std::vector<llama_token>* session_tokens = (std::vector<llama_token>*)c->session_tokens;
 
-        // predict
-        if (embd->size() > 0) {
+    // predict
+    if (embd->size() > 0) {
         if (c->n_past + (int)embd->size() > c->n_ctx) {
             const int n_left = c->n_past - params->n_keep;
 
@@ -171,6 +207,7 @@ bool bd_predict_tokens(void* container) {
                     break;
                 }
             }
+
             if (i > 0) {
                 embd->erase(embd->begin(), embd->begin() + i);
             }
@@ -183,22 +220,15 @@ bool bd_predict_tokens(void* container) {
             if (n_eval > params->n_batch) {
                 n_eval = params->n_batch;
             }
-
-            if (llama_eval(ctx, embd->data()+i, n_eval, c->n_past, params->n_threads)) {
+            if (llama_eval(ctx, embd->data() + i, n_eval, c->n_past, params->n_threads)) {
                 fprintf(stderr, "%s : failed to eval\n", __func__);
-                return 1;
+                return result;
             }
             c->n_past += n_eval;
         }
-
-        // if (embd->size() > 0 && !path_session.empty()) {
-        if (embd->size() > 0) {
-            session_tokens->insert(session_tokens->end(), embd->begin(), embd->end());
-            c->n_session_consumed = session_tokens->size();
-        }
     }
 
-    c->n_past += embd->size();
+    // c->n_past += embd->size();
     embd->clear();
 
     if ((int)embd_inp->size() <= c->n_consumed) {
