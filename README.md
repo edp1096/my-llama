@@ -11,7 +11,7 @@ Llama 7B runner on my windows machine
 
 ## Download pre-compiled binary
 * [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cpu.exe)
-* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
+* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [DLLs](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip)
 * [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cl.zip)
 
 
