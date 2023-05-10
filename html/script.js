@@ -34,9 +34,9 @@ function toggleDarkMode(isSave = true) {
 }
 
 function toggleDumpState() {
-    const dumpstateSwitch = document.getElementById("use_dump_session")
+    const dumpsessionSwitch = document.getElementById("use_dump_session")
 
-    preferences["DUMP_STATE"] = dumpstateSwitch.checked
+    preferences["DUMP_SESSION"] = dumpsessionSwitch.checked
     savePreferences()
 }
 
@@ -133,7 +133,7 @@ async function websocketSetup() {
     const params = new URLSearchParams({
         model_file: modelFile,
         threads: preferences["threads"] ? preferences["threads"] : 1,
-        use_dump_session: preferences["DUMP_STATE"] ? preferences["DUMP_STATE"] : false,
+        use_dump_session: preferences["DUMP_SESSION"] ? preferences["DUMP_SESSION"] : false,
         n_ctx: preferences["N_CTX"] ? preferences["N_CTX"] : 512,
         n_batch: preferences["N_BATCH"] ? preferences["N_BATCH"] : 32,
     })
@@ -157,9 +157,9 @@ async function websocketSetup() {
 
         console.log('Connected')
 
-        // Check dumpstate
-        if (preferences["DUMP_STATE"] != undefined && preferences["DUMP_STATE"] == true) {
-            ws.send("$$__COMMAND__$$\n$$__SEPARATOR__$$\n$$__DUMPSTATE_EXIST__$$")
+        // Check dumpsession
+        if (preferences["DUMP_SESSION"] != undefined && preferences["DUMP_SESSION"] == true) {
+            ws.send("$$__COMMAND__$$\n$$__SEPARATOR__$$\n$$__DUMPSESSION_EXIST__$$")
         } else {
             sendPrompt(true) // Send always first input with prefix prompt
         }
@@ -225,10 +225,10 @@ async function websocketSetup() {
                         }
 
                         break
-                    case "$$__DUMPSTATE_EXIST__$$":
+                    case "$$__DUMPSESSION_EXIST__$$":
                         console.log(`Dumpstate exist: ${responses[2]}`)
-                        dumpstateFileExist = JSON.parse(responses[2])
-                        if (dumpstateFileExist) {
+                        dumpsessionFileExist = JSON.parse(responses[2])
+                        if (dumpsessionFileExist) {
                             const focusTarget = document.querySelector("#inputs")
 
                             statusRemoveAllClasses()
@@ -421,7 +421,7 @@ function init() {
     if (preferences["darkmode"]) {
         document.querySelector("#switch-shade").click()
     }
-    if (preferences["DUMP_STATE"]) {
+    if (preferences["DUMP_SESSION"]) {
         document.querySelector("#use_dump_session").checked = true
     }
 

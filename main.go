@@ -70,10 +70,10 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 		}
 	}
 
-	useDumpStateSTR := req.URL.Query().Get("use_dump_session")
-	if useDumpStateSTR != "" {
+	useDumpSessionSTR := req.URL.Query().Get("use_dump_session")
+	if useDumpSessionSTR != "" {
 		l.UseDumpSession = false
-		if useDumpStateSTR == "true" {
+		if useDumpSessionSTR == "true" {
 			l.UseDumpSession = true
 		}
 	}
@@ -198,7 +198,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		fmt.Println("Model initialized..")
 
-		dumpFname := `dumpstate_` + modelFname + `.hex`
+		dumpFname := `dumpsession_` + modelFname + `.hex`
 		dumpInitialLoaded := false
 
 		// Load dump_session
@@ -239,16 +239,16 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 						if predictRunning {
 							l.PredictStop <- true
 						}
-					case "$$__DUMPSTATE_EXIST__$$":
-						// Check dumpstate file exists
+					case "$$__DUMPSESSION_EXIST__$$":
+						// Check dumpsession file exists
 						if _, err := os.Stat(dumpFname); err == nil {
-							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSTATE_EXIST__$$\n$$__SEPARATOR__$$\ntrue")
+							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSESSION_EXIST__$$\n$$__SEPARATOR__$$\ntrue")
 							if err != nil {
 								fmt.Println("Send error:", err)
 								disconnected = true
 							}
 						} else {
-							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSTATE_EXIST__$$\n$$__SEPARATOR__$$\nfalse")
+							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSESSION_EXIST__$$\n$$__SEPARATOR__$$\nfalse")
 							if err != nil {
 								fmt.Println("Send error:", err)
 								disconnected = true
