@@ -104,6 +104,17 @@ ifneq ($(filter armv8%,$(UNAME_M)),)
 	CFLAGS += -mfp16-format=ieee -mno-unaligned-access
 endif
 
+LLAMA_CLBLAST=0
+CFLAGS_ADD=
+LDFLAGS_ADD=
+OBJS=
+ifdef LLAMA_CLBLAST
+	CFLAGS_ADD = -DGGML_USE_CLBLAST -I../openclblast/include
+	LDFLAGS_ADD = -lclblast -lOpenCL
+	LLAMA_CLBLAST=1
+	OBJS = llama.cpp/ggml-opencl.o
+endif
+
 #
 # Print build information
 #
@@ -130,11 +141,14 @@ llama.cpp/llama.o:
 llama.cpp/common.o:
 	$(MAKE) CC=$(CC) -C llama.cpp common.o
 
-binding.o: llama.cpp/ggml.o llama.cpp/llama.o llama.cpp/common.o
-	$(CXX) $(CXXFLAGS) -static -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
+llama.cpp/ggml-opencl.o:
+	$(MAKE) CC=$(CC) LLAMA_CLBLAST=$(LLAMA_CLBLAST) CFLAGS='$(CFLAGS_ADD)' LDFLAGS='$(LDFLAGS_ADD)' -C llama.cpp ggml-opencl.o
 
-libllama.a: llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o
-	ar src libllama.a llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o
+binding.o: llama.cpp/ggml.o llama.cpp/llama.o llama.cpp/common.o $(OBJS)
+	$(CXX) $(CXXFLAGS) -static $(CFLAGS_ADD) $(LDFLAGS_ADD) -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
+
+libllama.a: llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o $(OBJS)
+	ar src libllama.a llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o $(OBJS)
 
 libbinding.a: binding.o
 	ar src libbinding.a cgollama/binding.o
