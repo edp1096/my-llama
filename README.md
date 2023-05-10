@@ -10,8 +10,9 @@ Llama 7B runner on my windows machine
 
 
 ## Download pre-compiled binary
-* [Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.6/my-llama_cpu.exe)
-* [Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.6/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
+* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cpu.exe)
+* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
+* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cl.zip)
 
 
 ## Usage
@@ -33,13 +34,24 @@ Llama 7B runner on my windows machine
     * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
     * [Git](https://github.com/git-for-windows/git/releases)
     * Memory >= 12GB
-* GPU
+* GPU/CUDA
     * [Go](https://golang.org/dl)
     * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
     * [Git](https://github.com/git-for-windows/git/releases)
     * [MS Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
     * [Cmake >= 3.26](https://cmake.org/download)
     * [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
+    * CPU Memory >= 12GB
+    * Video Memory >= 4GB
+* GPU/CLBlast
+    * [Go](https://golang.org/dl)
+    * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
+    * [Git](https://github.com/git-for-windows/git/releases)
+    * [MS Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
+    * [Cmake >= 3.26](https://cmake.org/download)
+    * [OpenCL-SDK](https://github.com/KhronosGroup/OpenCL-SDK), [CLBlast](https://github.com/KhronosGroup/OpenCL-SDK)
+        * <b>When build script running, download and build them automatically. No need to install manually</b>
+        * If need change their version, just edit [build_cl.cmd](/build_cl.cmd).
     * CPU Memory >= 12GB
     * Video Memory >= 4GB
 
@@ -54,7 +66,7 @@ git submodule update --init --recursive
 
 mingw32-make.exe
 ```
-* GPU
+* GPU/CUDA
 ```powershell
 git clone https://github.com/edp1096/my-llama.git
 
@@ -63,6 +75,16 @@ cd my-llama
 git submodule update --init --recursive
 
 build_cu.cmd
+```
+* GPU/CLBlast
+```powershell
+git clone https://github.com/edp1096/my-llama.git
+
+cd my-llama
+
+git submodule update --init --recursive
+
+build_cl.cmd
 ```
 
 ### Use binding
@@ -73,7 +95,7 @@ See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="
 * [ ] antiprompt, response name
     * [x] Add response name input - `### Assistant:`
     * [ ] Parse `### Human:`, `### Assistant:`
-* [ ] Add Papago, Kakao translator
+* [ ] Add Papago, Kakao, DeepL translator
 * `binding.cpp`
     * GGML Parameter settings - Set parameters from html to websocket server
         * Not touch. Probably I can't
