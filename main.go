@@ -70,11 +70,11 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 		}
 	}
 
-	useDumpStateSTR := req.URL.Query().Get("use_dump_state")
-	if useDumpStateSTR != "" {
-		l.UseDumpState = false
-		if useDumpStateSTR == "true" {
-			l.UseDumpState = true
+	useDumpSessionSTR := req.URL.Query().Get("use_dump_session")
+	if useDumpSessionSTR != "" {
+		l.UseDumpSession = false
+		if useDumpSessionSTR == "true" {
+			l.UseDumpSession = true
 		}
 	}
 
@@ -198,14 +198,14 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		fmt.Println("Model initialized..")
 
-		dumpFname := `dumpstate_` + modelFname + `.hex`
+		dumpFname := `dumpsession_` + modelFname + `.session`
 		dumpInitialLoaded := false
 
-		// Load dump_state
-		if l.UseDumpState {
+		// Load dump_session
+		if l.UseDumpSession {
 			if _, err := os.Stat(dumpFname); err == nil {
 				fmt.Println("Load", dumpFname)
-				l.LoadState(dumpFname)
+				l.LoadSession(dumpFname)
 				dumpInitialLoaded = true
 			}
 		}
@@ -239,16 +239,16 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 						if predictRunning {
 							l.PredictStop <- true
 						}
-					case "$$__DUMPSTATE_EXIST__$$":
-						// Check dumpstate file exists
+					case "$$__DUMPSESSION_EXIST__$$":
+						// Check dumpsession file exists
 						if _, err := os.Stat(dumpFname); err == nil {
-							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSTATE_EXIST__$$\n$$__SEPARATOR__$$\ntrue")
+							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSESSION_EXIST__$$\n$$__SEPARATOR__$$\ntrue")
 							if err != nil {
 								fmt.Println("Send error:", err)
 								disconnected = true
 							}
 						} else {
-							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSTATE_EXIST__$$\n$$__SEPARATOR__$$\nfalse")
+							err = handler.Send(conn, "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DUMPSESSION_EXIST__$$\n$$__SEPARATOR__$$\nfalse")
 							if err != nil {
 								fmt.Println("Send error:", err)
 								disconnected = true
@@ -372,7 +372,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 				if requestCount == 0 {
 					if dumpInitialLoaded {
-						// Because the prompt is not needed after the reload dump_state
+						// Because the prompt is not needed after the reload dump_session
 						l.SetPrompt(antiprompt)
 					} else {
 						l.SetPrompt(reflectionPrompt)
@@ -402,10 +402,10 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					disconnected = true
 				}
 
-				// Save dump_state
-				if l.UseDumpState {
+				// Save dump_session
+				if l.UseDumpSession {
 					fmt.Println("Save", dumpFname)
-					l.SaveState(dumpFname)
+					l.SaveSession(dumpFname)
 				}
 
 				predictRunning = false

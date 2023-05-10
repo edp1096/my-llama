@@ -10,10 +10,10 @@ import (
 )
 
 type LLama struct {
-	Container    unsafe.Pointer
-	PredictStop  chan bool
-	Threads      int
-	UseDumpState bool
+	Container      unsafe.Pointer
+	PredictStop    chan bool
+	Threads        int
+	UseDumpSession bool
 }
 
 func New() (*LLama, error) {
@@ -79,6 +79,14 @@ func (l *LLama) SaveState(fname string) {
 
 func (l *LLama) LoadState(fname string) {
 	C.bd_load_state(l.Container, C.CString(fname))
+}
+
+func (l *LLama) SaveSession(fname string) {
+	C.bd_save_session(l.Container, C.CString(fname))
+}
+
+func (l *LLama) LoadSession(fname string) {
+	C.bd_load_session(l.Container, C.CString(fname))
 }
 
 func (l *LLama) CheckPromptOrContinue() bool {

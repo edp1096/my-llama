@@ -8,11 +8,14 @@ struct variables_container {
     int n_past;
     int n_remain;
     int n_consumed;
+    int n_session_consumed;
     int id;
 
     bool is_interacting;
     bool input_noecho;
     int n_ctx;
+
+    void* session_tokens;
 
     void* last_n_tokens;
     void* llama_token_newline;
@@ -92,6 +95,8 @@ void bd_set_params_repeat_penalty(void* container, float value);
 /* State dump */
 void bd_save_state(void* container, char* fname);
 void bd_load_state(void* container, char* fname);
+void bd_save_session(void* container, char* fname);
+void bd_load_session(void* container, char* fname);
 
 /* Others */
 bool bd_check_prompt_or_continue(void* container);
