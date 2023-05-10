@@ -104,6 +104,20 @@ ifneq ($(filter armv8%,$(UNAME_M)),)
 	CFLAGS += -mfp16-format=ieee -mno-unaligned-access
 endif
 
+# Extremely slow
+# LLAMA_CLBLAST=0
+# CFLAGS_ADD=
+# LDFLAGS_ADD=
+# OBJS=
+# CGO_LDFLAGS=
+# ifdef USE_CLBLAST
+# 	CFLAGS_ADD = -DGGML_USE_CLBLAST -I../openclblast/include
+# 	LDFLAGS_ADD = -lclblast -lOpenCL
+# 	LLAMA_CLBLAST=1
+# 	OBJS = llama.cpp/ggml-opencl.o
+# 	CGO_LDFLAGS = -Lopenclblast/lib -lclblast -lOpenCL
+# endif
+
 #
 # Print build information
 #
@@ -119,9 +133,15 @@ $(info )
 
 build:
 	$(MAKE) libbinding.a libllama.a
-	go build -trimpath -ldflags="-w -s" -o bin/
+#	go env -w CGO_LDFLAGS="-O2 -g $(CGO_LDFLAGS)"
+	go build -a -trimpath -ldflags="-w -s" -o bin/
+#	go env -w CGO_LDFLAGS="-O2 -g"
+# ifdef USE_CLBLAST
+# 	cp openclblast/lib/clblast.dll bin/
+# endif
 
 llama.cpp/ggml.o:
+#	$(MAKE) CC=$(CC) CFLAGS+='$(CFLAGS_ADD)' -C llama.cpp ggml.o
 	$(MAKE) CC=$(CC) -C llama.cpp ggml.o
 
 llama.cpp/llama.o:
@@ -130,14 +150,19 @@ llama.cpp/llama.o:
 llama.cpp/common.o:
 	$(MAKE) CC=$(CC) -C llama.cpp common.o
 
-binding.o: llama.cpp/ggml.o llama.cpp/llama.o llama.cpp/common.o
+# llama.cpp/ggml-opencl.o:
+# 	$(MAKE) CC=$(CC) LLAMA_CLBLAST=$(LLAMA_CLBLAST) CFLAGS+='$(CFLAGS_ADD)' LDFLAGS+='$(LDFLAGS_ADD)' -C llama.cpp ggml-opencl.o
+
+binding.o: llama.cpp/ggml.o llama.cpp/llama.o llama.cpp/common.o $(OBJS)
+#	$(CXX) $(CXXFLAGS) -static $(LDFLAGS_ADD) $(CFLAGS_ADD) -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
 	$(CXX) $(CXXFLAGS) -static -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
 
-libllama.a: llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o
-	ar src libllama.a llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o
+libllama.a: llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o $(OBJS)
+	ar src libllama.a llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o $(OBJS)
 
 libbinding.a: binding.o
 	ar src libbinding.a cgollama/binding.o
+
 
 build_for_cuda:
 	$(MAKE) libbinding.a_for_cuda
@@ -146,6 +171,7 @@ build_for_cuda:
 libbinding.a_for_cuda:
 	$(CXX) $(CXXFLAGS) -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
 	ar src libbinding.a cgollama/binding.o
+
 
 clean:
 	rm -rf *.o
