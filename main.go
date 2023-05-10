@@ -379,7 +379,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					}
 					l.SetAntiPrompt(antiprompt)
 
-					err = l.MakeReadyToPredict()
+					err = l.AllocateVariables()
 					if err != nil {
 						fmt.Println(err.Error())
 						return

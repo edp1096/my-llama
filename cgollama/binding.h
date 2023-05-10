@@ -33,7 +33,7 @@ struct variables_container {
 void* bd_init_container();
 bool bd_load_model(void* container);
 void bd_init_params(void* container);
-bool bd_make_ready_to_predict(void* container);
+bool bd_allocate_variables(void* container);
 
 /* For main loop */
 bool bd_predict_tokens(void* container);
