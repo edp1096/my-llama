@@ -9,3 +9,8 @@ llama.lib
 llama.obj
 llama.def
 llama.exp
+
+openclblast/
+
+clblast.zip
+opencl.zip

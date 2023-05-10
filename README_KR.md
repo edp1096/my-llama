@@ -10,8 +10,9 @@
 
 
 ## 실행파일 다운로드
-* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.6/my-llama_cpu.exe)
-* [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.6/my-llama_cu.zip) - [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)를 설치해야됩니다
+* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cpu.exe)
+* [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cu.zip) - [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)를 설치해야됩니다
+* [MS윈도우 clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cl.zip)
 
 
 ## 실행 방법
@@ -32,13 +33,24 @@
     * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
     * [Git](https://github.com/git-for-windows/git/releases)
     * Memory >= 12GB
-* GPU
+* GPU/CUDA
     * [Go](https://golang.org/dl)
     * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
     * [Git](https://github.com/git-for-windows/git/releases)
     * [MS Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
     * [Cmake >= 3.26](https://cmake.org/download)
     * [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
+    * CPU Memory >= 12GB
+    * Video Memory >= 4GB
+* GPU/CLBlast
+    * [Go](https://golang.org/dl)
+    * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
+    * [Git](https://github.com/git-for-windows/git/releases)
+    * [MS Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
+    * [Cmake >= 3.26](https://cmake.org/download)
+    * [OpenCL-SDK](https://github.com/KhronosGroup/OpenCL-SDK), [CLBlast](https://github.com/KhronosGroup/OpenCL-SDK)
+        * <b>빌드스크립트에 다운로드, 빌드 명령 포함되어있으므로, 수동으로 다운받을 필요 없습니다.</b>
+        * 버전숫자를 바꾸려면 [build_cl.cmd](/build_cl.cmd)파일을 수정해주세요.
     * CPU Memory >= 12GB
     * Video Memory >= 4GB
 
@@ -53,7 +65,7 @@ git submodule update --init --recursive
 
 mingw32-make.exe
 ```
-* GPU
+* GPU/CUDA
 ```powershell
 git clone https://github.com/edp1096/my-llama.git
 
@@ -62,6 +74,16 @@ cd my-llama
 git submodule update --init --recursive
 
 build_cu.cmd
+```
+* GPU/CLBLast
+```powershell
+git clone https://github.com/edp1096/my-llama.git
+
+cd my-llama
+
+git submodule update --init --recursive
+
+build_cl.cmd
 ```
 
 
