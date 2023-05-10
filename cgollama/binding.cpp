@@ -226,6 +226,12 @@ bool bd_predict_tokens(void* container) {
             }
             c->n_past += n_eval;
         }
+
+        // if (embd.size() > 0 && !path_session.empty()) {
+        if (embd->size() > 0) {
+            session_tokens->insert(session_tokens->end(), embd->begin(), embd->end());
+            c->n_session_consumed = session_tokens->size();
+        }
     }
 
     // c->n_past += embd->size();
@@ -646,6 +652,7 @@ void bd_save_session(void* container, char* fname) {
 
     llama_save_session_file(ctx, fname, ((std::vector<llama_token>*)c->session_tokens)->data(), ((std::vector<llama_token>*)c->session_tokens)->size());
 }
+
 void bd_load_session(void* container, char* fname) {
     variables_container* c = (variables_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;

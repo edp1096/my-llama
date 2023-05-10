@@ -10,10 +10,10 @@ import (
 )
 
 type LLama struct {
-	Container    unsafe.Pointer
-	PredictStop  chan bool
-	Threads      int
-	UseDumpState bool
+	Container      unsafe.Pointer
+	PredictStop    chan bool
+	Threads        int
+	UseDumpSession bool
 }
 
 func New() (*LLama, error) {

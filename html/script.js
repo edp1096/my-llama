@@ -34,7 +34,7 @@ function toggleDarkMode(isSave = true) {
 }
 
 function toggleDumpState() {
-    const dumpstateSwitch = document.getElementById("use_dump_state")
+    const dumpstateSwitch = document.getElementById("use_dump_session")
 
     preferences["DUMP_STATE"] = dumpstateSwitch.checked
     savePreferences()
@@ -133,7 +133,7 @@ async function websocketSetup() {
     const params = new URLSearchParams({
         model_file: modelFile,
         threads: preferences["threads"] ? preferences["threads"] : 1,
-        use_dump_state: preferences["DUMP_STATE"] ? preferences["DUMP_STATE"] : false,
+        use_dump_session: preferences["DUMP_STATE"] ? preferences["DUMP_STATE"] : false,
         n_ctx: preferences["N_CTX"] ? preferences["N_CTX"] : 512,
         n_batch: preferences["N_BATCH"] ? preferences["N_BATCH"] : 32,
     })
@@ -422,7 +422,7 @@ function init() {
         document.querySelector("#switch-shade").click()
     }
     if (preferences["DUMP_STATE"]) {
-        document.querySelector("#use_dump_state").checked = true
+        document.querySelector("#use_dump_session").checked = true
     }
 
     websocketSetup()

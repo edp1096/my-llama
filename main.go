@@ -70,11 +70,11 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 		}
 	}
 
-	useDumpStateSTR := req.URL.Query().Get("use_dump_state")
+	useDumpStateSTR := req.URL.Query().Get("use_dump_session")
 	if useDumpStateSTR != "" {
-		l.UseDumpState = false
+		l.UseDumpSession = false
 		if useDumpStateSTR == "true" {
-			l.UseDumpState = true
+			l.UseDumpSession = true
 		}
 	}
 
@@ -201,8 +201,8 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 		dumpFname := `dumpstate_` + modelFname + `.hex`
 		dumpInitialLoaded := false
 
-		// Load dump_state
-		if l.UseDumpState {
+		// Load dump_session
+		if l.UseDumpSession {
 			if _, err := os.Stat(dumpFname); err == nil {
 				fmt.Println("Load", dumpFname)
 				l.LoadSession(dumpFname)
@@ -372,7 +372,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 				if requestCount == 0 {
 					if dumpInitialLoaded {
-						// Because the prompt is not needed after the reload dump_state
+						// Because the prompt is not needed after the reload dump_session
 						l.SetPrompt(antiprompt)
 					} else {
 						l.SetPrompt(reflectionPrompt)
@@ -402,8 +402,8 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					disconnected = true
 				}
 
-				// Save dump_state
-				if l.UseDumpState {
+				// Save dump_session
+				if l.UseDumpSession {
 					fmt.Println("Save", dumpFname)
 					l.SaveSession(dumpFname)
 				}
