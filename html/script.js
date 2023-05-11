@@ -11,6 +11,7 @@ const defaultResponseNameTEXT = `### Assistant:`
 const defaultFirstInputTEXT = `Please tell me the largest city in Earth.`
 
 let preferences = {}
+const defaultThreads = 4
 
 function toggleDarkMode(isSave = true) {
     const body = document.body
@@ -68,12 +69,12 @@ function loadPreferences() {
         document.querySelector("#first-input").value = preferences["FIRST_INPUT"]
     }
 
-    document.querySelector("#pref_threads").value = preferences["threads"] ? preferences["threads"] : 1
+    document.querySelector("#pref_threads").value = preferences["threads"] ? preferences["threads"] : defaultThreads
 
     document.querySelector("#pref_top_k").value = preferences["TOP_K"] ? preferences["TOP_K"] : 40
     document.querySelector("#pref_top_p").value = preferences["TOP_P"] ? preferences["TOP_P"] : 0.8
-    document.querySelector("#pref_temperature").value = preferences["TEMPERATURE"] ? preferences["TEMPERATURE"] : 0.5
-    document.querySelector("#pref_repeat_penalty").value = preferences["REPEAT_PENALTY"] ? preferences["REPEAT_PENALTY"] : 0.75
+    document.querySelector("#pref_temperature").value = preferences["TEMPERATURE"] ? preferences["TEMPERATURE"] : 0.15
+    document.querySelector("#pref_repeat_penalty").value = preferences["REPEAT_PENALTY"] ? preferences["REPEAT_PENALTY"] : 1.0
 
     return preferences
 }
@@ -132,10 +133,10 @@ async function websocketSetup() {
     base += `//localhost:1323/ws`
     const params = new URLSearchParams({
         model_file: modelFile,
-        threads: preferences["threads"] ? preferences["threads"] : 1,
+        threads: preferences["threads"] ? preferences["threads"] : defaultThreads,
         use_dump_session: preferences["DUMP_SESSION"] ? preferences["DUMP_SESSION"] : false,
-        n_ctx: preferences["N_CTX"] ? preferences["N_CTX"] : 512,
-        n_batch: preferences["N_BATCH"] ? preferences["N_BATCH"] : 32,
+        n_ctx: preferences["N_CTX"] ? preferences["N_CTX"] : 2048,
+        n_batch: preferences["N_BATCH"] ? preferences["N_BATCH"] : 1024,
     })
 
     const uri = new URL(`${base}?${params}`)
@@ -271,7 +272,7 @@ async function websocketSetup() {
 
                 document.querySelector("#max-cpu-count").innerHTML = `${preferences["maxcpu-physical"]} / ${preferences["maxcpu-logical"]}`
                 document.querySelector("#pref_threads").value = preferences["threads"]
-                document.querySelector("#sl_threads").value = preferences["threads"] ? preferences["threads"] : 1
+                document.querySelector("#sl_threads").value = preferences["threads"] ? preferences["threads"] : defaultThreads
 
                 break
             default:

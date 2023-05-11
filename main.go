@@ -305,8 +305,11 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					switch paramNAME {
 					case "$$__THREADS__$$":
 						// Maybe not needed
-						threads, _ = strconv.Atoi(paramVALUE)
-						fmt.Println("threads:", threads)
+						threadsReceived, _ := strconv.Atoi(paramVALUE)
+						fmt.Println("threads:", threadsReceived)
+						if threadsReceived > 3 {
+							threads = threadsReceived
+						}
 					case "$$__N_CTX__$$":
 						n_ctx, _ := strconv.Atoi(paramVALUE)
 						fmt.Println("n_ctx:", n_ctx)
