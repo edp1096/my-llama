@@ -13,6 +13,14 @@ const defaultFirstInputTEXT = `Please tell me the largest city in Earth.`
 let preferences = {}
 const defaultThreads = 4
 
+let previousMessenger = ""
+let previousMessage = ""
+
+let currentMessenger = ""
+let currentMessage = ""
+
+let tmpMessage = ""
+
 function toggleDarkMode(isSave = true) {
     const body = document.body
     const darkmodeSwitch = document.getElementById("switch-shade")
@@ -177,7 +185,14 @@ async function websocketSetup() {
     ws.onmessage = function (evt) {
         buttonDisableAll()
 
+        const human = document.getElementById('antiprompt').value
+        const ai = document.getElementById('response-name').value
+
         const out = document.getElementById('outputs')
+        let lastMessageContainer
+        if (out.children.length > 0) {
+            lastMessageContainer = out.lastChild
+        }
 
         const responses = evt.data.split("\n$$__SEPARATOR__$$\n") // Split by separator
         let response = ""
@@ -197,11 +212,79 @@ async function websocketSetup() {
                     statusAddClass('status-ready', 'Ready')
                     buttonSendEnable()
 
-                    break
+                    break // Prevent next currentMessanger before input send
+                }
+
+                switch (true) {
+                    case response.includes("<br />"):
+                        // console.log(currentMessenger, currentMessage)
+
+                        previousMessenger = currentMessenger
+                        currentMessenger = ""
+                        currentMessage = ""
+                        tmpMessage = ""
+
+                        // Append child with div with class name message
+                        if (out.children.length > 0) {
+                            // lastMessageContainer.lastChild.innerHTML = lastMessageContainer.lastChild.innerHTML.slice(0, -28)
+                            lastMessageContainer.lastChild.innerHTML = lastMessageContainer.lastChild.innerHTML.replace(/<span class="cursor"><\/span>/g, "")
+                            previousMessage = lastMessageContainer.lastChild.innerHTML
+                        }
+
+                        // Create div with class name "message"
+                        const messageContainer = document.createElement("div")
+                        messageContainer.className = "message-container"
+
+                        const divMessenger = document.createElement("div")
+                        divMessenger.className = "messenger"
+                        divMessenger.innerHTML = currentMessenger
+                        messageContainer.appendChild(divMessenger)
+
+                        const divMessage = document.createElement("div")
+                        divMessage.className = "message"
+                        divMessage.innerHTML = currentMessage
+                        messageContainer.appendChild(divMessage)
+
+                        out.appendChild(messageContainer)
+
+                        lastMessageContainer = out.lastChild
+
+                        break
+                    default:
+                        if (currentMessenger == human || currentMessenger == ai) {
+                            currentMessage += response
+
+                            // Set messenger at before last child
+                            if (lastMessageContainer.querySelector(".messenger").innerHTML == "") {
+                                lastMessageContainer.querySelector(".messenger").innerHTML = currentMessenger
+                            }
+                        } else {
+                            currentMessenger += response
+                            if (currentMessenger == human || currentMessenger == ai) {
+                                break
+                            }
+
+                            if (tmpMessage.length > human.length && tmpMessage.length > ai.length) {
+                                currentMessage = previousMessage + tmpMessage + currentMessage + response
+                                tmpMessage = ""
+                                currentMessenger = previousMessenger
+                            } else {
+                                tmpMessage += response
+                            }
+                        }
                 }
 
                 // -28 for cursor, `<span class="cursor"></span>` removing.
-                out.innerHTML = out.innerHTML.slice(0, -28) + response + `<span class="cursor"></span>`
+                // out.innerHTML = out.innerHTML.slice(0, -28) + response + `<span class="cursor"></span>`
+
+                // Insert response to last child of out
+                if (out.children.length > 0 && lastMessageContainer != undefined) {
+                    // out.lastChild.innerHTML = out.lastChild.innerHTML.slice(0, -28) + response + `<span class="cursor"></span>`
+                    if (currentMessage != "") {
+                        lastMessageContainer.querySelector(".message").innerHTML = currentMessage + `<span class="cursor"></span>`
+                    }
+                }
+
                 out.scrollTop = out.scrollHeight
 
                 break
