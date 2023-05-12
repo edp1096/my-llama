@@ -13,6 +13,7 @@ Llama 7B runner on my windows machine
 * ggjt v2
     * [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cpu.exe)
     * [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cu.zip) - require [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [DLLs](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip)
+        * [MS-Windows cuda / gpu token](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cu_gpu_token.zip)
     * MS-Windows clblast - Have bugs
 * ggjt v1
     * [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cpu_old_ggml.exe)
