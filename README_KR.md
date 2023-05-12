@@ -10,9 +10,14 @@
 
 
 ## 실행파일 다운로드
-* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cpu.exe)
-* [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cu.zip) - [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)를 설치해야됩니다. 아니면 [DLL](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip)파일들을 다운받아서 실행파일 폴더에 넣어주세요.
-* [MS윈도우 clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.7/my-llama_cl.zip)
+* ggjt v2 - 바뀐거
+    * [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cpu.exe)
+    * [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cu.zip) - [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)를 설치해야됩니다. 아니면 [DLL](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip)파일들을 다운받아서 실행파일 폴더에 넣어주세요.
+    * MS윈도우 clblast - GGML 버그 있어서 제외
+* ggjt v1 - 예전거
+    * [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cpu_old_ggml.exe)
+    * [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cu_old_ggml.zip) - [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)를 설치해야됩니다. 아니면 [DLL](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip)파일들을 다운받아서 실행파일 폴더에 넣어주세요.
+    * [MS윈도우 clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cl_old_ggml.zip)
 
 
 ## 실행 방법
