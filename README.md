@@ -92,9 +92,6 @@ See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="
 
 
 ## Todo
-* [ ] antiprompt, response name
-    * [x] Add response name input - `### Assistant:`
-    * [ ] Parse `### Human:`, `### Assistant:`
 * [ ] Add Papago, Kakao, DeepL translator
 * `binding.cpp`
     * GGML Parameter settings - Set parameters from html to websocket server
