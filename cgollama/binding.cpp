@@ -89,6 +89,11 @@ bool bd_load_model(void* container) {
         params->seed = time(NULL);
     }
 
+#ifdef USE_GPU_LAYER
+    // params->n_gpu_layers = 48; // 7B for 3060ti
+    params->n_gpu_layers = 24;  // 13B for 3060ti
+#endif
+
     // llama_context* ctx = binding_init_context(params);
     llama_context* ctx = llama_init_from_gpt_params(*params);
     if (ctx == nullptr) {

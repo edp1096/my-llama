@@ -1,8 +1,15 @@
 CC = gcc
 
 FLAG_OLD_GGML=
+USE_GPU_LAYER=
+
+ifdef build_for_cuda
+	USE_GPU_LAYER=-DUSE_GPU_LAYER
+endif
+
 ifdef USE_OLD_GGML
 	FLAG_OLD_GGML = -X main.sampleVicunaWeightsDownloadURL=https://huggingface.co/eachadea/ggml-vicuna-7b-1.1/resolve/main/ggml-old-vic7b-q4_0.bin -X main.sampleVicunaWeightsFileName=ggml-old-vic7b-q4_0.bin
+	USE_GPU_LAYER=
 endif
 
 
@@ -25,7 +32,7 @@ endif
 
 # keep standard at C11 and C++11
 CFLAGS   = -I./llama.cpp -I. -O3 -DNDEBUG -std=c11 -fPIC
-CXXFLAGS = -I./llama.cpp -I. -I./llama.cpp/examples -I./examples -O3 -DNDEBUG -std=c++11 -fPIC
+CXXFLAGS = -I./llama.cpp -I. -I./llama.cpp/examples -I./examples -O3 -DNDEBUG -std=c++11 -fPIC $(USE_GPU_LAYER)
 LDFLAGS  =
 
 # warnings
