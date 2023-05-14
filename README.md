@@ -48,7 +48,7 @@ Llama 7B runner on my windows machine
     * [CUDA Toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
     * CPU Memory >= 12GB
     * Video Memory >= 7GB
-        * Beacuse of GPU token generation, hard coded `n_gpu_layer` as 24 for my 3060ti
+        * Beacuse of GPU token generation, hard coded `n_gpu_layer` as 32 for my 3060ti
         * If you have different GPU, you may need to change it in [cgollama/binding.cpp](/cgollama/binding.cpp)
 * GPU/CLBlast
     * [Go](https://golang.org/dl)
@@ -111,12 +111,6 @@ See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="
 
 
 ## Source
-* Code
-    * https://github.com/ggerganov/llama.cpp
-    * https://github.com/go-skynet/go-llama.cpp
-    * https://github.com/cornelk/llama-go
-* Prompt
-    * https://arca.live/b/alpaca/73449389
-    ```dos
-    main -m ggml-vicuna-7b-4bit-rev1.bin --color -f ./prompts/vicuna.txt -i --n_parts 1 -t 6 --temp 0.15 --top_k 400 -c 2048 --repeat_last_n 2048 --repeat_penalty 1.0 -n 2048 -r "### Human:" -b 512
-    ```
+* https://github.com/ggerganov/llama.cpp
+* https://github.com/go-skynet/go-llama.cpp
+* https://github.com/cornelk/llama-go

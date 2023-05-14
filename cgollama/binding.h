@@ -101,6 +101,7 @@ void bd_load_session(void* container, char* fname);
 /* Others */
 bool bd_check_prompt_or_continue(void* container);
 void bd_dropback_user_input(void* container);
+void bd_print_timings(void* container);
 
 #ifdef __cplusplus
 }

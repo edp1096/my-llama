@@ -47,7 +47,7 @@
     * [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
     * CPU Memory >= 12GB
     * Video Memory >= 7GB
-        * GPU 토큰 생성에 사용되는 `n_gpu_layer` 값을 3060ti 기준으로 24로 잡아놔서 그렇습니다.
+        * GPU 토큰 생성에 사용되는 `n_gpu_layer` 값을 3060ti 기준으로 32로 잡아놔서 그렇습니다.
         * 다른 nvidia gpu에서 돌리려면 [cgollama/binding.cpp](/cgollama/binding.cpp)에서 `n_gpu_layer`값을 바꿔주세요.
 * GPU/CLBlast
     * [Go](https://golang.org/dl)
@@ -95,12 +95,6 @@ build_cl.cmd
 
 
 ## 출처/참고
-* 코드
-    * https://github.com/ggerganov/llama.cpp
-    * https://github.com/go-skynet/go-llama.cpp
-    * https://github.com/cornelk/llama-go
-* 프롬프트
-    * https://arca.live/b/alpaca/73449389
-    ```dos
-    main -m ggml-vicuna-7b-4bit-rev1.bin --color -f ./prompts/vicuna.txt -i --n_parts 1 -t 6 --temp 0.15 --top_k 400 -c 2048 --repeat_last_n 2048 --repeat_penalty 1.0 -n 2048 -r "### Human:" -b 512
-    ```
+* https://github.com/ggerganov/llama.cpp
+* https://github.com/go-skynet/go-llama.cpp
+* https://github.com/cornelk/llama-go

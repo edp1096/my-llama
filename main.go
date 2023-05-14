@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -162,6 +161,8 @@ END:
 		return err
 	}
 
+	l.PrintTimings()
+
 	return nil
 }
 
@@ -173,7 +174,6 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		defer l.FreeALL()
-
 		defer conn.Close()
 
 		l.Threads = threads
@@ -356,7 +356,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 			// Predict and Write responses
 			go func() {
-				runtime.LockOSThread()
+				// runtime.LockOSThread()
 
 				predictRunning = true
 
