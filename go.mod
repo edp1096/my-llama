@@ -2,10 +2,7 @@ module github.com/edp1096/my-llama
 
 go 1.20
 
-require (
-	github.com/shirou/gopsutil/v3 v3.23.3
-	golang.org/x/net v0.9.0
-)
+require github.com/shirou/gopsutil/v3 v3.23.3
 
 require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
