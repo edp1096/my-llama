@@ -96,3 +96,7 @@ func (l *LLama) CheckPromptOrContinue() bool {
 func (l *LLama) DropBackUserInput() {
 	C.bd_dropback_user_input(l.Container)
 }
+
+func (l *LLama) PrintTimings() {
+	C.bd_print_timings(l.Container)
+}

@@ -32,26 +32,14 @@ void* bd_init_container() {
     return c;
 }
 
-// llama_context* binding_init_context(gpt_params* params) {
-//     auto lparams = llama_context_default_params();
-
-//     lparams.n_ctx = params->n_ctx;
-//     lparams.n_parts = params->n_parts;
-//     lparams.seed = params->seed;
-//     lparams.f16_kv = params->memory_f16;
-//     lparams.use_mmap = params->use_mmap;
-//     lparams.use_mlock = params->use_mlock;
-
-//     llama_context* ctx = llama_init_from_file(params->model.c_str(), lparams);
-
-//     return ctx;
-// }
-
 struct llama_context* llama_init_from_gpt_params(const gpt_params& params) {
     auto lparams = llama_context_default_params();
 
     lparams.n_ctx = params.n_ctx;
     lparams.n_parts = params.n_parts;
+#ifndef USE_OLD_GGML
+    lparams.n_gpu_layers = params.n_gpu_layers;
+#endif
     lparams.seed = params.seed;
     lparams.f16_kv = params.memory_f16;
     lparams.use_mmap = params.use_mmap;
@@ -88,6 +76,11 @@ bool bd_load_model(void* container) {
     if (params->seed < 0) {
         params->seed = time(NULL);
     }
+
+#ifndef USE_OLD_GGML
+    params->n_gpu_layers = 32;  // for 3060ti, CUDA only
+    printf("n_gpu_layers: %d\n", params->n_gpu_layers);
+#endif
 
     // llama_context* ctx = binding_init_context(params);
     llama_context* ctx = llama_init_from_gpt_params(*params);
@@ -375,7 +368,7 @@ bool bd_receive_input(void* container) {
         }
         buffer += line + '\n';  // Append the line to the result
     } while (another_line);
-    // buffer = "Do you know kimchi?";
+    // buffer = "What is the largest city in Earth?";
 
     // Add tokens to embd only if the input buffer is non-empty. Entering a empty line lets the user pass control back
     if (buffer.length() > 1) {
@@ -438,14 +431,6 @@ bool bd_wait_or_continue(void* container) {
     // Receive user input
     if (c->n_past > 0 && c->is_interacting) {
         return false;
-        // // bool result = bd_receive_input(c);
-        // bool result = bd_append_input(c);
-        // if (!result) {
-        //     return false;
-        // }
-
-        // // printf("%s", c->user_input);
-        // c->user_input = NULL;
     }
 
     if (c->n_past > 0) {
@@ -474,9 +459,9 @@ void bd_free_params(void* container) {
 }
 
 void bd_free_model(void* container) {
-    llama_context* ctx = (llama_context*)((variables_container*)container)->ctx;
-    if (ctx != NULL) {
-        llama_free(ctx);
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        llama_free((llama_context*)c->ctx);
     }
 }
 
@@ -704,4 +689,11 @@ void bd_dropback_user_input(void* container) {
     if (c->n_remain <= 0 && ((gpt_params*)c->params)->n_predict != -1) {
         c->n_remain = ((gpt_params*)c->params)->n_predict;
     }
+}
+
+void bd_print_timings(void* container) {
+    variables_container* c = (variables_container*)container;
+    llama_context* ctx = (llama_context*)c->ctx;
+
+    llama_print_timings(ctx);
 }

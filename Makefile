@@ -1,10 +1,10 @@
 CC = gcc
 
 FLAG_OLD_GGML=
+
 ifdef USE_OLD_GGML
 	FLAG_OLD_GGML = -X main.sampleVicunaWeightsDownloadURL=https://huggingface.co/eachadea/ggml-vicuna-7b-1.1/resolve/main/ggml-old-vic7b-q4_0.bin -X main.sampleVicunaWeightsFileName=ggml-old-vic7b-q4_0.bin
 endif
-
 
 # Mac OS + Arm can report x86_64
 # ref: https://github.com/ggerganov/whisper.cpp/issues/66#issuecomment-1282546789
