@@ -1,44 +1,8 @@
 @echo off
 
-@REM Old ggml
-
-@REM cuda
-cd llama.cpp
-git checkout b608b55a
-cd ..
-
-cmd /c "clean.cmd"
-cmd /c "build_cu.cmd USE_OLD_GGML"
-move /y bin\my-llama.exe bin\my-llama_cu.exe
-cd bin
-tar.exe -a -c -f my-llama_cu_old_ggml.zip my-llama_cu.exe llama.dll
-cd ..
-
-
-@REM clblast
-cmd /c "clean.cmd"
-cmd /c "build_cl.cmd USE_OLD_GGML"
-move /y bin\my-llama.exe bin\my-llama_cl.exe
-cd bin
-tar.exe -a -c -f my-llama_cl_old_ggml.zip my-llama_cl.exe llama.dll clblast.dll
-cd ..
-
-
-@REM cpu
-cmd /c "clean.cmd"
-cmd /c "mingw32-make.exe USE_OLD_GGML=1"
-move /y bin\my-llama.exe bin\my-llama_cpu_old_ggml.exe
-cmd /c "mingw32-make.exe clean"
-
-
-
 @REM New ggml
 
 @REM cuda
-cd llama.cpp
-git checkout master
-cd ..
-
 cmd /c "clean.cmd"
 cmd /c "build_cu.cmd"
 move /y bin\my-llama.exe bin\my-llama_cu.exe
