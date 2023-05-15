@@ -1,8 +1,8 @@
 package cgollama
 
-// #cgo CXXFLAGS: -I../llama.cpp/examples -I../llama.cpp
-// #cgo LDFLAGS: -L../ -static -lstdc++ -lbinding -lllama
-// #include "binding.h"
+// #cgo CFLAGS: -I../llama.cpp
+// #cgo LDFLAGS: -static -L../ -lstdc++ -lllama
+// #include "llama.h"
 import "C"
 import (
 	"fmt"
@@ -17,25 +17,9 @@ type LLama struct {
 }
 
 func New() (*LLama, error) {
-	container := C.bd_init_container()
-	if container == nil {
-		return nil, fmt.Errorf("failed to initialize the container")
-	}
-
-	return &LLama{Container: container}, nil
+	return &LLama{}, nil
 }
 
-func (l *LLama) LoadModel(modelFNAME string) error {
-	C.bd_set_model_path(l.Container, C.CString(modelFNAME))
-
-	result := bool(C.bd_load_model(l.Container))
-	if !result {
-		return fmt.Errorf("failed to load the model")
-	}
-
-	return nil
-}
-
-func (l *LLama) PredictTokens() bool {
-	return bool(C.bd_predict_tokens(l.Container))
+func (l *LLama) Hello() {
+	fmt.Println("Hello, I'm LLama!")
 }

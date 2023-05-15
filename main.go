@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/edp1096/my-llama/cgollama"
 	"github.com/shirou/gopsutil/v3/cpu"
-)
-
-var (
-	threads = 4
 )
 
 var (
@@ -20,53 +17,56 @@ var (
 
 	modelPath = "./"
 
-	modelFname  string   = ""
-	modelFnames []string = []string{}
+	modelFilename  string   = ""
+	modelFilenames []string = []string{}
 )
 
 func main() {
+	l, err := cgollama.New()
+	if err != nil {
+		fmt.Printf("Creating LLama instance failed: %s", err)
+		os.Exit(1)
+	}
+
+	l.Hello()
+
 	cpuPhysicalNUM, _ = cpu.Counts(false)
 	cpuLogicalNUM, _ = cpu.Counts(true)
 
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flags.BoolVar(&isBrowserOpen, "b", false, "open browser automatically")
 
-	threads = cpuPhysicalNUM
-
-	err := flags.Parse(os.Args[1:])
+	err = flags.Parse(os.Args[1:])
 	if err != nil {
 		fmt.Printf("Parsing program arguments failed: %s", err)
 		os.Exit(1)
 	}
 
-	if modelFname == "" {
-		modelFnames, err = findModelFiles(modelPath)
-		if err != nil {
-			fmt.Printf("Finding model files failed: %s", err)
-			os.Exit(1)
-		}
-		// fmt.Println(modelFnames)
-
-		if len(modelFnames) == 0 {
-			fmt.Println("No model files found.")
-			fmt.Println("Press enter to download vicuna model file and to open the model search page.")
-			fmt.Println("Press Ctrl+C, if you want to exit.")
-			fmt.Scanln()
-
-			openBrowser(weightsSearchURL)
-			downloadVicuna()
-
-			modelFnames, _ = findModelFiles(modelPath)
-		}
-
-		modelFname = modelFnames[0]
+	modelFilenames, err = findModelFiles(modelPath)
+	if err != nil {
+		fmt.Printf("Finding model files failed: %s", err)
+		os.Exit(1)
 	}
+	// fmt.Println(modelFnames)
 
-	if _, err := os.Stat(modelFname); os.IsNotExist(err) {
+	if len(modelFilenames) == 0 {
+		fmt.Println("No model files found.")
+		fmt.Println("Press enter to download vicuna model file and open the model search page.")
+		fmt.Println("Press Ctrl+C, if you want to exit.")
+		fmt.Scanln()
+
+		openBrowser(weightsSearchURL)
+		downloadVicuna()
+
+		modelFilenames, _ = findModelFiles(modelPath)
+	}
+	modelFilename = modelFilenames[0]
+
+	if _, err := os.Stat(modelFilename); os.IsNotExist(err) {
 		// Because, model will be downloaded if not exists, may be not reachable here
-		fmt.Printf("Model file %s does not exist", modelFname)
+		fmt.Printf("Model file %s does not exist", modelFilename)
 		os.Exit(1)
 	}
 
-	fmt.Println("CPU cores physical/logical/threads:", cpuPhysicalNUM, "/", cpuLogicalNUM, "/", threads)
+	fmt.Println("CPU cores physical/logical:", cpuPhysicalNUM, "/", cpuLogicalNUM)
 }
