@@ -4,7 +4,7 @@
 
 @REM cuda
 cd llama.cpp
-git checkout b608b55a
+git checkout -q b608b55a
 cd ..
 
 cmd /c "clean.cmd"
@@ -36,7 +36,7 @@ cmd /c "mingw32-make.exe clean"
 
 @REM cuda
 cd llama.cpp
-git checkout master
+git checkout -q master
 cd ..
 
 cmd /c "clean.cmd"

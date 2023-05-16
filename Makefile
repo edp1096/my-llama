@@ -4,6 +4,7 @@ FLAG_OLD_GGML=
 
 ifdef USE_OLD_GGML
 	FLAG_OLD_GGML = -X main.sampleVicunaWeightsDownloadURL=https://huggingface.co/eachadea/ggml-vicuna-7b-1.1/resolve/main/ggml-old-vic7b-q4_0.bin -X main.sampleVicunaWeightsFileName=ggml-old-vic7b-q4_0.bin
+	CXXFLAGS_OLD_GGML = -DUSE_OLD_GGML
 endif
 
 # Mac OS + Arm can report x86_64
@@ -25,7 +26,7 @@ endif
 
 # keep standard at C11 and C++11
 CFLAGS   = -I./llama.cpp -I. -O3 -DNDEBUG -std=c11 -fPIC
-CXXFLAGS = -I./llama.cpp -I. -I./llama.cpp/examples -I./examples -O3 -DNDEBUG -std=c++11 -fPIC
+CXXFLAGS = -I./llama.cpp -I. -I./llama.cpp/examples -I./examples -O3 -DNDEBUG -std=c++11 -fPIC $(CXXFLAGS_OLD_GGML)
 LDFLAGS  =
 
 # warnings
