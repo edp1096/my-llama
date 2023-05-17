@@ -1,34 +1,34 @@
 @echo off
 
-@REM Old ggml
+@REM @REM Old ggml
 
-@REM cuda
-cd llama.cpp
-git checkout -q b608b55a
-cd ..
+@REM @REM cuda
+@REM cd llama.cpp
+@REM git checkout -q b608b55a
+@REM cd ..
 
-cmd /c "clean.cmd"
-cmd /c "build_cu.cmd USE_OLD_GGML"
-move /y bin\my-llama.exe bin\my-llama_cu.exe
-cd bin
-tar.exe -a -c -f my-llama_cu_old_ggml.zip my-llama_cu.exe llama.dll
-cd ..
-
-
-@REM clblast
-cmd /c "clean.cmd"
-cmd /c "build_cl.cmd USE_OLD_GGML"
-move /y bin\my-llama.exe bin\my-llama_cl.exe
-cd bin
-tar.exe -a -c -f my-llama_cl_old_ggml.zip my-llama_cl.exe llama.dll clblast.dll
-cd ..
+@REM cmd /c "clean.cmd"
+@REM cmd /c "build_cu.cmd USE_OLD_GGML"
+@REM move /y bin\my-llama.exe bin\my-llama_cu.exe
+@REM cd bin
+@REM tar.exe -a -c -f my-llama_cu_old_ggml.zip my-llama_cu.exe llama.dll
+@REM cd ..
 
 
-@REM cpu
-cmd /c "clean.cmd"
-cmd /c "mingw32-make.exe USE_OLD_GGML=1"
-move /y bin\my-llama.exe bin\my-llama_cpu_old_ggml.exe
-cmd /c "mingw32-make.exe clean"
+@REM @REM clblast
+@REM cmd /c "clean.cmd"
+@REM cmd /c "build_cl.cmd USE_OLD_GGML"
+@REM move /y bin\my-llama.exe bin\my-llama_cl.exe
+@REM cd bin
+@REM tar.exe -a -c -f my-llama_cl_old_ggml.zip my-llama_cl.exe llama.dll clblast.dll
+@REM cd ..
+
+
+@REM @REM cpu
+@REM cmd /c "clean.cmd"
+@REM cmd /c "mingw32-make.exe USE_OLD_GGML=1"
+@REM move /y bin\my-llama.exe bin\my-llama_cpu_old_ggml.exe
+@REM cmd /c "mingw32-make.exe clean"
 
 
 

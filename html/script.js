@@ -10,6 +10,8 @@ const defaultAntipromptTEXT = `### Human:`
 const defaultResponseNameTEXT = `### Assistant:`
 const defaultFirstInputTEXT = `Please tell me the largest city in Earth.`
 
+let deviceType = "cpu"
+
 let preferences = {}
 const defaultThreads = 4
 
@@ -184,6 +186,9 @@ async function websocketSetup() {
 
         console.log('Connected')
 
+        // Check device type - cpu, cublas, clblast
+        ws.send("$$__COMMAND__$$\n$$__SEPARATOR__$$\n$$__DEVICE_TYPE__$$")
+
         // Check dumpsession
         if (preferences["DUMP_SESSION"] != undefined && preferences["DUMP_SESSION"] == true) {
             ws.send("$$__COMMAND__$$\n$$__SEPARATOR__$$\n$$__DUMPSESSION_EXIST__$$")
@@ -301,6 +306,9 @@ async function websocketSetup() {
             case responses[0].includes("$$__RESPONSE_INFO__$$"): // Response info to console log
                 // 0: $$__RESPONSE_INFO__$$, 1: $$__MAX_CPU_PHYSICAL__$$ or $$__MAX_CPU_LOGICAL__$$, 2: number
                 switch (responses[1]) {
+                    case "$$__DEVICE_TYPE__$$":
+                        deviceType = responses[2]
+                        console.log(`Device type: ${deviceType}`)
                     case "$$__MODEL_FILES__$$":
                         for (let i = 2; i < responses.length; i++) {
                             const option = document.createElement("option")
@@ -478,6 +486,19 @@ function stopResponse() {
 
     // input.value = ''
     input.focus()
+}
+
+function sendServerRestart() {
+    if (deviceType == "cublas") {
+        ws.send("$$__COMMAND__$$\n$$__SEPARATOR__$$\n$$__KILL_SERVER__$$")
+        ws.close()
+
+        setTimeout(function () {
+            location.reload()
+        }, 4000)
+    } else {
+        location.reload()
+    }
 }
 
 function init() {

@@ -29,7 +29,7 @@ dlltool.exe -k -d llama.def -l libllama.a
 if "%1" == "USE_OLD_GGML" (
     mingw32-make.exe build_for_cuda USE_OLD_GGML=1
 ) else (
-    mingw32-make.exe build_for_cuda
+    mingw32-make.exe build_for_cuda USE_CUDA=1
 )
 
 copy llama.dll .\bin /y

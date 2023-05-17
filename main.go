@@ -235,9 +235,19 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 					command := strings.Split(message, "\n$$__SEPARATOR__$$\n")[1]
 
 					switch command {
+					case "$$__KILL_SERVER__$$":
+						os.Exit(0)
 					case "$$__STOP__$$":
 						if predictRunning {
 							l.PredictStop <- true
+						}
+					case "$$__DEVICE_TYPE__$$":
+						tag := "$$__RESPONSE_INFO__$$\n$$__SEPARATOR__$$\n$$__DEVICE_TYPE__$$\n$$__SEPARATOR__$$\n"
+						response := fmt.Sprintf("%s%s", tag, deviceType)
+						err = handler.Send(conn, response)
+						if err != nil {
+							fmt.Println("Send error:", err)
+							disconnected = true
 						}
 					case "$$__DUMPSESSION_EXIST__$$":
 						// Check dumpsession file exists

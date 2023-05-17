@@ -149,7 +149,8 @@ void bd_init_params(void* container) {
     params->antiprompt = {};
 
     // params->n_predict = 512;
-    // params->use_mlock = true;
+    params->use_mmap = false;
+    params->use_mlock = true;
 }
 
 bool bd_predict_tokens(void* container) {

@@ -1,10 +1,15 @@
 CC = gcc
 
 FLAG_OLD_GGML=
+FLAG_BLAS_TYPE=clblast
 
 ifdef USE_OLD_GGML
 	FLAG_OLD_GGML = -X main.sampleVicunaWeightsDownloadURL=https://huggingface.co/eachadea/ggml-vicuna-7b-1.1/resolve/main/ggml-old-vic7b-q4_0.bin -X main.sampleVicunaWeightsFileName=ggml-old-vic7b-q4_0.bin
 	CXXFLAGS_OLD_GGML = -DUSE_OLD_GGML
+endif
+
+ifdef USE_CUDA
+	FLAG_BLAS_TYPE = cublas
 endif
 
 # Mac OS + Arm can report x86_64
@@ -174,7 +179,7 @@ libbinding.a: binding.o
 build_for_cuda:
 	@echo Target: $(FLAG_OLD_GGML)
 	$(MAKE) libbinding.a_for_cuda
-	go build -trimpath -ldflags="-w -s $(FLAG_OLD_GGML)" -o bin/
+	go build -trimpath -ldflags="-w -s $(FLAG_OLD_GGML) -X main.deviceType=$(FLAG_BLAS_TYPE)" -o bin/
 
 libbinding.a_for_cuda:
 	$(CXX) $(CXXFLAGS) -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
