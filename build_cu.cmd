@@ -33,3 +33,9 @@ if "%1" == "USE_OLD_GGML" (
 )
 
 copy llama.dll .\bin /y
+
+
+@REM A makeshift about memory leakeage
+cd my-runner
+go build -ldflags="-w -s" -o ../bin/my-runner.exe
+cd ..

@@ -43,7 +43,7 @@ cmd /c "clean.cmd"
 cmd /c "build_cu.cmd"
 move /y bin\my-llama.exe bin\my-llama_cu.exe
 cd bin
-tar.exe -a -c -f my-llama_cu.zip my-llama_cu.exe llama.dll
+tar.exe -a -c -f my-llama_cu.zip my-llama_cu.exe llama.dll my-runner.exe
 cd ..
 
 

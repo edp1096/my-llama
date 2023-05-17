@@ -13,6 +13,7 @@ Llama 7B runner on my windows machine
 * ggjt v2 (GGML new)
     * [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cpu.exe)
     * [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cu.zip) - require [CUDA Toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [DLLs](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip) and VRAM >= 7GB
+        * Because of [memory leakage problem](https://github.com/ggerganov/llama.cpp/issues/1456), use `my-runner.exe` instead of `my-llama.exe`
     * [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cl.zip)
 * ggjt v1 (GGML old)
     * [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cpu_old_ggml.exe)
@@ -23,10 +24,10 @@ Llama 7B runner on my windows machine
 ## Usage
 ```powershell
 # Just launch
-./bin/my-llama.exe
+my-llama.exe
 
 # Launch with browser open
-./bin/my-llama.exe -b
+my-llama.exe -b
 ```
 * When modified parameters in panel seem not working, try refresh the browser screen
 
