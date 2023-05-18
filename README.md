@@ -14,6 +14,7 @@ Llama 7B runner on my windows machine
 * [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cu.zip) - require [CUDA Toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [DLLs](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip) and VRAM >= 7GB
     * Because of [memory leakage problem](https://github.com/ggerganov/llama.cpp/issues/1456), use `my-runner.exe` instead of `my-llama.exe`
 * [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl.zip)
+    * [MS-Windows clblast gpu token](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl_gpu_token.zip) - Source from [this](https://github.com/ggerganov/llama.cpp/pull/1459). Still have memory leak but better than cuda version
 
 
 ## Usage

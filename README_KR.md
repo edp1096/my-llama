@@ -14,6 +14,7 @@
 * [MS윈도우 cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cu.zip) - [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)를 설치해야됩니다. 아니면 [DLL](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip)파일들을 다운받아서 실행파일 폴더에 넣어주세요. 그리고 VRAM 7GB 이상 필요합니다.
     * [메모리 누수/반환 버그](https://github.com/ggerganov/llama.cpp/issues/1456) 때문에 `my-llama.exe` 말고 `my-runner.exe` 로 실행해주세요.
 * [MS윈도우 clblast] - (https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl.zip)
+    * [MS윈도우 clblast gpu token](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl_gpu_token.zip) - 출처는 [여기](https://github.com/ggerganov/llama.cpp/pull/1459). 메모리 누수 있긴 한데 cuda 보다는 훨씬 낫고 속도도 cuda 버전보다 조금 더 빠릅니다.
 
 
 ## 실행 방법
