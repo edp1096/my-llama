@@ -4,25 +4,27 @@ Llama 7B runner on my windows machine
 
 ## This is a ..
 
-* Go binding for interactive mode of [llama.cpp](https://github.com/ggerganov/llama.cpp)
+* Go binding for interactive mode of `llama.cpp/examples/main`
 * Websocket server
 * Go embedded web ui
 
 
 ## Download pre-compiled binary
-* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cpu.exe)
-* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cu.zip) - require [CUDA Toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [DLLs](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip) and VRAM >= 7GB
-* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.8/my-llama_cl.zip)
+* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cpu.exe)
+* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cu.zip) - require [CUDA Toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [DLLs](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip) and VRAM >= 7GB
+    * Because of [memory leakage problem](https://github.com/ggerganov/llama.cpp/issues/1456), use `my-runner.exe` instead of `my-llama.exe`
+* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl.zip)
+
 
 ## Usage
 ```powershell
 # Just launch
-./my-llama.exe
+my-llama.exe
 
 # Launch with browser open
-./my-llama.exe -b
+my-llama.exe -b
 ```
-* When modified parameters in panel seem not updated, try refresh the browser screen
+* When modified parameters in panel seem not working, try refresh the browser screen
 
 
 ## Build from source
@@ -90,3 +92,21 @@ build_cl.cmd
 
 ### Use binding
 See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama/cgollama.svg" alt="Go Reference"></a> and [`main.go`](main.go)
+
+
+## Todo
+* [ ] Add Papago, Kakao, DeepL translator
+* `binding.cpp`
+    * GGML Parameter settings - Set parameters from html to websocket server
+        * Not touch. Probably I can't
+            * ~~n_predict - new tokens to predict~~
+            * ~~seed, n_keep, f16_kv, use_mmap, use_mlock~~
+    * Not touch. Probably I can't
+        * ~~Clean up functions~~
+        * ~~Remove and integrate all unnecessary functions~~
+
+
+## Source
+* https://github.com/ggerganov/llama.cpp
+* https://github.com/go-skynet/go-llama.cpp
+* https://github.com/cornelk/llama-go
