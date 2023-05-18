@@ -19,3 +19,4 @@ del *.lib
 del *.obj
 del *.def
 del *.exp
+del *.s
