@@ -1,5 +1,3 @@
-#define GGML_USE_CLBLAST
-
 // Defines fileno on msys:
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
