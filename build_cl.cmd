@@ -1,7 +1,14 @@
 @echo off
 
-curl --progress-bar -Lo clblast.zip "https://github.com/CNugteren/CLBlast/releases/download/1.5.3/CLBlast-1.5.3-Windows-x64.zip"
-curl --progress-bar -Lo opencl.zip "https://github.com/KhronosGroup/OpenCL-SDK/releases/download/v2023.04.17/OpenCL-SDK-v2023.04.17-Win-x64.zip"
+if not exist "clblast.zip" (
+    echo "Downloading CLBlast..."
+    curl --progress-bar -Lo clblast.zip "https://github.com/CNugteren/CLBlast/releases/download/1.5.3/CLBlast-1.5.3-Windows-x64.zip"
+)
+
+if not exist "openclblast_cmake.zip" (
+    echo "Downloading OpenCLBlast CMake..."
+    curl --progress-bar -Lo opencl.zip "https://github.com/KhronosGroup/OpenCL-SDK/releases/download/v2023.04.17/OpenCL-SDK-v2023.04.17-Win-x64.zip"
+)
 
 md openclblast
 tar -xf clblast.zip -C openclblast
