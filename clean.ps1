@@ -1,7 +1,7 @@
 rm -rf *.o
 rm -rf *.a
-rm -rf cgollama\*.o
-rm -rf cgollama\*.a
+rm -rf cgollama/*.o
+rm -rf cgollama/*.a
 
 rm -rf llama.cpp/*.o
 rm -rf llama.cpp/build
@@ -16,3 +16,4 @@ rm -f *.lib
 rm -f *.obj
 rm -f *.def
 rm -f *.exp
+rm -f *.s

@@ -190,7 +190,7 @@
 #define GGML_FILE_MAGIC   0x67676d6c // "ggml"
 #define GGML_FILE_VERSION 1
 
-#define GGML_QNT_VERSION        1    // bump this on quantization format changes
+#define GGML_QNT_VERSION        2    // bump this on quantization format changes
 #define GGML_QNT_VERSION_FACTOR 1000 // do not change this
 
 #define GGML_MAX_DIMS          4
@@ -314,6 +314,7 @@ extern "C" {
         GGML_OP_ROPE,
         GGML_OP_ROPE_BACK,
         GGML_OP_ALIBI,
+        GGML_OP_CLAMP,
         GGML_OP_CONV_1D_1S,
         GGML_OP_CONV_1D_2S,
 
@@ -341,7 +342,7 @@ extern "C" {
 
     // n-dimensional tensor
     struct ggml_tensor {
-        enum ggml_type type;
+        enum ggml_type    type;
         enum ggml_backend backend;
 
         int     n_dims;
@@ -373,7 +374,7 @@ extern "C" {
 
         char name[32];
 
-        char padding[9]; // TODO: remove and add padding to name?
+        char padding[16];
     };
 
     // computation graph
@@ -850,7 +851,7 @@ extern "C" {
             int                   n_past);
 
     // in-place, returns view(a)
-    GGML_API struct ggml_tensor * gml_diag_mask_zero_inplace(
+    GGML_API struct ggml_tensor * ggml_diag_mask_zero_inplace(
             struct ggml_context * ctx,
             struct ggml_tensor  * a,
             int                   n_past);
@@ -898,7 +899,16 @@ extern "C" {
             struct ggml_context * ctx,
             struct ggml_tensor  * a,
             int                   n_past,
-            int                   n_head);
+            int                   n_head,
+            float                 bias_max);
+
+    // clamp
+    // in-place, returns view(a)
+    struct ggml_tensor * ggml_clamp(
+            struct ggml_context * ctx,
+            struct ggml_tensor  * a,
+            float                 min,
+            float                 max);
 
     // padding = 1
     // TODO: we don't support extra parameters for now
