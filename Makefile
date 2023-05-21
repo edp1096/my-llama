@@ -1,12 +1,6 @@
 CC = gcc
 
-FLAG_OLD_GGML=
 FLAG_BLAS_TYPE=clblast
-
-ifdef USE_OLD_GGML
-	FLAG_OLD_GGML = -X main.sampleVicunaWeightsDownloadURL=https://huggingface.co/eachadea/ggml-vicuna-7b-1.1/resolve/main/ggml-old-vic7b-q4_0.bin -X main.sampleVicunaWeightsFileName=ggml-old-vic7b-q4_0.bin
-	CXXFLAGS_OLD_GGML = -DUSE_OLD_GGML
-endif
 
 ifdef USE_CUDA
 	FLAG_BLAS_TYPE = cublas
@@ -31,7 +25,7 @@ endif
 
 # keep standard at C11 and C++11
 CFLAGS   = -I./llama.cpp -I. -O3 -DNDEBUG -std=c11 -fPIC
-CXXFLAGS = -I./llama.cpp -I. -I./llama.cpp/examples -I./examples -O3 -DNDEBUG -std=c++11 -fPIC $(CXXFLAGS_OLD_GGML)
+CXXFLAGS = -I./llama.cpp -I. -I./llama.cpp/examples -I./examples -O3 -DNDEBUG -std=c++11 -fPIC
 LDFLAGS  =
 
 # warnings
@@ -146,7 +140,7 @@ $(info )
 build:
 	$(MAKE) libbinding.a libllama.a
 #	go env -w CGO_LDFLAGS="-O2 -g $(CGO_LDFLAGS)"
-	go build -a -trimpath -ldflags="-w -s $(FLAG_OLD_GGML)" -o bin/
+	go build -a -trimpath -ldflags="-w -s" -o bin/
 #	go env -w CGO_LDFLAGS="-O2 -g"
 # ifdef USE_CLBLAST
 # 	cp openclblast/lib/clblast.dll bin/
@@ -177,9 +171,8 @@ libbinding.a: binding.o
 
 
 build_for_cuda:
-	@echo Target: $(FLAG_OLD_GGML)
 	$(MAKE) libbinding.a_for_cuda
-	go build -trimpath -ldflags="-w -s $(FLAG_OLD_GGML) -X main.deviceType=$(FLAG_BLAS_TYPE)" -o bin/
+	go build -trimpath -ldflags="-w -s -X main.deviceType=$(FLAG_BLAS_TYPE)" -o bin/
 
 libbinding.a_for_cuda:
 	$(CXX) $(CXXFLAGS) -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)

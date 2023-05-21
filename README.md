@@ -10,11 +10,8 @@ Llama 7B runner on my windows machine
 
 
 ## Download pre-compiled binary
-* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cpu.exe)
-* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cu.zip) - require [CUDA Toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [DLLs](https://github.com/ggerganov/llama.cpp/releases/download/master-e6a46b0/cudart-llama-bin-win-cu12.1.0-x64.zip) and VRAM >= 7GB
-    * Because of [memory leakage problem](https://github.com/ggerganov/llama.cpp/issues/1456), use `my-runner.exe` instead of `my-llama.exe`
-* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl.zip)
-    * [MS-Windows clblast gpu token](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl_gpu_token.zip) - Source from [this](https://github.com/ggerganov/llama.cpp/pull/1459). Still have memory leak but better than cuda version
+* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cpu.exe)
+* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cl.zip)
 
 
 ## Usage
@@ -36,17 +33,6 @@ my-llama.exe -b
     * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
     * [Git](https://github.com/git-for-windows/git/releases)
     * Memory >= 12GB
-* GPU/CUDA
-    * [Go](https://golang.org/dl)
-    * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
-    * [Git](https://github.com/git-for-windows/git/releases)
-    * [MS Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
-    * [Cmake >= 3.26](https://cmake.org/download)
-    * [CUDA Toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
-    * CPU Memory >= 12GB
-    * Video Memory >= 7GB
-        * Beacuse of GPU token generation, hard coded `n_gpu_layer` as 32 for my 3060ti
-        * If you have different GPU, you may need to change it in [cgollama/binding.cpp](/cgollama/binding.cpp)
 * GPU/CLBlast
     * [Go](https://golang.org/dl)
     * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
@@ -56,10 +42,22 @@ my-llama.exe -b
     * [OpenCL-SDK](https://github.com/KhronosGroup/OpenCL-SDK), [CLBlast](https://github.com/CNugteren/CLBlast)
         * <b>When build script running, download and build them automatically. No need to install manually</b>
         * If need change their version, just edit [build_cl.cmd](/build_cl.cmd).
+        * And one of them - NVIDIA CUDA SDK or AMD APP SDK or AMD ROCm or Intel OpenCL
     * CPU Memory >= 12GB
     * Video Memory >= 4GB
 
 ### Build
+* Scripts - `ExecutionPolicy` should be set to `RemoteSigned` and unblock `ps1` files
+```powershell
+# Check
+ExecutionPolicy
+# Set as RemoteSigned
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+
+# Unblock ps1 files
+Unblock-File *.ps1
+```
+
 * CPU
 ```powershell
 git clone https://github.com/edp1096/my-llama.git
@@ -70,16 +68,6 @@ git submodule update --init --recursive
 
 mingw32-make.exe
 ```
-* GPU/CUDA
-```powershell
-git clone https://github.com/edp1096/my-llama.git
-
-cd my-llama
-
-git submodule update --init --recursive
-
-build_cu.cmd
-```
 * GPU/CLBlast
 ```powershell
 git clone https://github.com/edp1096/my-llama.git
@@ -88,7 +76,7 @@ cd my-llama
 
 git submodule update --init --recursive
 
-build_cl.cmd
+build_cl.ps1
 ```
 
 ### Use binding

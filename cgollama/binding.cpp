@@ -36,6 +36,7 @@ struct llama_context* llama_init_from_gpt_params(const gpt_params& params) {
     auto lparams = llama_context_default_params();
 
     lparams.n_ctx = params.n_ctx;
+    // lparams.n_parts = params.n_parts;
 #ifndef USE_OLD_GGML
     lparams.n_gpu_layers = params.n_gpu_layers;
 #endif
