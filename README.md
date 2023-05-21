@@ -10,9 +10,8 @@ Llama 7B runner on my windows machine
 
 
 ## Download pre-compiled binary
-* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cpu.exe)
-* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl.zip)
-    * [MS-Windows clblast gpu token](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl_gpu_token.zip) - Source from [this](https://github.com/ggerganov/llama.cpp/pull/1459)
+* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cpu.exe)
+* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cl.zip)
 
 
 ## Usage
@@ -43,6 +42,7 @@ my-llama.exe -b
     * [OpenCL-SDK](https://github.com/KhronosGroup/OpenCL-SDK), [CLBlast](https://github.com/CNugteren/CLBlast)
         * <b>When build script running, download and build them automatically. No need to install manually</b>
         * If need change their version, just edit [build_cl.cmd](/build_cl.cmd).
+        * And one of them - NVIDIA CUDA SDK or AMD APP SDK or AMD ROCm or Intel OpenCL
     * CPU Memory >= 12GB
     * Video Memory >= 4GB
 

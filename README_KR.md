@@ -10,9 +10,8 @@
 
 
 ## 실행파일 다운로드
-* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cpu.exe)
-* [MS윈도우 clblast] - (https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl.zip)
-    * [MS윈도우 clblast gpu token](https://github.com/edp1096/my-llama/releases/download/v0.1.9/my-llama_cl_gpu_token.zip) - 출처는 [여기](https://github.com/ggerganov/llama.cpp/pull/1459)
+* [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cpu.exe)
+* [MS윈도우 clblast] - (https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cl.zip)
 
 
 ## 실행 방법
@@ -42,6 +41,7 @@
     * [OpenCL-SDK](https://github.com/KhronosGroup/OpenCL-SDK), [CLBlast](https://github.com/KhronosGroup/OpenCL-SDK)
         * <b>빌드스크립트에 다운로드, 빌드 명령 포함되어있으므로, 수동으로 다운받을 필요 없습니다.</b>
         * 버전숫자를 바꾸려면 [build_cl.cmd](/build_cl.cmd)파일을 수정해주세요.
+        * 추가로 NVIDIA CUDA SDK, AMD APP SDK, AMD ROCm, Intel OpenCL 중 하나가 필요합니다.
     * CPU Memory >= 12GB
     * Video Memory >= 4GB
 

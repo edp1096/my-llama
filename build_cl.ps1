@@ -46,5 +46,6 @@ cp -f openclblast/lib/clblast.dll bin/
 
 # Waiting for 0cc4m's PR accepting. until then, must copy this to llama.cpp folder.
 cd llama.cpp
-git restore .
+git clean -f .
+git reset --hard
 cd ..
