@@ -12,6 +12,7 @@
 ## 실행파일 다운로드
 * [MS윈도우 cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cpu.exe)
 * [MS윈도우 clblast] - (https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cl.zip)
+    * NVIDIA CUDA SDK, AMD APP SDK, AMD ROCm, Intel OpenCL 중 하나가 필요합니다.
 
 
 ## 실행 방법
