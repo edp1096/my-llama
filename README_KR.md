@@ -76,7 +76,7 @@ cd my-llama
 
 git submodule update --init --recursive
 
-build_cl.cmd
+build_cl.ps1
 ```
 
 
