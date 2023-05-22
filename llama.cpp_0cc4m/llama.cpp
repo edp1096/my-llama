@@ -2345,7 +2345,7 @@ void llama_free(struct llama_context * ctx) {
     // ggml_cl_destroy();
     // if (ctx->model.output->backend == GGML_BACKEND_CL) {
     // }
-    ggml_cl_destroy();
+    // ggml_cl_destroy();
 
 #endif
 

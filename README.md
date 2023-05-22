@@ -12,6 +12,7 @@ Llama 7B runner on my windows machine
 ## Download pre-compiled binary
 * [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cpu.exe)
 * [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cl.zip)
+    * Require one of them - NVIDIA CUDA SDK or AMD APP SDK or AMD ROCm or Intel OpenCL
 
 
 ## Usage
