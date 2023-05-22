@@ -1,7 +1,7 @@
 package cgollama
 
-// #cgo CXXFLAGS: -I../llama.cpp/examples -I../llama.cpp
-// #cgo LDFLAGS: -L../ -static -lstdc++ -lbinding
+// #cgo CXXFLAGS: -Illama.cpp/examples -Illama.cpp -Ibinding
+// #cgo LDFLAGS: -L. -static -lstdc++ -lbinding
 // #include "binding.h"
 import "C"
 import (
