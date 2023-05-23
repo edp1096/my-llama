@@ -4,7 +4,7 @@ $defName="llama.def"
 $libLlamaName="libllama.a"
 $libBindingName="libbinding.a"
 
-<# clblast #>
+<# Prepare clblast and opencl #>
 if ($args[0] -eq "clblast") {
     cp -f llama.cpp_deallocate/* llama.cpp/
 
@@ -28,8 +28,9 @@ if ($args[0] -eq "clblast") {
     }
     .\7zr.exe x -y .\clblast.7z -o"." -r
     mv -f clblast_release_dir/* openclblast/
-    rm -rf clblast_release_dir
     tar -xf opencl.zip -C openclblast
+    rm -f ./7zr.exe
+    rm -rf clblast_release_dir
 
     cp -rf openclblast/OpenCL-SDK-v2023.04.17-Win-x64/* openclblast
     cp -rf openclblast_cmake/*.cmake openclblast/lib/cmake/CLBlast
@@ -45,7 +46,7 @@ if ($args[0] -eq "clblast") {
 }
 
 
-<# llama.cpp - msvc/cmake #>
+<# Compile llama.cpp - msvc/cmake #>
 cd llama.cpp
 
 mkdir -f build
@@ -64,12 +65,12 @@ if ($args[0] -eq "clblast") {
 }
 dlltool -k -d ./$defName -l ./$libLlamaName
 
-<# binding #>
+<# Compile binding #>
 g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./llama.cpp -I./llama.cpp/examples binding.cpp -o binding.o -c
 ar src $libBindingName binding.o
 
 
-<# clblast - restore modified from llama.cpp_deallocate #>
+<# Restore overwritten llama.cpp_deallocate for clblast to original commit #>
 if ($args[0] -eq "clblast") {
     cd llama.cpp
     git clean -f .

@@ -9,6 +9,6 @@ if ($args[0] -eq "clblast") {
     # export CGO_LDFLAGS="-static -L. -lstdc++ -lllama -lbinding"
     $env:CGO_LDFLAGS="-static -L. -lstdc++ -lllama -lbinding"
 
-    go build -trimpath -ldflags="-w -s" -o bin/run-myllama.exe ./cmd
+    go build -trimpath -ldflags="-w -s" -o bin/run-myllama_cpu.exe ./cmd
     cp -f llama.dll bin/
 }
