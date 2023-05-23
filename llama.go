@@ -1,8 +1,10 @@
 package myllama
 
 /*
+#cgo CFLAGS: -I./llama.cpp -I./llama.cpp/examples
 #cgo CXXFLAGS: -I./llama.cpp -I./llama.cpp/examples
 #cgo LDFLAGS: -static -L. -lstdc++ -lllama -lbinding
+#include "llama.h"
 #include "binding.h"
 */
 import "C"
@@ -19,6 +21,8 @@ type LLama struct {
 }
 
 func New() (*LLama, error) {
+	C.llama_print_system_info()
+
 	container := C.bd_init_container()
 	if container == nil {
 		return nil, fmt.Errorf("failed to initialize the container")
