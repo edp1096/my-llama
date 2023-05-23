@@ -1,11 +1,7 @@
 package myllama
 
 /*
-#cgo CFLAGS: -I./llama.cpp -I./llama.cpp/examples
-#cgo CXXFLAGS: -I./llama.cpp -I./llama.cpp/examples
-// Use CGO_LDFLAGS at environment variables instead of #cgo LDFLAGS: -static -L. -lstdc++ -lllama -lbinding
-// See build_cmd.ps1 for above.
-#include "llama.h"
+#cgo CXXFLAGS: -Illama.cpp -Illama.cpp/examples
 #include "binding.h"
 */
 import "C"
@@ -37,8 +33,6 @@ func (l *LLama) LoadModel(modelFNAME string) error {
 	if !result {
 		return fmt.Errorf("failed to load the model")
 	}
-
-	C.llama_print_system_info()
 
 	return nil
 }
