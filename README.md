@@ -76,8 +76,6 @@ git clone https://github.com/edp1096/my-llama.git
 
 cd my-llama
 
-git submodule update --init --recursive
-
 build_lib.ps1
 build_cmd.ps1
 ```
@@ -86,8 +84,6 @@ build_cmd.ps1
 git clone https://github.com/edp1096/my-llama.git
 
 cd my-llama
-
-git submodule update --init --recursive
 
 build_lib.ps1 clblast
 build_cmd.ps1 clblast
