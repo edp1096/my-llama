@@ -5,14 +5,19 @@ Llama 7B runner on my windows machine
 ## This is a ..
 
 * Go binding for interactive mode of `llama.cpp/examples/main`
-* Websocket server
-* Go embedded web ui
+* `cmd`
+    * Websocket server
+    * Go embedded web ui
 
 
 ## Download pre-compiled binary
-* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cpu.exe)
-* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.10/my-llama_cl.zip)
-    * Require one of them - NVIDIA CUDA SDK or AMD APP SDK or AMD ROCm or Intel OpenCL
+* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.11/my-llama_cpu.zip)
+* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.11/my-llama_cl.zip)
+    * Require one of them installed
+        * NVIDIA CUDA SDK
+        * AMD APP SDK
+        * AMD ROCm
+        * Intel OpenCL
 
 
 ## Usage
@@ -33,6 +38,8 @@ my-llama.exe -b
     * [Go](https://golang.org/dl)
     * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
     * [Git](https://github.com/git-for-windows/git/releases)
+    * [MS Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
+    * [Cmake >= 3.26](https://cmake.org/download)
     * Memory >= 12GB
 * GPU/CLBlast
     * [Go](https://golang.org/dl)
@@ -42,12 +49,16 @@ my-llama.exe -b
     * [Cmake >= 3.26](https://cmake.org/download)
     * [OpenCL-SDK](https://github.com/KhronosGroup/OpenCL-SDK), [CLBlast](https://github.com/CNugteren/CLBlast)
         * <b>When build script running, download and build them automatically. No need to install manually</b>
-        * If need change their version, just edit [build_cl.cmd](/build_cl.cmd).
-        * And one of them - NVIDIA CUDA SDK or AMD APP SDK or AMD ROCm or Intel OpenCL
+        * If need change their version, just edit [build_lib.ps1](/build_lib.ps1).
+        * And one of them
+            * NVIDIA CUDA SDK
+            * AMD APP SDK
+            * AMD ROCm
+            * Intel OpenCL
     * CPU Memory >= 12GB
     * Video Memory >= 4GB
 
-### Build
+### Build runner in cmd
 * Scripts - `ExecutionPolicy` should be set to `RemoteSigned` and unblock `ps1` files
 ```powershell
 # Check
@@ -67,7 +78,8 @@ cd my-llama
 
 git submodule update --init --recursive
 
-mingw32-make.exe
+build_lib.ps1
+build_cmd.ps1
 ```
 * GPU/CLBlast
 ```powershell
@@ -77,11 +89,12 @@ cd my-llama
 
 git submodule update --init --recursive
 
-build_cl.ps1
+build_lib.ps1 clblast
+build_cmd.ps1 clblast
 ```
 
 ### Use binding
-See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama/cgollama.svg" alt="Go Reference"></a> and [`main.go`](main.go)
+See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama/cgollama.svg" alt="Go Reference"></a> and [`main.go`](/cmd/main.go) in `cmd`
 
 
 ## Todo
