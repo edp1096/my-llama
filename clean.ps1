@@ -5,6 +5,11 @@ rm -f *.s
 rm -f *.def
 rm -f *.dll
 
+rm -f vendor/*.o
+rm -f vendor/*.a
+rm -f vendor/*.def
+rm -f vendor/*.dll
+
 rm -f vendor/llama.cpp/*.o
 rm -f vendor/llama.cpp/*.a
 
