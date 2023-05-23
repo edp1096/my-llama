@@ -14,7 +14,10 @@ llama.exp
 
 openclblast/
 
+clblast.7z
 clblast.zip
 opencl.zip
 
 output.log
+
+7zr.exe

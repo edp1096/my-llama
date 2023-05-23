@@ -21,8 +21,6 @@ type LLama struct {
 }
 
 func New() (*LLama, error) {
-	C.llama_print_system_info()
-
 	container := C.bd_init_container()
 	if container == nil {
 		return nil, fmt.Errorf("failed to initialize the container")
@@ -38,6 +36,8 @@ func (l *LLama) LoadModel(modelFNAME string) error {
 	if !result {
 		return fmt.Errorf("failed to load the model")
 	}
+
+	C.llama_print_system_info()
 
 	return nil
 }
