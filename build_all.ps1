@@ -1,12 +1,12 @@
-# Get submodule
-cd vendor/llama.cpp
-git checkout -q master
-cd ..
+# # Get submodule
+# cd vendor/llama.cpp
+# git checkout -q master
+# cd ..
 
-cd vendor/llama.cpp
-git clean -f .
-git reset --hard
-cd ..
+# cd vendor/llama.cpp
+# git clean -f .
+# git reset --hard
+# cd ..
 
 
 # cpu

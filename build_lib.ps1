@@ -70,10 +70,10 @@ g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./vendor/llama.c
 ar src $libBindingName binding.o
 
 
-<# Restore overwritten vendor/llama.cpp_deallocate for clblast to original commit #>
-if ($args[0] -eq "clblast") {
-    cd vendor/llama.cpp
-    git clean -f .
-    git reset --hard
-    cd ..
-}
+# <# Restore overwritten vendor/llama.cpp_deallocate for clblast to original commit #>
+# if ($args[0] -eq "clblast") {
+#     cd vendor/llama.cpp
+#     git clean -f .
+#     git reset --hard
+#     cd ..
+# }
