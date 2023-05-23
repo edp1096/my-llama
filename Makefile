@@ -139,15 +139,9 @@ $(info )
 
 build:
 	$(MAKE) libbinding.a libllama.a
-#	go env -w CGO_LDFLAGS="-O2 -g $(CGO_LDFLAGS)"
 	go build -a -trimpath -ldflags="-w -s" -o bin/
-#	go env -w CGO_LDFLAGS="-O2 -g"
-# ifdef USE_CLBLAST
-# 	cp openclblast/lib/clblast.dll bin/
-# endif
 
 llama.cpp/ggml.o:
-#	$(MAKE) CC=$(CC) CFLAGS+='$(CFLAGS_ADD)' -C llama.cpp ggml.o
 	$(MAKE) CC=$(CC) -C llama.cpp ggml.o
 
 llama.cpp/llama.o:
@@ -156,11 +150,7 @@ llama.cpp/llama.o:
 llama.cpp/common.o:
 	$(MAKE) CC=$(CC) -C llama.cpp common.o
 
-# llama.cpp/ggml-opencl.o:
-# 	$(MAKE) CC=$(CC) LLAMA_CLBLAST=$(LLAMA_CLBLAST) CFLAGS+='$(CFLAGS_ADD)' LDFLAGS+='$(LDFLAGS_ADD)' -C llama.cpp ggml-opencl.o
-
-binding.o: llama.cpp/ggml.o llama.cpp/llama.o llama.cpp/common.o $(OBJS)
-#	$(CXX) $(CXXFLAGS) -static $(LDFLAGS_ADD) $(CFLAGS_ADD) -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
+binding.o: $(OBJS)
 	$(CXX) $(CXXFLAGS) -static -I./llama.cpp -I./llama.cpp/examples cgollama/binding.cpp -o cgollama/binding.o -c $(LDFLAGS)
 
 libllama.a: llama.cpp/ggml.o llama.cpp/common.o llama.cpp/llama.o $(OBJS)
