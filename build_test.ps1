@@ -10,7 +10,17 @@ cmake --build . --config Release
 
 cp bin/Release/llama.dll ../../llama.dll
 
-cd ..
+cd ../..
+
+mingw32-make.exe CC=gcc -C llama.cpp ggml.o
+mingw32-make.exe CC=gcc -C llama.cpp llama.o
+mingw32-make.exe CC=gcc -C llama.cpp common.o
+
+cp -f llama.cpp/ggml.o ggml.o
+cp -f llama.cpp/llama.o llama.o
+cp -f llama.cpp/common.o common.o
+
+ar rcs libllama.a llama.o ggml.o common.o
 
 # gcc -I. -Iexamples ggml.c -o ggml.o -c
 # g++ -I. -Iexamples llama.cpp -o llama.o -c
@@ -20,17 +30,17 @@ cd ..
 # cp llama.o ../llama.o
 # cp common.o ../common.o
 
-cd ..
+# cd ..
 # ar rcs libllama.a llama.o ggml.o common.o
 
-gendef ./llama.dll
-dlltool -k -d ./llama.def -l ./libllama.a
+# gendef ./llama.dll
+# dlltool -k -d ./llama.def -l ./libllama.a
 
 <# binding #>
 cd binding
-g++ -I../llama.cpp -I../llama.cpp/examples -lllama binding.cpp -o binding.o -c -L..
+g++ -I../llama.cpp -I../llama.cpp/examples binding.cpp -o binding.o -c -L.. -lllama
 # ar rcs libbinding.a binding.o libllama.a
-ar rcs libbinding.a binding.o
+ar rcs libbinding.a
 
 cp libbinding.a ../libbinding.a
 

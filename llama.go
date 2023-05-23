@@ -1,7 +1,7 @@
 package myllama
 
 // #cgo CFLAGS: -Illama.cpp -Illama.cpp/examples -Ibinding
-// #cgo LDFLAGS: -L. -lstdc++ -lbinding -lllama
+// #cgo LDFLAGS: -L. -lstdc++ -llama -lbinding
 // #include "binding.h"
 import "C"
 import (
