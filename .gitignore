@@ -1,6 +1,8 @@
 .vscode
 /bin/
 *.a
+# !libbinding.a
+# binding/libbinding.a
 *.o
 *.s
 
