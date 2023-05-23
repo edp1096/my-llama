@@ -1,4 +1,4 @@
-package main // import "github.com/edp1096/my-llama"
+package main // import "run-myllama"
 
 import (
 	"flag"
@@ -16,7 +16,7 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	ws "golang.org/x/net/websocket"
 
-	llama "myllama"
+	llama "github.com/edp1096/my-llama"
 )
 
 //go:embed html/index.html
