@@ -1,4 +1,4 @@
-git restore vendor
+git restore vendors
 
 # cpu
 ./clean.ps1

@@ -5,16 +5,16 @@ rm -f *.s
 rm -f *.def
 rm -f *.dll
 
-rm -f vendor/*.o
-rm -f vendor/*.a
-rm -f vendor/*.def
-rm -f vendor/*.dll
+rm -f vendors/*.o
+rm -f vendors/*.a
+rm -f vendors/*.def
+rm -f vendors/*.dll
 
-rm -f vendor/llama.cpp/*.o
-rm -f vendor/llama.cpp/*.a
+rm -f vendors/llama.cpp/*.o
+rm -f vendors/llama.cpp/*.a
 
-rm -rf vendor/llama.cpp/build
-rm -f vendor/llama.cpp/build-info.h
+rm -rf vendors/llama.cpp/build
+rm -f vendors/llama.cpp/build-info.h
 
 rm -f opencl.zip
 rm -f clblast.7z
