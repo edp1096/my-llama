@@ -208,6 +208,7 @@ struct llama_vocab {
 
 struct llama_context {
     int n_gpu = 0;
+    int n_gpu_output = 0;
 
     std::mt19937 rng;
 
@@ -1154,6 +1155,8 @@ static void llama_model_load_internal(
         if (n_gpu_layers > (int) hparams.n_layer) {
             fprintf(stderr, "ggml_opencl: offloading output layer to GPU\n");
             ggml_cl_transform_tensor(model.output); vram_total += ggml_nbytes(model.output);
+
+            lctx.n_gpu_output = 1;
         }
 
         fprintf(stderr, "ggml_opencl: total VRAM used: %zu MB\n", vram_total / 1024 / 1024);
@@ -2293,38 +2296,6 @@ struct llama_context * llama_init_from_file(
 }
 
 void llama_free(struct llama_context * ctx) {
-    void *output_data = nullptr;
-
-#ifdef GGML_USE_CUBLAS
-    printf("free start\n");
-    int n_gpu = ctx->n_gpu;
-
-    ggml_cuda_device_synchronize();
-
-    for (int i = 0; i < n_gpu; ++i) {
-        ggml_cuda_pool_free(ctx->model.layers[i].wq->data, ggml_nbytes(ctx->model.layers[i].wq));
-        ggml_cuda_pool_free(ctx->model.layers[i].wk->data, ggml_nbytes(ctx->model.layers[i].wk));
-        ggml_cuda_pool_free(ctx->model.layers[i].wv->data, ggml_nbytes(ctx->model.layers[i].wv));
-        ggml_cuda_pool_free(ctx->model.layers[i].wo->data, ggml_nbytes(ctx->model.layers[i].wo));
-        ggml_cuda_pool_free(ctx->model.layers[i].w1->data, ggml_nbytes(ctx->model.layers[i].w1));
-        ggml_cuda_pool_free(ctx->model.layers[i].w2->data, ggml_nbytes(ctx->model.layers[i].w2));
-        ggml_cuda_pool_free(ctx->model.layers[i].w3->data, ggml_nbytes(ctx->model.layers[i].w3));
-
-        // ggml_cuda_mem_free(ctx->model.layers[i].wq->data);
-        // ggml_cuda_mem_free(ctx->model.layers[i].wk->data);
-        // ggml_cuda_mem_free(ctx->model.layers[i].wv->data);
-        // ggml_cuda_mem_free(ctx->model.layers[i].wo->data);
-        // ggml_cuda_mem_free(ctx->model.layers[i].w1->data);
-        // ggml_cuda_mem_free(ctx->model.layers[i].w2->data);
-        // ggml_cuda_mem_free(ctx->model.layers[i].w3->data);
-    }
-    printf("free inputs done?\n");
-    // ggml_cuda_mem_free(ctx->model.output->data);
-    // printf("free output done?\n");
-    // ggml_cuda_destroy();
-    // printf("destroy done?\n");
-#endif
-
 #ifdef GGML_USE_CLBLAST
     int n_gpu = ctx->n_gpu;
     for (int i = 0; i < n_gpu; ++i) {
@@ -2336,15 +2307,11 @@ void llama_free(struct llama_context * ctx) {
         ggml_cl_mem_free(*(cl_mem *)ctx->model.layers[i].w2->data);
         ggml_cl_mem_free(*(cl_mem *)ctx->model.layers[i].w3->data);
     }
-    // Not work
-    // ggml_cl_mem_free(*(cl_mem*)ctx->model.output->data);
-    // ggml_cl_destroy();
 
-    // output_data = ctx->model.output->data;
-    // ggml_cl_mem_free(*(cl_mem *)output_data);
-    // ggml_cl_destroy();
-    // if (ctx->model.output->backend == GGML_BACKEND_CL) {
-    // }
+    if (ctx->n_gpu_output > 0) {
+        ggml_cl_mem_free(*(cl_mem *)ctx->model.output->data);
+    }
+    // Not work
     // ggml_cl_destroy();
 
 #endif
