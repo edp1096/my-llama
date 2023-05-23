@@ -96,7 +96,7 @@ build_cmd.ps1 clblast
 ```
 
 ### Use binding
-See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama/cgollama.svg" alt="Go Reference"></a> and [`main.go`](/cmd/main.go) in `cmd`
+See <a href="https://pkg.go.dev/github.com/edp1096/my-llama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama.svg" alt="Go Reference"></a> and [`main.go`](/cmd/main.go) in `cmd`
 
 
 ## Todo
