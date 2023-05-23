@@ -15,4 +15,5 @@ rm -f clblast.7z
 rm -f clblast.zip
 rm -rf openclblast
 
+rm -f output.log
 rm -f 7zr.exe
