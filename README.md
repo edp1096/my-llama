@@ -10,9 +10,10 @@ Llama 7B runner on my windows machine
     * Go embedded web ui
 
 
-## Download pre-compiled binary
-* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.11/my-llama_cpu.zip)
-* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.11/my-llama_cl.zip)
+## Download pre-compiled binary, dll
+* [DLL](https://github.com/edp1096/my-llama/releases)
+* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.15/my-llama_cpu.zip)
+* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.15/my-llama_cl.zip)
     * Require one of them installed
         * NVIDIA CUDA SDK
         * AMD APP SDK
