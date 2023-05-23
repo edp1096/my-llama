@@ -5,6 +5,7 @@ package myllama
 #include "binding.h"
 */
 import "C"
+
 import (
 	"fmt"
 	"unsafe"
