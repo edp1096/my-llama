@@ -52,7 +52,7 @@ cd vendor/llama.cpp
 mkdir -f build
 cd build
 
-cmake .. -DCMAKE_PREFIX_PATH='../openclblast' -DLLAMA_CLBLAST=$useCLBlast -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
+cmake .. -DCMAKE_PREFIX_PATH='../../openclblast' -DLLAMA_CLBLAST=$useCLBlast -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
 cmake --build . --config Release
 
 cp bin/Release/llama.dll ../../../$dllName
@@ -71,9 +71,6 @@ ar src $libBindingName binding.o
 
 
 # <# Restore overwritten vendor/llama.cpp_deallocate for clblast to original commit #>
-# if ($args[0] -eq "clblast") {
-#     cd vendor/llama.cpp
-#     git clean -f .
-#     git reset --hard
-#     cd ..
-# }
+if ($args[0] -eq "clblast") {
+    git restore vendor
+}

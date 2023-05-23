@@ -1,13 +1,4 @@
-# # Get submodule
-# cd vendor/llama.cpp
-# git checkout -q master
-# cd ..
-
-# cd vendor/llama.cpp
-# git clean -f .
-# git reset --hard
-# cd ..
-
+git restore vendor
 
 # cpu
 ./clean.ps1
