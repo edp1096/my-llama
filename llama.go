@@ -1,8 +1,10 @@
 package myllama
 
-// #cgo CFLAGS: -Ibinding
-// #cgo LDFLAGS: -L. -lstdc++ -lllama -lbinding
-// #include "binding.h"
+/*
+#cgo CXXFLAGS: -I./llama.cpp -I./llama.cpp/examples
+#cgo LDFLAGS: -static -L. -lstdc++ -lllama -lbinding
+#include "binding.h"
+*/
 import "C"
 import (
 	"fmt"

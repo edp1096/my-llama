@@ -1,5 +1,3 @@
-rm -f binding/*.o
-rm -f binding/*.a
 rm -f *.o
 rm -f *.a
 # rm -f libllama.a
