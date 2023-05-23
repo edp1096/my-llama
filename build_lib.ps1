@@ -55,9 +55,9 @@ cd build
 cmake .. -DCMAKE_PREFIX_PATH='../openclblast' -DLLAMA_CLBLAST=$useCLBlast -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
 cmake --build . --config Release
 
-cp bin/Release/llama.dll ../../$dllName
+cp bin/Release/llama.dll ../../../$dllName
 
-cd ../..
+cd ../../..
 
 gendef ./$dllName
 if ($args[0] -eq "clblast") {
