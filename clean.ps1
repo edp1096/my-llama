@@ -1,4 +1,5 @@
 rm -f *.o
+rm -f *.s
 # rm -f *.a
 # rm -f libllama.a
 rm -f *.def

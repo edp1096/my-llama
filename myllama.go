@@ -3,7 +3,8 @@ package myllama
 /*
 #cgo CFLAGS: -I./llama.cpp -I./llama.cpp/examples
 #cgo CXXFLAGS: -I./llama.cpp -I./llama.cpp/examples
-#cgo LDFLAGS: -static -L. -lstdc++ -lllama -lbinding
+// Use CGO_LDFLAGS at environment variables instead of #cgo LDFLAGS: -static -L. -lstdc++ -lllama -lbinding
+// See build_cmd.ps1 for above.
 #include "llama.h"
 #include "binding.h"
 */

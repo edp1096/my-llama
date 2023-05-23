@@ -1,4 +1,8 @@
-$useCLBlast=""
+$useCLBlast="0"
+$dllName="llama.dll"
+$defName="llama.def"
+$libLlamaName="libllama.a"
+$libBindingName="libbinding.a"
 
 <# clblast #>
 if ($args[0] -eq "clblast") {
@@ -32,7 +36,12 @@ if ($args[0] -eq "clblast") {
 
     rm -rf openclblast/OpenCL-SDK-v2023.04.17-Win-x64
 
-    $useCLBlast = "-DLLAMA_CLBLAST=1"
+    $useCLBlast = "1"
+
+    $dllName="llama_cl.dll"
+    $defName="llama_cl.def"
+    $libLlamaName="libllama_cl.a"
+    $libBindingName="libbinding_cl.a"
 }
 
 
@@ -45,17 +54,19 @@ cd build
 cmake .. -DCMAKE_PREFIX_PATH='../openclblast' -DLLAMA_CLBLAST=$useCLBlast -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
 cmake --build . --config Release
 
-cp bin/Release/llama.dll ../../llama.dll
+cp bin/Release/llama.dll ../../$dllName
 
 cd ../..
 
-gendef ./llama.dll
-dlltool -k -d ./llama.def -l ./libllama.a
-
+gendef ./$dllName
+if ($args[0] -eq "clblast") {
+    (Get-Content -Path "$defName") -replace "llama.dll", "llama_cl.dll" | Set-Content -Path "$defName"
+}
+dlltool -k -d ./$defName -l ./$libLlamaName
 
 <# binding #>
 g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./llama.cpp -I./llama.cpp/examples binding.cpp -o binding.o -c
-ar src libbinding.a binding.o
+ar src $libBindingName binding.o
 
 
 <# clblast - restore modified from llama.cpp_deallocate #>

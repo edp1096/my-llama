@@ -1,4 +1,4 @@
-module run-cgollama
+module run-myllama
 
 go 1.20
 
