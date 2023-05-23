@@ -21,6 +21,11 @@ Llama 7B runner on my windows machine
 
 
 ## Usage
+
+### Use as go module
+See [my-llama-app](https://github.com/edp1096/my-llama-app) repo.
+
+### runner in cmd
 ```powershell
 # Just launch
 my-llama.exe
