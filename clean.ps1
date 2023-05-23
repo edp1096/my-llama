@@ -5,11 +5,11 @@ rm -f *.s
 rm -f *.def
 rm -f *.dll
 
-rm -f llama.cpp/*.o
-rm -f llama.cpp/*.a
+rm -f vendor/llama.cpp/*.o
+rm -f vendor/llama.cpp/*.a
 
-rm -rf llama.cpp/build
-rm -f llama.cpp/build-info.h
+rm -rf vendor/llama.cpp/build
+rm -f vendor/llama.cpp/build-info.h
 
 rm -f opencl.zip
 rm -f clblast.7z

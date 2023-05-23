@@ -1,9 +1,9 @@
 # Get submodule
-cd llama.cpp
+cd vendor/llama.cpp
 git checkout -q master
 cd ..
 
-cd llama.cpp
+cd vendor/llama.cpp
 git clean -f .
 git reset --hard
 cd ..

@@ -6,7 +6,7 @@ $libBindingName="libbinding.a"
 
 <# Prepare clblast and opencl #>
 if ($args[0] -eq "clblast") {
-    cp -f llama.cpp_deallocate/* llama.cpp/
+    cp -f llama.cpp_deallocate/* vendor/llama.cpp/
 
     if (-not (Test-Path -Path "clblast.zip")) {
         echo "Downloading CLBlast..."
@@ -46,8 +46,8 @@ if ($args[0] -eq "clblast") {
 }
 
 
-<# Compile llama.cpp - msvc/cmake #>
-cd llama.cpp
+<# Compile vendor/llama.cpp - msvc/cmake #>
+cd vendor/llama.cpp
 
 mkdir -f build
 cd build
@@ -66,13 +66,13 @@ if ($args[0] -eq "clblast") {
 dlltool -k -d ./$defName -l ./$libLlamaName
 
 <# Compile binding #>
-g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./llama.cpp -I./llama.cpp/examples binding.cpp -o binding.o -c
+g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./vendor/llama.cpp -I./vendor/llama.cpp/examples binding.cpp -o binding.o -c
 ar src $libBindingName binding.o
 
 
-<# Restore overwritten llama.cpp_deallocate for clblast to original commit #>
+<# Restore overwritten vendor/llama.cpp_deallocate for clblast to original commit #>
 if ($args[0] -eq "clblast") {
-    cd llama.cpp
+    cd vendor/llama.cpp
     git clean -f .
     git reset --hard
     cd ..
