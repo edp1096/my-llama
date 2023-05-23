@@ -1,18 +1,27 @@
 .vscode
 /bin/
 *.a
+!libllama.a
+!libbinding.a
+!libllama_cl.a
+!libbinding_cl.a
 *.o
 *.s
 
-llama.dll
 llama.lib
 llama.obj
-llama.def
 llama.exp
+llama.dll
+llama_cl.dll
+llama.def
+llama_cl.def
 
 openclblast/
 
+clblast.7z
 clblast.zip
 opencl.zip
 
 output.log
+
+7zr.exe

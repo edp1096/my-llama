@@ -3,24 +3,35 @@ cd llama.cpp
 git checkout -q master
 cd ..
 
-
-# clblast
-./clean.ps1
-./build_cl.ps1
-mv -f bin/my-llama.exe bin/my-llama_cl.exe
-cd bin
-tar.exe -a -c -f my-llama_cl.zip my-llama_cl.exe llama.dll clblast.dll
+cd llama.cpp
+git clean -f .
+git reset --hard
 cd ..
 
 
 # cpu
 ./clean.ps1
-mingw32-make.exe
-mv -f bin/my-llama.exe bin/my-llama_cpu.exe
+./build_lib.ps1
+./build_cmd.ps1
+
+cd bin
+tar.exe -a -c -f my-llama_dll_cpu.zip llama.dll
+tar.exe -a -c -f my-llama_cpu.zip run-myllama_cpu.exe llama.dll
+cd ..
 
 
-# clean and delete unnecessary files
+# clblast
 ./clean.ps1
-rm -rf bin\my-llama_cl.exe
-rm -rf bin\llama.dll
-rm -rf bin\clblast.dll
+./build_lib.ps1 clblast
+./build_cmd.ps1 clblast
+
+cd bin
+tar.exe -a -c -f my-llama_dll_cl.zip llama_cl.dll clblast.dll
+tar.exe -a -c -f my-llama_cl.zip run-myllama_cl.exe llama_cl.dll clblast.dll
+cd ..
+
+
+# cleaning
+cd bin
+rm -f *.dll *.exe
+cd ..
