@@ -3,6 +3,7 @@ package myllama
 /*
 #cgo CXXFLAGS: -Ivendors/llama.cpp -Ivendors/llama.cpp/examples
 #include "binding.h"
+#include "binding_api.h"
 */
 import "C"
 
@@ -23,6 +24,9 @@ func New() (*LLama, error) {
 	if container == nil {
 		return nil, fmt.Errorf("failed to initialize the container")
 	}
+
+	sysInfo := C.llama_get_system_info()
+	fmt.Printf("System Info: %s\n", C.GoString(sysInfo))
 
 	return &LLama{Container: container}, nil
 }
@@ -75,10 +79,20 @@ func (l *LLama) SetIsInteracting(isInteracting bool) {
 	C.bd_set_is_interacting(l.Container, C.bool(isInteracting))
 }
 
+/*
+SaveState
+
+Not use.
+*/
 func (l *LLama) SaveState(fname string) {
 	C.bd_save_state(l.Container, C.CString(fname))
 }
 
+/*
+LoadState
+
+Not use.
+*/
 func (l *LLama) LoadState(fname string) {
 	C.bd_load_state(l.Container, C.CString(fname))
 }

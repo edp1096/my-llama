@@ -1,5 +1,3 @@
-//go:build cpu || clblast
-
 package main // import "run-myllama"
 
 import (

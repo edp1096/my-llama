@@ -1,11 +1,7 @@
-//go:build cpu
-// +build cpu
+//go:build cpu || !clblast
+// +build cpu !clblast
 
 package myllama
 
-/*
-#cgo CXXFLAGS: -Ivendors/llama.cpp -Ivendors/llama.cpp/examples
-#cgo LDFLAGS: -static -L. -lstdc++ -lllama -lbinding
-#include "binding.h"
-*/
+// #cgo LDFLAGS: -static -L. -lstdc++ -lllama -lbinding
 import "C"
