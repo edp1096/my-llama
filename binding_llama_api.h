@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 
-char* llama_get_system_info();
+char* llama_api_print_system_info();
 
 #ifdef __cplusplus
 }
