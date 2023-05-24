@@ -24,7 +24,7 @@ Llama 7B runner on my windows machine
 ## Usage
 
 ### Use this as go module
-See [my-llama-app](https://github.com/edp1096/my-llama-app) repo.
+See <a href="https://pkg.go.dev/github.com/edp1096/my-llama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama.svg" alt="Go Reference"></a> or [my-llama-app](https://github.com/edp1096/my-llama-app) repo.
 
 ### runner in cmd
 ```powershell
@@ -64,8 +64,8 @@ my-llama.exe -b
     * CPU Memory >= 12GB
     * Video Memory >= 4GB
 
-### Build runner in cmd
-* Scripts - `ExecutionPolicy` should be set to `RemoteSigned` and unblock `ps1` files
+# Powershell scripts
+* Before execute `ps1` script files, `ExecutionPolicy` should be set to `RemoteSigned` and unblock `ps1` files
 ```powershell
 # Check
 ExecutionPolicy
@@ -76,6 +76,7 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 Unblock-File *.ps1
 ```
 
+### Clone repository then build library
 * CPU
 ```powershell
 git clone https://github.com/edp1096/my-llama.git
@@ -83,7 +84,6 @@ git clone https://github.com/edp1096/my-llama.git
 cd my-llama
 
 build_lib.ps1
-build_cmd.ps1
 ```
 * GPU/CLBlast
 ```powershell
@@ -92,11 +92,27 @@ git clone https://github.com/edp1096/my-llama.git
 cd my-llama
 
 build_lib.ps1 clblast
-build_cmd.ps1 clblast
 ```
 
-### Use binding
-See <a href="https://pkg.go.dev/github.com/edp1096/my-llama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama.svg" alt="Go Reference"></a> and [`main.go`](/cmd/main.go) in `cmd`
+### Then build runner in cmd folder
+* CPU
+```powershell
+build_cmd.ps1
+
+# or
+
+cd cmd
+go build
+```
+* GPU/CLBlast
+```powershell
+build_cmd.ps1 clblast
+
+# or
+
+cd cmd
+go build -tags clblast -ldflags="-X main.deviceType=clblast"
+```
 
 
 ## Todo
