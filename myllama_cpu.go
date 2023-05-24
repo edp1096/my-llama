@@ -1,5 +1,5 @@
-//go:build cpu || !clblast
-// +build cpu !clblast
+//go:build !clblast
+// +build !clblast
 
 package myllama
 
