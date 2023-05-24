@@ -1,14 +1,12 @@
 package myllama
 
 /*
-#cgo CFLAGS: -I./llama.cpp -I./llama.cpp/examples
-#cgo CXXFLAGS: -I./llama.cpp -I./llama.cpp/examples
-// Use CGO_LDFLAGS at environment variables instead of #cgo LDFLAGS: -static -L. -lstdc++ -lllama -lbinding
-// See build_cmd.ps1 for above.
-#include "llama.h"
+#cgo CXXFLAGS: -Ivendors/llama.cpp -Ivendors/llama.cpp/examples
 #include "binding.h"
+#include "binding_api.h"
 */
 import "C"
+
 import (
 	"fmt"
 	"unsafe"
@@ -27,6 +25,9 @@ func New() (*LLama, error) {
 		return nil, fmt.Errorf("failed to initialize the container")
 	}
 
+	sysInfo := C.llama_get_system_info()
+	fmt.Printf("System Info: %s\n", C.GoString(sysInfo))
+
 	return &LLama{Container: container}, nil
 }
 
@@ -37,8 +38,6 @@ func (l *LLama) LoadModel(modelFNAME string) error {
 	if !result {
 		return fmt.Errorf("failed to load the model")
 	}
-
-	C.llama_print_system_info()
 
 	return nil
 }
@@ -80,10 +79,20 @@ func (l *LLama) SetIsInteracting(isInteracting bool) {
 	C.bd_set_is_interacting(l.Container, C.bool(isInteracting))
 }
 
+/*
+SaveState
+
+Not use.
+*/
 func (l *LLama) SaveState(fname string) {
 	C.bd_save_state(l.Container, C.CString(fname))
 }
 
+/*
+LoadState
+
+Not use.
+*/
 func (l *LLama) LoadState(fname string) {
 	C.bd_load_state(l.Container, C.CString(fname))
 }

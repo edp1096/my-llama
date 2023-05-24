@@ -1,13 +1,4 @@
-# Get submodule
-cd llama.cpp
-git checkout -q master
-cd ..
-
-cd llama.cpp
-git clean -f .
-git reset --hard
-cd ..
-
+git restore vendors
 
 # cpu
 ./clean.ps1

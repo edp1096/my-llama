@@ -10,17 +10,23 @@ Llama 7B runner on my windows machine
     * Go embedded web ui
 
 
-## Download pre-compiled binary
-* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.11/my-llama_cpu.zip)
-* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.11/my-llama_cl.zip)
+## Download pre-compiled binary, dll
+* [DLL](https://github.com/edp1096/my-llama/releases)
+* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.15/my-llama_cpu.zip)
+* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.15/my-llama_cl.zip)
     * Require one of them installed
-        * NVIDIA CUDA SDK
+        * NVIDIA CUDA Toolkit >= 11
         * AMD APP SDK
         * AMD ROCm
         * Intel OpenCL
 
 
 ## Usage
+
+### Use this as go module
+See <a href="https://pkg.go.dev/github.com/edp1096/my-llama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama.svg" alt="Go Reference"></a> or [my-llama-app](https://github.com/edp1096/my-llama-app) repo.
+
+### runner in cmd
 ```powershell
 # Just launch
 my-llama.exe
@@ -58,8 +64,8 @@ my-llama.exe -b
     * CPU Memory >= 12GB
     * Video Memory >= 4GB
 
-### Build runner in cmd
-* Scripts - `ExecutionPolicy` should be set to `RemoteSigned` and unblock `ps1` files
+# Powershell scripts
+* Before execute `ps1` script files, `ExecutionPolicy` should be set to `RemoteSigned` and unblock `ps1` files
 ```powershell
 # Check
 ExecutionPolicy
@@ -70,16 +76,14 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 Unblock-File *.ps1
 ```
 
+### Clone repository then build library
 * CPU
 ```powershell
 git clone https://github.com/edp1096/my-llama.git
 
 cd my-llama
 
-git submodule update --init --recursive
-
 build_lib.ps1
-build_cmd.ps1
 ```
 * GPU/CLBlast
 ```powershell
@@ -87,14 +91,28 @@ git clone https://github.com/edp1096/my-llama.git
 
 cd my-llama
 
-git submodule update --init --recursive
-
 build_lib.ps1 clblast
-build_cmd.ps1 clblast
 ```
 
-### Use binding
-See <a href="https://pkg.go.dev/github.com/edp1096/my-llama/cgollama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama/cgollama.svg" alt="Go Reference"></a> and [`main.go`](/cmd/main.go) in `cmd`
+### Then build runner in cmd folder
+* CPU
+```powershell
+build_cmd.ps1
+
+# or
+
+cd cmd
+go build
+```
+* GPU/CLBlast
+```powershell
+build_cmd.ps1 clblast
+
+# or
+
+cd cmd
+go build -tags clblast -ldflags="-X main.deviceType=clblast"
+```
 
 
 ## Todo

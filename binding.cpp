@@ -78,7 +78,7 @@ bool bd_load_model(void* container) {
     }
 
 #ifndef USE_OLD_GGML
-    params->n_gpu_layers = 32;  // for 3060ti, CUDA only
+    params->n_gpu_layers = 33;  // for 3060ti, CUDA only
     printf("n_gpu_layers: %d\n", params->n_gpu_layers);
 #endif
 

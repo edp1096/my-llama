@@ -6,7 +6,7 @@ $libBindingName="libbinding.a"
 
 <# Prepare clblast and opencl #>
 if ($args[0] -eq "clblast") {
-    cp -f llama.cpp_deallocate/* llama.cpp/
+    cp -f llama.cpp_deallocate/* vendors/llama.cpp/
 
     if (-not (Test-Path -Path "clblast.zip")) {
         echo "Downloading CLBlast..."
@@ -46,18 +46,18 @@ if ($args[0] -eq "clblast") {
 }
 
 
-<# Compile llama.cpp - msvc/cmake #>
-cd llama.cpp
+<# Compile vendors/llama.cpp - msvc/cmake #>
+cd vendors/llama.cpp
 
 mkdir -f build
 cd build
 
-cmake .. -DCMAKE_PREFIX_PATH='../openclblast' -DLLAMA_CLBLAST=$useCLBlast -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
+cmake .. -DCMAKE_PREFIX_PATH='../../openclblast' -DLLAMA_CLBLAST=$useCLBlast -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
 cmake --build . --config Release
 
-cp bin/Release/llama.dll ../../$dllName
+cp bin/Release/llama.dll ../../../$dllName
 
-cd ../..
+cd ../../..
 
 gendef ./$dllName
 if ($args[0] -eq "clblast") {
@@ -65,15 +65,13 @@ if ($args[0] -eq "clblast") {
 }
 dlltool -k -d ./$defName -l ./$libLlamaName
 
+
 <# Compile binding #>
-g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./llama.cpp -I./llama.cpp/examples binding.cpp -o binding.o -c
+g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
 ar src $libBindingName binding.o
 
 
-<# Restore overwritten llama.cpp_deallocate for clblast to original commit #>
+# <# Restore overwritten vendors/llama.cpp_deallocate for clblast to original commit #>
 if ($args[0] -eq "clblast") {
-    cd llama.cpp
-    git clean -f .
-    git reset --hard
-    cd ..
+    git restore vendors
 }
