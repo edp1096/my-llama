@@ -3,7 +3,7 @@ package myllama
 /*
 #cgo CXXFLAGS: -Ivendors/llama.cpp -Ivendors/llama.cpp/examples
 #include "binding.h"
-#include "binding_api.h"
+#include "binding_llama_api.h"
 */
 import "C"
 
@@ -25,7 +25,7 @@ func New() (*LLama, error) {
 		return nil, fmt.Errorf("failed to initialize the container")
 	}
 
-	sysInfo := C.llama_get_system_info()
+	sysInfo := C.llama_api_print_system_info()
 	fmt.Printf("System Info: %s\n", C.GoString(sysInfo))
 
 	return &LLama{Container: container}, nil

@@ -102,7 +102,7 @@ build_cmd.ps1
 # or
 
 cd cmd
-go build
+go build -tags cpu
 ```
 * GPU/CLBlast
 ```powershell
@@ -111,7 +111,7 @@ build_cmd.ps1 clblast
 # or
 
 cd cmd
-go build -tags clblast -ldflags="-X main.deviceType=clblast"
+go build -tags clblast
 ```
 
 
