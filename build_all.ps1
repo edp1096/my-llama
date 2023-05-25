@@ -3,7 +3,11 @@ git restore vendors
 # cpu
 ./clean.ps1
 ./build_lib.ps1
-./build_cmd.ps1
+
+cd cmd
+go build -tags cpu -trimpath -ldflags="-w -s" -o ../bin/run-myllama_cpu.exe
+cp -f ../llama.dll ../bin/
+cd ..
 
 cd bin
 tar.exe -a -c -f my-llama_dll_cpu.zip llama.dll
@@ -14,7 +18,12 @@ cd ..
 # clblast
 ./clean.ps1
 ./build_lib.ps1 clblast
-./build_cmd.ps1 clblast
+
+cd cmd
+go build -tags clblast -trimpath -ldflags="-w -s" -o ../bin/run-myllama_cl.exe
+cp -f ../llama_cl.dll ../bin/
+cp -f ../openclblast/lib/clblast.dll ../bin/
+cd ..
 
 cd bin
 tar.exe -a -c -f my-llama_dll_cl.zip llama_cl.dll clblast.dll
