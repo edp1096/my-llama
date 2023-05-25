@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "llama.h"
+#include "binding.h"
 #include "binding_llama_api.h"
 
 // Not done
@@ -21,8 +22,7 @@ void llama_api_init_backend() {
     llama_init_backend();
 }
 
-// Not done
-int llama_api_time_us() {
+int64_t llama_api_time_us() {
     return llama_time_us();
 }
 
@@ -31,9 +31,11 @@ void llama_api_init_from_file() {
     llama_init_from_file("", {});
 }
 
-// Not done
-void llama_api_free() {
-    llama_free({});
+void llama_api_free(void* container) {
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        llama_free((llama_context*)c->ctx);
+    }
 }
 
 // Not done

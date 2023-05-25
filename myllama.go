@@ -79,20 +79,12 @@ func (l *LLama) SetIsInteracting(isInteracting bool) {
 	C.bd_set_is_interacting(l.Container, C.bool(isInteracting))
 }
 
-/*
-SaveState
-
-Not use.
-*/
+// SaveState - Not use.
 func (l *LLama) SaveState(fname string) {
 	C.bd_save_state(l.Container, C.CString(fname))
 }
 
-/*
-LoadState
-
-Not use.
-*/
+// LoadState - Not use.
 func (l *LLama) LoadState(fname string) {
 	C.bd_load_state(l.Container, C.CString(fname))
 }
@@ -115,4 +107,14 @@ func (l *LLama) DropBackUserInput() {
 
 func (l *LLama) PrintTimings() {
 	C.bd_print_timings(l.Container)
+}
+
+/* LLAMA_API */
+
+func (l *LLama) LlamaApiTimeUs() int64 {
+	return int64(C.llama_api_time_us())
+}
+
+func (l *LLama) LlamaApiFree() {
+	C.llama_api_free(l.Container)
 }

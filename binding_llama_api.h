@@ -2,15 +2,17 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 // void llama_api_context_default_params();
 
 bool llama_api_mmap_supported();
 bool llama_api_mlock_supported();
 void llama_api_init_backend();
 
-// int llama_api_time_us();
+int64_t llama_api_time_us();
 // void llama_api_init_from_file();
-// void llama_api_free();
+void llama_api_free(void* container);
 // int llama_api_model_quantize();
 // int llama_api_get_kv_cache_token_count();
 // void llama_api_set_rng_seed();
