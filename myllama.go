@@ -79,20 +79,12 @@ func (l *LLama) SetIsInteracting(isInteracting bool) {
 	C.bd_set_is_interacting(l.Container, C.bool(isInteracting))
 }
 
-/*
-SaveState
-
-Not use.
-*/
+// SaveState - Not use.
 func (l *LLama) SaveState(fname string) {
 	C.bd_save_state(l.Container, C.CString(fname))
 }
 
-/*
-LoadState
-
-Not use.
-*/
+// LoadState - Not use.
 func (l *LLama) LoadState(fname string) {
 	C.bd_load_state(l.Container, C.CString(fname))
 }
@@ -115,4 +107,54 @@ func (l *LLama) DropBackUserInput() {
 
 func (l *LLama) PrintTimings() {
 	C.bd_print_timings(l.Container)
+}
+
+/* LLAMA_API */
+
+func (l *LLama) LlamaApiTimeUs() int64 {
+	return int64(C.llama_api_time_us())
+}
+
+func (l *LLama) LlamaApiFree() {
+	C.llama_api_free(l.Container)
+}
+
+func (l *LLama) LlamaApiSetRandomNumberGenerationSeed(seed int) {
+	C.llama_api_set_rng_seed(l.Container, C.int(seed))
+}
+
+func (l *LLama) LlamaApiNumVocab() int {
+	return int(C.llama_api_n_vocab(l.Container))
+}
+
+func (l *LLama) LlamaApiNumCtx() int {
+	return int(C.llama_api_n_ctx(l.Container))
+}
+
+func (l *LLama) LlamaApiNumEmbd() int {
+	return int(C.llama_api_n_embd(l.Container))
+}
+
+func (l *LLama) LlamaApiGetLogits() unsafe.Pointer {
+	return C.llama_api_get_logits(l.Container)
+}
+
+func (l *LLama) LlamaApiGetEmbeddings() unsafe.Pointer {
+	return C.llama_api_get_embeddings(l.Container)
+}
+
+func (l *LLama) LlamaApiTokenToStr(token int) string {
+	return C.GoString(C.llama_api_token_to_str(l.Container, C.int(token)))
+}
+
+func (l *LLama) LlamaApiTokenBOS() int {
+	return int(C.llama_api_token_bos())
+}
+
+func (l *LLama) LlamaApiTokenEOS() int {
+	return int(C.llama_api_token_eos())
+}
+
+func (l *LLama) LlamaApiTokenNL() int {
+	return int(C.llama_api_token_nl())
 }

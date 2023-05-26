@@ -3,4 +3,5 @@
 *.cpp linguist-detectable=false
 *.cmake linguist-detectable=false
 CMakeLists.txt linguist-detectable=false
+*.html linguist-detectable=false
 *.js linguist-detectable=false
