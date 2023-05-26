@@ -135,6 +135,18 @@ func (l *LLama) LlamaApiNumEmbd() int {
 	return int(C.llama_api_n_embd(l.Container))
 }
 
+func (l *LLama) LlamaApiGetLogits() unsafe.Pointer {
+	return C.llama_api_get_logits(l.Container)
+}
+
+func (l *LLama) LlamaApiGetEmbeddings() unsafe.Pointer {
+	return C.llama_api_get_embeddings(l.Container)
+}
+
+func (l *LLama) LlamaApiTokenToStr(token int) string {
+	return C.GoString(C.llama_api_token_to_str(l.Container, C.int(token)))
+}
+
 func (l *LLama) LlamaApiTokenBOS() int {
 	return int(C.llama_api_token_bos())
 }

@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "llama.h"
-#include "binding.h"
+// #include "llama.h"
+#include "common.h"
+#include "binding.h"  // including struct variables_container
 #include "binding_llama_api.h"
 
 // Not done
@@ -55,12 +56,12 @@ void llama_api_set_rng_seed(void* container, int seed) {
     }
 }
 
-// Not done
+// Not done - not use
 int llama_api_get_state_size() {
     return llama_get_state_size({});
 }
 
-// Not done
+// Not done - not use
 int llama_api_copy_state_data() {
     return llama_copy_state_data({}, {});
 }
@@ -86,8 +87,16 @@ int llama_api_eval() {
 }
 
 // Not done
-int llama_api_tokenize() {
-    return llama_tokenize({}, "", {}, 0, false);
+int llama_api_tokenize(void* container, char* text, bool add_bos) {
+    int result = 0;
+
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        std::vector<llama_token> tokens(strlen(text) + (int)add_bos);
+        return llama_tokenize((llama_context*)c->ctx, text, tokens.data(), tokens.size(), add_bos);
+    }
+
+    return 0;
 }
 
 int llama_api_n_vocab(void* container) {
@@ -120,28 +129,38 @@ int llama_api_n_embd(void* container) {
     return n_embd;
 }
 
-// Not done
-float* llama_api_get_logits(void* container) {
-    float* logits;
+void* llama_api_get_logits(void* container) {
+    void* logits;
+
     variables_container* c = (variables_container*)container;
     if ((llama_context*)c->ctx != NULL) {
-        logits = llama_get_logits((llama_context*)c->ctx);
+        void* logits = (void*)llama_get_logits((llama_context*)c->ctx);
     }
 
     return logits;
 }
 
-// Not done
-float* llama_api_get_embeddings() {
-    return llama_get_embeddings({});
+void* llama_api_get_embeddings(void* container) {
+    void* embeddings;
+
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        void* embeddings = (void*)llama_get_embeddings((llama_context*)c->ctx);
+    }
+    
+    return embeddings;
 }
 
-// Not done
-char* llama_api_token_to_str() {
-    const char* result = llama_token_to_str({}, 0);
+char* llama_api_token_to_str(void* container, int token) {
+    llama_token token_id = (llama_token)token;
+    char* c_result;
 
-    char* c_result = (char*)malloc(strlen(result) + 1);
-    strcpy(c_result, result);
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        const char* result = llama_token_to_str((llama_context*)c->ctx, token_id);
+        c_result = (char*)malloc(strlen(result) + 1);
+        strcpy(c_result, result);
+    }
 
     return c_result;
 }

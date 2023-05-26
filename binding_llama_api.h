@@ -1,8 +1,8 @@
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdint.h>
 
 // void llama_api_context_default_params();
 
@@ -26,9 +26,9 @@ void llama_api_set_rng_seed(void* container, int seed);
 int llama_api_n_vocab(void* container);
 int llama_api_n_ctx(void* container);
 int llama_api_n_embd(void* container);
-// float* llama_api_get_logits(void* container);
-// float* llama_api_get_embeddings();
-// char* llama_api_token_to_str();
+void* llama_api_get_logits(void* container);
+void* llama_api_get_embeddings(void* container);
+char* llama_api_token_to_str(void* container, int token);
 int llama_api_token_bos();
 int llama_api_token_eos();
 int llama_api_token_nl();
