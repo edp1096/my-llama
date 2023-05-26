@@ -6,9 +6,8 @@
 #include "binding.h"  // including struct variables_container
 #include "binding_llama_api.h"
 
-// Not done
-void llama_api_context_default_params() {
-    llama_context_default_params();
+void* llama_api_context_default_params() {
+    return (void*)&llama_context_default_params();
 }
 
 bool llama_api_mmap_supported() {
@@ -45,9 +44,15 @@ int llama_api_model_quantize(char* fname_inp, char* fname_out, int ftype_int, in
     return llama_model_quantize(fname_inp, fname_out, ftype, nthread);
 }
 
-// Not done
-int llama_api_get_kv_cache_token_count() {
-    return llama_get_kv_cache_token_count({});
+int llama_api_get_kv_cache_token_count(void* container) {
+    int result = 0;
+
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        result = llama_get_kv_cache_token_count((llama_context*)c->ctx);
+    }
+
+    return result;
 }
 
 void llama_api_set_rng_seed(void* container, int seed) {
@@ -57,29 +62,55 @@ void llama_api_set_rng_seed(void* container, int seed) {
     }
 }
 
-// Not done - not use
-int llama_api_get_state_size() {
-    return llama_get_state_size({});
+int llama_api_get_state_size(void* container) {
+    int result = 0;
+
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        result = (int)llama_get_state_size((llama_context*)c->ctx);
+    }
+
+    return result;        
 }
 
-// Not done - not use
-int llama_api_copy_state_data() {
-    return llama_copy_state_data({}, {});
+int llama_api_copy_state_data(void* container, void* dst_p) {
+    int result = 0;
+
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        result = (int)llama_copy_state_data((llama_context*)c->ctx, (uint8_t*)dst_p);
+    }
+
+    return result;
 }
 
-// Not done
-int llama_api_set_state_data() {
-    return llama_set_state_data({}, 0);
+int llama_api_set_state_data(void* container, void* src_p) {
+    int result = 0;
+
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        result = (int)llama_set_state_data((llama_context*)c->ctx, (uint8_t*)src_p);
+    }
+
+    return result;
 }
 
-// Not done
-bool llama_api_load_session_file() {
-    return llama_load_session_file({}, "", {}, 0, 0);
+bool llama_api_load_session_file(void* container, char* path_session, void* tokens_out, int n_token_capacity, int* n_token_count_out) {
+    bool result = false;
+
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        result = llama_load_session_file((llama_context*)c->ctx, path_session, (llama_token*)tokens_out, (size_t)n_token_capacity, (size_t*)n_token_count_out);
+    }
+
+    return result;
 }
 
-// Not done
-bool llama_api_save_session_file() {
-    return llama_save_session_file({}, "", {}, 0);
+bool llama_api_save_session_file(void* container, char* path_session, void* tokens, int n_token_count) {
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        return llama_save_session_file((llama_context*)c->ctx, path_session, (llama_token*)tokens, (size_t)n_token_count);
+    }
 }
 
 int llama_api_eval(void* container, int* tokens, int n_tokens, int n_past, int n_threads) {
@@ -183,14 +214,19 @@ int llama_api_token_nl() {
     return (int)llama_token_nl();
 }
 
-// Not done
-void llama_api_sample_repetition_penalty() {
-    llama_sample_repetition_penalty({}, {}, {}, 0, 0);
+void llama_api_sample_repetition_penalty(void* container, void* candidates_a_p, void* last_tokens, int last_tokens_size, float penalty) {
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        llama_sample_repetition_penalty((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, (llama_token*)last_tokens, (size_t)last_tokens_size, penalty);
+    }
 }
 
-// Not done
-void llama_api_sample_frequency_and_presence_penalties() {
-    llama_sample_frequency_and_presence_penalties({}, {}, {}, 0, 0, 0);
+void llama_api_sample_frequency_and_presence_penalties(void* container, void* candidates_a_p, void* last_tokens, int last_tokens_size, float alpha_frequency, float alpha_presence) {
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        llama_sample_frequency_and_presence_penalties((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, (llama_token*)last_tokens, (size_t)last_tokens_size, alpha_frequency, alpha_presence);
+    }
+
 }
 
 void llama_api_sample_softmax(void* container, void* candidates_a_p) {
