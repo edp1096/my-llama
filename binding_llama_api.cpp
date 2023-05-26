@@ -40,7 +40,8 @@ void llama_api_free(void* container) {
     }
 }
 
-int llama_api_model_quantize(char* fname_inp, char* fname_out, llama_ftype ftype, int nthread) {
+int llama_api_model_quantize(char* fname_inp, char* fname_out, int ftype_int, int nthread) {
+    llama_ftype ftype = (llama_ftype)ftype_int;
     return llama_model_quantize(fname_inp, fname_out, ftype, nthread);
 }
 

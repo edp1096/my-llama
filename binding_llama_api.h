@@ -13,7 +13,7 @@ void llama_api_init_backend();
 int64_t llama_api_time_us();
 void* llama_api_init_from_file(char* path_model, void* params_p);
 void llama_api_free(void* container);
-int llama_api_model_quantize(char* fname_inp, char* fname_out, llama_ftype ftype, int nthread);
+int llama_api_model_quantize(char* fname_inp, char* fname_out, int ftype, int nthread);
 // int llama_api_get_kv_cache_token_count();
 void llama_api_set_rng_seed(void* container, int seed);
 // int llama_api_get_state_size();
