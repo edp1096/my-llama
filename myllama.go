@@ -118,3 +118,31 @@ func (l *LLama) LlamaApiTimeUs() int64 {
 func (l *LLama) LlamaApiFree() {
 	C.llama_api_free(l.Container)
 }
+
+func (l *LLama) LlamaApiSetRandomNumberGenerationSeed(seed int) {
+	C.llama_api_set_rng_seed(l.Container, C.int(seed))
+}
+
+func (l *LLama) LlamaApiNumVocab() int {
+	return int(C.llama_api_n_vocab(l.Container))
+}
+
+func (l *LLama) LlamaApiNumCtx() int {
+	return int(C.llama_api_n_ctx(l.Container))
+}
+
+func (l *LLama) LlamaApiNumEmbd() int {
+	return int(C.llama_api_n_embd(l.Container))
+}
+
+func (l *LLama) LlamaApiTokenBOS() int {
+	return int(C.llama_api_token_bos())
+}
+
+func (l *LLama) LlamaApiTokenEOS() int {
+	return int(C.llama_api_token_eos())
+}
+
+func (l *LLama) LlamaApiTokenNL() int {
+	return int(C.llama_api_token_nl())
+}

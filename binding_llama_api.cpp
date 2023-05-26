@@ -48,9 +48,11 @@ int llama_api_get_kv_cache_token_count() {
     return llama_get_kv_cache_token_count({});
 }
 
-// Not done
-void llama_api_set_rng_seed() {
-    llama_set_rng_seed({}, 0);
+void llama_api_set_rng_seed(void* container, int seed) {
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        llama_set_rng_seed((llama_context*)c->ctx, seed);
+    }
 }
 
 // Not done
@@ -88,24 +90,45 @@ int llama_api_tokenize() {
     return llama_tokenize({}, "", {}, 0, false);
 }
 
-// Not done
-int llama_api_n_vocab() {
-    return llama_n_vocab({});
+int llama_api_n_vocab(void* container) {
+    int n_vocab = 0;
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        n_vocab = llama_n_vocab((llama_context*)c->ctx);
+    }
+
+    return n_vocab;
+}
+
+int llama_api_n_ctx(void* container) {
+    int n_ctx = 0;
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        n_ctx = llama_n_ctx((llama_context*)c->ctx);
+    }
+
+    return n_ctx;
+}
+
+int llama_api_n_embd(void* container) {
+    int n_embd = 0;
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        n_embd = llama_n_embd((llama_context*)c->ctx);
+    }
+
+    return n_embd;
 }
 
 // Not done
-int llama_api_n_ctx() {
-    return llama_n_ctx({});
-}
+float* llama_api_get_logits(void* container) {
+    float* logits;
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        logits = llama_get_logits((llama_context*)c->ctx);
+    }
 
-// Not done
-int llama_api_n_embd() {
-    return llama_n_embd({});
-}
-
-// Not done
-float* llama_api_get_logits() {
-    return llama_get_logits({});
+    return logits;
 }
 
 // Not done
@@ -123,19 +146,16 @@ char* llama_api_token_to_str() {
     return c_result;
 }
 
-// Not done
-void llama_api_token_bos() {
-    llama_token_bos();
+int llama_api_token_bos() {
+    return (int)llama_token_bos();
 }
 
-// Not done
-void llama_api_token_eos() {
-    llama_token_eos();
+int llama_api_token_eos() {
+    return (int)llama_token_eos();
 }
 
-// Not done
-void llama_api_token_nl() {
-    llama_token_nl();
+int llama_api_token_nl() {
+    return (int)llama_token_nl();
 }
 
 // Not done
@@ -193,14 +213,18 @@ void llama_api_sample_token() {
     llama_sample_token({}, {});
 }
 
-// Not done
-void llama_api_print_timings() {
-    llama_print_timings({});
+void llama_api_print_timings(void* container) {
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        llama_print_timings((llama_context*)c->ctx);
+    }
 }
 
-// Not done
-void llama_api_reset_timings() {
-    llama_reset_timings({});
+void llama_api_reset_timings(void* container) {
+    variables_container* c = (variables_container*)container;
+    if ((llama_context*)c->ctx != NULL) {
+        llama_reset_timings((llama_context*)c->ctx);
+    }
 }
 
 char* llama_api_print_system_info() {
