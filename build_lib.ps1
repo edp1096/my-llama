@@ -1,9 +1,15 @@
+$llamaCppSharedLibName="llama"
+$llamaCppSharedLibExt="dll"
+
 $dllName="llama.dll"
 $defName="llama.def"
 $libLlamaName="libllama.a"
 $libBindingName="libbinding.a"
 
-$cmakeDefinitions=""
+$cmakePrefixPath=""
+$cmakeUseCLBLAST="OFF"
+$cmakeUseCUDA="OFF"
+
 
 <# All #>
 # llama.cpp compile error bdbda1b1 so always copy
@@ -49,7 +55,8 @@ if ($args[0] -eq "clblast") {
     $libLlamaName="libllama_cl.a"
     $libBindingName="libbinding_cl.a"
 
-    $cmakeDefinitions="-DCMAKE_PREFIX_PATH='../../openclblast' -DLLAMA_CLBLAST=1"
+    $cmakePrefixPath="../../openclblast"
+    $cmakeUseCLBLAST="ON"
 }
 
 if ($args[0] -eq "cuda") {
@@ -61,7 +68,7 @@ if ($args[0] -eq "cuda") {
     $libLlamaName="libllama_cu.a"
     $libBindingName="libbinding_cu.a"
 
-    $cmakeDefinitions="-DLLAMA_CUBLAS=1"
+    $cmakeUseCUDA="ON"
 }
 
 
@@ -71,19 +78,19 @@ cd vendors/llama.cpp
 mkdir -f build >$null
 cd build
 
-cmake .. $cmakeDefinitions -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
+cmake .. -DCMAKE_PREFIX_PATH="$cmakePrefixPath" -DLLAMA_CUBLAS="$cmakeUseCUDA" -DLLAMA_CLBLAST="$cmakeUseCLBLAST" -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
 cmake --build . --config Release
 
-cp bin/Release/llama.dll ../../../$dllName
+cp bin/Release/$llamaCppSharedLibName.$llamaCppSharedLibExt ../../../$dllName
 
 cd ../../..
 
 gendef ./$dllName
 if ($args[0] -eq "clblast") {
-    (Get-Content -Path "$defName") -replace "llama.dll", "llama_cl.dll" | Set-Content -Path "$defName"
+    (Get-Content -Path "$defName") -replace "$llamaCppSharedLibName.$llamaCppSharedLibExt", "llama_cl.dll" | Set-Content -Path "$defName"
 }
 if ($args[0] -eq "cuda") {
-    (Get-Content -Path "$defName") -replace "llama.dll", "llama_cu.dll" | Set-Content -Path "$defName"
+    (Get-Content -Path "$defName") -replace "$llamaCppSharedLibName.$llamaCppSharedLibExt", "llama_cu.dll" | Set-Content -Path "$defName"
 }
 dlltool -k -d ./$defName -l ./$libLlamaName
 
