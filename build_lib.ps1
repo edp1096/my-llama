@@ -21,7 +21,7 @@ if ($args[0] -eq "clblast") {
         curl --progress-bar -Lo clblast.zip "https://ci.appveyor.com/api/buildjobs/nikwayllaa7nia4c/artifacts/CLBlast-1.6.0-Windows-x64.zip"
     }
 
-    mkdir -f openclblast
+    mkdir -f openclblast >$null
     rm -rf openclblast/*
     tar -xf opencl.zip -C openclblast
     tar -xf clblast.zip -C openclblast
@@ -62,7 +62,7 @@ if ($args[0] -eq "cuda") {
 <# Compile vendors/llama.cpp - msvc/cmake #>
 cd vendors/llama.cpp
 
-mkdir -f build
+mkdir -f build >$null
 cd build
 
 cmake .. $cmakeDefinitions -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
