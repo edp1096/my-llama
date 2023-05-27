@@ -7,7 +7,7 @@
 #include "binding_llama_api.h"
 
 void* llama_api_context_default_params() {
-    auto params = llama_context_default_params();
+    llama_context_params params = llama_context_default_params();
 
     return (void*)new llama_context_params(params);
 }
