@@ -1,5 +1,5 @@
-//go:build cpu || !clblast
-// +build cpu !clblast
+//go:build !clblast && !cuda
+// +build !clblast,!cuda
 
 package main
 
