@@ -1,5 +1,5 @@
-//go:build !clblast
-// +build !clblast
+//go:build !clblast && !cuda
+// +build !clblast,!cuda
 
 package myllama
 
