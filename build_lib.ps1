@@ -5,9 +5,14 @@ $libBindingName="libbinding.a"
 
 $cmakeDefinitions=""
 
+<# All #>
+# llama.cpp compile error bdbda1b1 so always copy
+cp -f llama.cpp_deallocate/* vendors/llama.cpp/
+
 <# Prepare clblast and opencl #>
 if ($args[0] -eq "clblast") {
-    cp -f llama.cpp_deallocate/* vendors/llama.cpp/
+    # llama.cpp compile error bdbda1b1 so always copy
+    # cp -f llama.cpp_deallocate/* vendors/llama.cpp/
 
     if (-not (Test-Path -Path "opencl.zip")) {
         echo "Downloading OpenCL..."
@@ -48,7 +53,8 @@ if ($args[0] -eq "clblast") {
 }
 
 if ($args[0] -eq "cuda") {
-    cp -f llama.cpp_deallocate/* vendors/llama.cpp/
+    # llama.cpp compile error bdbda1b1 so always copy
+    # cp -f llama.cpp_deallocate/* vendors/llama.cpp/
 
     $dllName="llama_cu.dll"
     $defName="llama_cu.def"

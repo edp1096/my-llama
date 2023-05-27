@@ -23,3 +23,5 @@ if ($args[0] -eq "all") {
     rm -f clblast.zip
     rm -rf openclblast
 }
+
+./subtree_restore.ps1
