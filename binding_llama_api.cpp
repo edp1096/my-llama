@@ -7,7 +7,9 @@
 #include "binding_llama_api.h"
 
 void* llama_api_context_default_params() {
-    return (void*)&llama_context_default_params();
+    auto params = llama_context_default_params();
+
+    return (void*)new llama_context_params(params);
 }
 
 bool llama_api_mmap_supported() {
@@ -107,10 +109,14 @@ bool llama_api_load_session_file(void* container, char* path_session, void* toke
 }
 
 bool llama_api_save_session_file(void* container, char* path_session, void* tokens, int n_token_count) {
+    bool result = false;
+
     variables_container* c = (variables_container*)container;
     if ((llama_context*)c->ctx != NULL) {
-        return llama_save_session_file((llama_context*)c->ctx, path_session, (llama_token*)tokens, (size_t)n_token_count);
+        result = llama_save_session_file((llama_context*)c->ctx, path_session, (llama_token*)tokens, (size_t)n_token_count);
     }
+
+    return result;
 }
 
 int llama_api_eval(void* container, int* tokens, int n_tokens, int n_past, int n_threads) {
