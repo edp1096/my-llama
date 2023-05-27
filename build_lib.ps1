@@ -78,7 +78,7 @@ cd vendors/llama.cpp
 mkdir -f build >$null
 cd build
 
-cmake .. -DCMAKE_PREFIX_PATH="$cmakePrefixPath" -DLLAMA_CUBLAS="$cmakeUseCUDA" -DLLAMA_CLBLAST="$cmakeUseCLBLAST" -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
+cmake .. -DCMAKE_PREFIX_PATH="$cmakePrefixPath" -DLLAMA_CUBLAS="$cmakeUseCUDA" -DLLAMA_CLBLAST="$cmakeUseCLBLAST" -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=1 -DLLAMA_BUILD_TESTS=0
 cmake --build . --config Release
 
 cp bin/Release/$llamaCppSharedLibName.$llamaCppSharedLibExt ../../../$dllName
@@ -96,7 +96,8 @@ dlltool -k -d ./$defName -l ./$libLlamaName
 
 
 <# Compile binding #>
-g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
+# g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
+g++ -fomit-frame-pointer -s -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
 ar src $libBindingName binding.o
 
 
