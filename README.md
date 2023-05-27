@@ -59,7 +59,7 @@ my-llama.exe -b
     * CPU Memory >= 12GB
     * Video Memory >= 4GB
 
-# Powershell scripts
+### Powershell scripts
 * Before execute `ps1` script files, `ExecutionPolicy` should be set to `RemoteSigned` and unblock `ps1` files
 ```powershell
 # Check
