@@ -14,6 +14,7 @@ Llama 7B runner on my windows machine
 * [DLL](https://github.com/edp1096/my-llama/releases)
 * [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.15/my-llama_cpu.zip)
 * [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.15/my-llama_cl.zip)
+* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.15/my-llama_cu.zip)
 
 
 ## Usage
@@ -43,13 +44,9 @@ my-llama.exe -b
     * [Cmake >= 3.26](https://cmake.org/download)
     * Memory >= 12GB
 * GPU/CLBlast
-    * [Go](https://golang.org/dl)
-    * [MinGW>=12.2.0](https://github.com/brechtsanders/winlibs_mingw/releases/tag/12.2.0-16.0.0-10.0.0-ucrt-r5)
-    * [Git](https://github.com/git-for-windows/git/releases)
-    * [MS Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs)
-    * [Cmake >= 3.26](https://cmake.org/download)
+    * Above CPU requirements and below
     * [OpenCL-SDK](https://github.com/KhronosGroup/OpenCL-SDK), [CLBlast](https://github.com/CNugteren/CLBlast)
-        * <b>When build script running, download and build them automatically. No need to install manually</b>
+        * <b>Build script download and build them automatically. No need to install manually</b>
         * If need change their version, just edit [build_lib.ps1](/build_lib.ps1).
         * And one of them
             * NVIDIA CUDA SDK
@@ -57,9 +54,14 @@ my-llama.exe -b
             * AMD ROCm
             * Intel OpenCL
     * CPU Memory >= 12GB
-    * Video Memory >= 4GB
+    * Video Memory >= 6GB
+* GPU/CUDA
+    * Above CPU requirements and below
+    * [CUDA Toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
+    * CPU Memory >= 12GB
+    * Video Memory >= 6GB
 
-# Powershell scripts
+### Powershell scripts
 * Before execute `ps1` script files, `ExecutionPolicy` should be set to `RemoteSigned` and unblock `ps1` files
 ```powershell
 # Check
@@ -88,25 +90,30 @@ cd my-llama
 
 build_lib.ps1 clblast
 ```
+* GPU/CUDA
+```powershell
+git clone https://github.com/edp1096/my-llama.git
+
+cd my-llama
+
+build_lib.ps1 cuda
+```
 
 ### Then build runner in cmd folder
 * CPU
 ```powershell
-build_cmd.ps1
-
-# or
-
 cd cmd
 go build -tags cpu
 ```
 * GPU/CLBlast
 ```powershell
-build_cmd.ps1 clblast
-
-# or
-
 cd cmd
 go build -tags clblast
+```
+* GPU/CUDA
+```powershell
+cd cmd
+go build -tags cuda
 ```
 
 

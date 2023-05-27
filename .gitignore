@@ -5,6 +5,8 @@
 !libbinding.a
 !libllama_cl.a
 !libbinding_cl.a
+!libllama_cu.a
+!libbinding_cu.a
 *.o
 *.s
 
@@ -13,8 +15,10 @@ llama.obj
 llama.exp
 llama.dll
 llama_cl.dll
+llama_cu.dll
 llama.def
 llama_cl.def
+llama_cu.def
 
 openclblast/
 

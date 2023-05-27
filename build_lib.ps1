@@ -1,8 +1,9 @@
-$useCLBlast="0"
 $dllName="llama.dll"
 $defName="llama.def"
 $libLlamaName="libllama.a"
 $libBindingName="libbinding.a"
+
+$cmakeDefinitions=""
 
 <# Prepare clblast and opencl #>
 if ($args[0] -eq "clblast") {
@@ -38,12 +39,23 @@ if ($args[0] -eq "clblast") {
 
     rm -rf openclblast/OpenCL-SDK-v2023.04.17-Win-x64
 
-    $useCLBlast = "1"
-
     $dllName="llama_cl.dll"
     $defName="llama_cl.def"
     $libLlamaName="libllama_cl.a"
     $libBindingName="libbinding_cl.a"
+
+    $cmakeDefinitions="-DCMAKE_PREFIX_PATH='../../openclblast' -DLLAMA_CLBLAST=1"
+}
+
+if ($args[0] -eq "cuda") {
+    cp -f llama.cpp_deallocate/* vendors/llama.cpp/
+
+    $dllName="llama_cu.dll"
+    $defName="llama_cu.def"
+    $libLlamaName="libllama_cu.a"
+    $libBindingName="libbinding_cu.a"
+
+    $cmakeDefinitions="-DLLAMA_CUBLAS=1"
 }
 
 
@@ -53,7 +65,7 @@ cd vendors/llama.cpp
 mkdir -f build
 cd build
 
-cmake .. -DCMAKE_PREFIX_PATH='../../openclblast' -DLLAMA_CLBLAST=$useCLBlast -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
+cmake .. $cmakeDefinitions -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
 cmake --build . --config Release
 
 cp bin/Release/llama.dll ../../../$dllName
@@ -64,6 +76,9 @@ gendef ./$dllName
 if ($args[0] -eq "clblast") {
     (Get-Content -Path "$defName") -replace "llama.dll", "llama_cl.dll" | Set-Content -Path "$defName"
 }
+if ($args[0] -eq "cuda") {
+    (Get-Content -Path "$defName") -replace "llama.dll", "llama_cu.dll" | Set-Content -Path "$defName"
+}
 dlltool -k -d ./$defName -l ./$libLlamaName
 
 
@@ -72,7 +87,7 @@ g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.
 ar src $libBindingName binding.o
 
 
-# <# Restore overwritten vendors/llama.cpp_deallocate for clblast to original commit #>
-if ($args[0] -eq "clblast") {
+# <# Restore overwritten vendors/llama.cpp_deallocate for clblast/cuda to original commit #>
+if ($args[0] -eq "clblast" -or $args[0] -eq "cuda") {
     git restore vendors
 }

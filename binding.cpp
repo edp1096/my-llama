@@ -36,10 +36,7 @@ struct llama_context* llama_init_from_gpt_params(const gpt_params& params) {
     auto lparams = llama_context_default_params();
 
     lparams.n_ctx = params.n_ctx;
-    // lparams.n_parts = params.n_parts;
-#ifndef USE_OLD_GGML
     lparams.n_gpu_layers = params.n_gpu_layers;
-#endif
     lparams.seed = params.seed;
     lparams.f16_kv = params.memory_f16;
     lparams.use_mmap = params.use_mmap;
@@ -77,12 +74,9 @@ bool bd_load_model(void* container) {
         params->seed = time(NULL);
     }
 
-#ifndef USE_OLD_GGML
     params->n_gpu_layers = 33;  // for 3060ti, CUDA only
     printf("n_gpu_layers: %d\n", params->n_gpu_layers);
-#endif
 
-    // llama_context* ctx = binding_init_context(params);
     llama_context* ctx = llama_init_from_gpt_params(*params);
     if (ctx == nullptr) {
         fprintf(stderr, "%s : failed to load model\n", __func__);
