@@ -14,7 +14,7 @@ rm -f vendors/llama.cpp/*.a
 rm -rf vendors/llama.cpp/build
 rm -f vendors/llama.cpp/build-info.h
 
-rm -f output.log
+rm -f output.log >$null
 rm -f 7zr.exe
 
 if ($args[0] -eq "all") {
