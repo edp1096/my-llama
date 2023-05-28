@@ -21,6 +21,8 @@ if [ "$1" = "cpu" ] || [ -z "$1" ]; then
 
 elif [ "$1" = "clblast" ]; then
     # clblast
+    export LD_LIBRARY_PATH=$(pwd):$LD_LIBRARY_PATH
+
     mkdir -p ./openclblast; cd openclblast
 
     rm -rf ./OpenCL-SDK
@@ -31,6 +33,7 @@ elif [ "$1" = "clblast" ]; then
     cmake --install . --prefix ../..
 
     cd ../..
+    # cp -f ./lib/libOpenCL.so ../libOpenCL.so
 
     rm -rf ./CLBlast
     git clone https://github.com/CNugteren/CLBlast.git
@@ -40,7 +43,7 @@ elif [ "$1" = "clblast" ]; then
     cmake --install . --prefix ../..
 
     cd ../..
-    # cp -f ./lib/libclblast.a ../libclblast.a
+    cp -f ./lib/libclblast.a ../libclblast.a
 
     cd ..
 
@@ -57,7 +60,8 @@ elif [ "$1" = "clblast" ]; then
     cd ../../..
 
     g++ -static -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
-    ar src libbinding_cl_lin64.a libllama_cl_lin64.a binding.o
+    g++ -static -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding_llama_api.cpp -o binding_llama_api.o -c
+    ar src libbinding_cl_lin64.a libllama_cl_lin64.a binding.o binding_llama_api.o
 
 elif [ "$1" = "cuda" ]; then
     # cuda

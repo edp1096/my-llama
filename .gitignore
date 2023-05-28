@@ -13,6 +13,7 @@
 !libllama_cu_lin64.a
 !libbinding_cu.a
 !libbinding_cu_lin64.a
+!libclblast.a
 *.o
 *.s
 
