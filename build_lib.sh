@@ -40,6 +40,7 @@ elif [ "$1" = "clblast" ]; then
     cmake --install . --prefix ../..
 
     cd ../..
+    # cp -f ./lib/libclblast.a ../libclblast.a
 
     cd ..
 
