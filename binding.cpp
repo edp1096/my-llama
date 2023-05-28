@@ -6,12 +6,10 @@
 #include "common.h"
 #include "binding.h"
 
-// Windows not yet support so, override it
-#ifdef _WIN32
+// Not use
 int32_t get_num_physical_cores() {
     return 1;
 }
-#endif
 
 // TODO: not great allocating this every time
 std::vector<llama_token> binding_tokenize(struct llama_context* ctx, const std::string& text, bool add_bos) {

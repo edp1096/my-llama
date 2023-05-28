@@ -6,7 +6,7 @@
 !libbinding.a
 !libbinding_lin64.a
 !libllama_cl.a
-!libllama_cl_li64.a
+!libllama_cl_lin64.a
 !libbinding_cl.a
 !libbinding_cl_lin64.a
 !libllama_cu.a
