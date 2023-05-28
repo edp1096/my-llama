@@ -2,11 +2,17 @@
 /bin/
 *.a
 !libllama.a
+!libllama_lin64.a
 !libbinding.a
+!libbinding_lin64.a
 !libllama_cl.a
+!libllama_cl_li64.a
 !libbinding_cl.a
+!libbinding_cl_lin64.a
 !libllama_cu.a
+!libllama_cu_lin64.a
 !libbinding_cu.a
+!libbinding_cu_lin64.a
 *.o
 *.s
 

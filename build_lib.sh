@@ -1,10 +1,13 @@
-#!/bin/bash
+#!/bin/sh
+
+# common
+# llama.cpp compile error bdbda1b1 so always copy
+cp -f llama.cpp_deallocate/* vendors/llama.cpp/
 
 if [ "$1" = "cpu" ] || [ -z "$1" ]; then
     # cpu
     cd vendors/llama.cpp
-    mkdir -p build
-    cd build
+    mkdir -p build; cd build
 
     cmake .. -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
     cmake --build . --config Release
@@ -38,9 +41,10 @@ elif [ "$1" = "clblast" ]; then
 
     cd ../..
 
+    cd ..
+
     cd vendors/llama.cpp
-    mkdir -p build
-    cd build
+    mkdir -p build; cd build
 
     curl -L
 
