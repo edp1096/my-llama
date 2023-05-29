@@ -1,5 +1,5 @@
-//go:build cuda
-// +build cuda
+//go:build windows && cuda
+// +build windows,cuda
 
 package myllama
 

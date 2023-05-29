@@ -1,5 +1,5 @@
-//go:build clblast
-// +build clblast
+//go:build windows && clblast
+// +build windows,clblast
 
 package myllama
 

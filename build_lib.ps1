@@ -28,8 +28,8 @@ if ($args[0] -eq "clblast") {
     if (-not (Test-Path -Path "clblast.zip")) {
         echo "Downloading CLBlast..."
         # curl --progress-bar -Lo clblast.zip "https://github.com/CNugteren/CLBlast/releases/download/1.5.3/CLBlast-1.5.3-Windows-x64.zip"
-        curl --progress-bar -Lo clblast.7z "https://github.com/CNugteren/CLBlast/releases/download/1.6.0/CLBlast-1.6.0-windows-x64.7z"
         # curl --progress-bar -Lo clblast.zip "https://ci.appveyor.com/api/buildjobs/nikwayllaa7nia4c/artifacts/CLBlast-1.6.0-Windows-x64.zip"
+        curl --progress-bar -Lo clblast.7z "https://github.com/CNugteren/CLBlast/releases/download/1.6.0/CLBlast-1.6.0-windows-x64.7z"
     }
 
     mkdir -f openclblast >$null
