@@ -14,6 +14,8 @@
 !libbinding_cu.a
 !libbinding_cu_lin64.a
 !libclblast.a
+!libclblast_lin64.a
+!libOpenCL_lin64.a
 *.o
 *.s
 
