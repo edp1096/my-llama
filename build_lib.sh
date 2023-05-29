@@ -64,8 +64,7 @@ elif [ "$1" = "clblast" ]; then
 elif [ "$1" = "cuda" ]; then
     # cuda
     cd vendors/llama.cpp
-    mkdir -p build
-    cd build
+    mkdir -p build; cd build
 
     cmake .. -DLLAMA_CUBLAS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
     cmake --build . --config Release
