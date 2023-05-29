@@ -17,7 +17,7 @@ void * ggml_cl_host_malloc(size_t size);
 void   ggml_cl_host_free(void * ptr);
 
 void ggml_cl_mem_free(cl_mem mem);
-void ggml_cl_destroy();
+void ggml_cl_destroy(void);
 
 void ggml_cl_transform_tensor(struct ggml_tensor * tensor);
 

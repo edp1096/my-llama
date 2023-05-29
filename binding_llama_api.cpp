@@ -136,10 +136,15 @@ int llama_api_tokenize(void* container, char* text, bool add_bos) {
     variables_container* c = (variables_container*)container;
     if ((llama_context*)c->ctx != NULL) {
         std::vector<llama_token> tokens(strlen(text) + (int)add_bos);
-        return llama_tokenize((llama_context*)c->ctx, text, tokens.data(), tokens.size(), add_bos);
+        const int n = llama_tokenize((llama_context*)c->ctx, text, tokens.data(), tokens.size(), add_bos);
+        if (n > 0) {
+            result = n;
+            tokens.resize(n);
+            c->embd_inp = (void*)new std::vector<llama_token>(tokens);
+        }
     }
 
-    return 0;
+    return result;
 }
 
 int llama_api_n_vocab(void* container) {

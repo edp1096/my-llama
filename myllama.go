@@ -115,12 +115,23 @@ func (l *LLama) LlamaApiTimeUs() int64 {
 	return int64(C.llama_api_time_us())
 }
 
+// Not done
+func (l *LLama) LlamaApiInitFromFile(fname string) {}
+
 func (l *LLama) LlamaApiFree() {
 	C.llama_api_free(l.Container)
 }
 
 func (l *LLama) LlamaApiSetRandomNumberGenerationSeed(seed int) {
 	C.llama_api_set_rng_seed(l.Container, C.int(seed))
+}
+
+// Not done
+func (l *LLama) LlamaApiEval(text string, addBOS bool) {}
+
+// Not done
+func (l *LLama) LlamaApiTokenize(text string, addBOS bool) int {
+	return int(C.llama_api_tokenize(l.Container, C.CString(text), C.bool(addBOS)))
 }
 
 func (l *LLama) LlamaApiNumVocab() int {

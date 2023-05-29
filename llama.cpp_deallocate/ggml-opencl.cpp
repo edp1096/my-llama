@@ -616,7 +616,7 @@ void ggml_cl_mem_free(cl_mem mem) {
     clReleaseMemObject(mem);
 }
 
-void ggml_cl_destroy() {
+void ggml_cl_destroy(void) {
     delete platform;
     delete device;
     // delete program;

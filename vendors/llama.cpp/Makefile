@@ -44,11 +44,7 @@ CFLAGS   = -I.              -O3 -std=c11   -fPIC
 CXXFLAGS = -I. -I./examples -O3 -std=c++11 -fPIC
 LDFLAGS  =
 
-ifdef LLAMA_DEBUG
-	CFLAGS   += -O0 -g
-	CXXFLAGS += -O0 -g
-	LDFLAGS  += -g
-else
+ifndef LLAMA_DEBUG
 	CFLAGS   += -DNDEBUG
 	CXXFLAGS += -DNDEBUG
 endif

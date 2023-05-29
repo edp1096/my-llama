@@ -14,7 +14,6 @@ rm -f vendors/llama.cpp/*.a
 rm -rf vendors/llama.cpp/build
 rm -f vendors/llama.cpp/build-info.h
 
-rm -f output.log >$null
 rm -f 7zr.exe
 
 if ($args[0] -eq "all") {
@@ -22,6 +21,8 @@ if ($args[0] -eq "all") {
     rm -f clblast.7z
     rm -f clblast.zip
     rm -rf openclblast
+
+    rm -f output.log
 }
 
 ./subtree_restore.ps1

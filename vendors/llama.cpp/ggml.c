@@ -186,9 +186,7 @@ typedef double ggml_float;
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include <intrin.h>
 #else
-#if !defined(__riscv)
 #include <immintrin.h>
-#endif
 #endif
 #endif
 #endif

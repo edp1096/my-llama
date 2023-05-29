@@ -72,7 +72,11 @@ bool bd_load_model(void* container) {
         params->seed = time(NULL);
     }
 
-    params->n_gpu_layers = 33;  // for 3060ti, CUDA only
+    /*
+     ggml or opencl may have a bug when offloading output layer to GPU
+     Hence, set 32 instead of 33 for now
+     */
+    params->n_gpu_layers = 32;  // for 3060ti, CUDA only
     printf("n_gpu_layers: %d\n", params->n_gpu_layers);
 
     llama_context* ctx = llama_init_from_gpt_params(*params);
