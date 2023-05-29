@@ -34,7 +34,8 @@ elif [ "$1" = "clblast" ]; then
     cmake --install . --prefix ../..
 
     cd ../..
-    cp -f ./lib/libOpenCL.so ../libOpenCL.so
+    # cp -f ./lib/libOpenCL_lin64.so ../libOpenCL.so
+    ar src ../libOpenCL_lin64.a ./lib/libOpenCL.so 
 
     rm -rf ./CLBlast
     git clone https://github.com/CNugteren/CLBlast.git
@@ -44,7 +45,7 @@ elif [ "$1" = "clblast" ]; then
     cmake --install . --prefix ../..
 
     cd ../..
-    cp -f ./lib/libclblast.a ../libclblast.a
+    cp -f ./lib/libclblast.a ../libclblast_lin64.a
 
     cd ..
 
@@ -62,6 +63,8 @@ elif [ "$1" = "clblast" ]; then
     g++ -static -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding_llama_api.cpp -o binding_llama_api.o -c
     ar src libbinding_cl_lin64.a libllama_cl_lin64.a binding.o binding_llama_api.o
 
+    git restore vendors
+
 elif [ "$1" = "cuda" ]; then
     # cuda
     cd vendors/llama.cpp
@@ -77,6 +80,8 @@ elif [ "$1" = "cuda" ]; then
     g++ -static -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
     g++ -static -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding_llama_api.cpp -o binding_llama_api.o -c
     ar src libbinding_cu_lin64.a libllama_cu_lin64.a binding.o binding_llama_api.o
+
+    git restore vendors
 
 else
     echo "Invalid argument"
