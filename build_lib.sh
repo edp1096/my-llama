@@ -50,8 +50,6 @@ elif [ "$1" = "clblast" ]; then
     cd vendors/llama.cpp
     mkdir -p build; cd build
 
-    curl -L
-
     cmake .. -DLLAMA_CLBLAST=1 -DCMAKE_PREFIX_PATH="../../openclblast" -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
     cmake --build . --config Release
 
