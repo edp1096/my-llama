@@ -17,6 +17,7 @@ if [ "$1" = "cpu" ] || [ -z "$1" ]; then
     cd ../../..
 
     g++ -static -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
+    g++ -static -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding_llama_api.cpp -o binding_llama_api.o -c
     ar src libbinding_lin64.a libllama_lin64.a binding.o binding_llama_api.o
 
 elif [ "$1" = "clblast" ]; then
@@ -74,7 +75,8 @@ elif [ "$1" = "cuda" ]; then
     cd ../../..
 
     g++ -static -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
-    ar src libbinding_cu_lin64.a libllama_cu_lin64.a binding.o
+    g++ -static -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding_llama_api.cpp -o binding_llama_api.o -c
+    ar src libbinding_cu_lin64.a libllama_cu_lin64.a binding.o binding_llama_api.o
 
 else
     echo "Invalid argument"
