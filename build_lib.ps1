@@ -96,9 +96,9 @@ dlltool -k -d ./$defName -l ./$libLlamaName
 
 
 <# Compile binding #>
-# g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
-g++ -fomit-frame-pointer -s -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
-ar src $libBindingName binding.o
+g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
+g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding_llama_api.cpp -o binding_llama_api.o -c
+ar src $libBindingName binding_llama_api.o binding.o
 
 
 # <# Restore overwritten vendors/llama.cpp_deallocate for clblast/cuda to original commit #>

@@ -6,6 +6,10 @@
 #include "binding.h"  // including struct variables_container
 #include "binding_llama_api.h"
 
+void free_pointer(void* ptr) {
+    free(ptr);
+}
+
 void* llama_api_context_default_params() {
     llama_context_params params = llama_context_default_params();
 
@@ -188,12 +192,12 @@ void* llama_api_get_logits(void* container) {
     return logits;
 }
 
-void* llama_api_get_embeddings(void* container) {
-    void* embeddings;
+float* llama_api_get_embeddings(void* container) {
+    float* embeddings;
 
     variables_container* c = (variables_container*)container;
     if ((llama_context*)c->ctx != NULL) {
-        void* embeddings = (void*)llama_get_embeddings((llama_context*)c->ctx);
+        embeddings = llama_get_embeddings((llama_context*)c->ctx);
     }
 
     return embeddings;

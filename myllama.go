@@ -2,6 +2,7 @@ package myllama
 
 /*
 #cgo CXXFLAGS: -Ivendors/llama.cpp -Ivendors/llama.cpp/examples
+#include <stdlib.h>
 #include "binding.h"
 #include "binding_llama_api.h"
 */
@@ -150,8 +151,16 @@ func (l *LLama) LlamaApiGetLogits() unsafe.Pointer {
 	return C.llama_api_get_logits(l.Container)
 }
 
-func (l *LLama) LlamaApiGetEmbeddings() unsafe.Pointer {
-	return C.llama_api_get_embeddings(l.Container)
+func (l *LLama) LlamaApiGetEmbeddings(embeddingSize int) []float64 {
+	embeddings := C.llama_api_get_embeddings(l.Container)
+	defer C.free(unsafe.Pointer(embeddings))
+
+	embeddingSlice := make([]float64, embeddingSize)
+	for i := 0; i < embeddingSize; i++ {
+		embeddingSlice[i] = float64(*(*C.float)(unsafe.Pointer(uintptr(unsafe.Pointer(&embeddings)) + uintptr(i)*unsafe.Sizeof(C.float(0)))))
+	}
+
+	return embeddingSlice
 }
 
 func (l *LLama) LlamaApiTokenToStr(token int) string {

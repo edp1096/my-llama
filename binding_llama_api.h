@@ -31,7 +31,7 @@ int llama_api_n_ctx(void* container);
 int llama_api_n_embd(void* container);
 
 void* llama_api_get_logits(void* container);
-void* llama_api_get_embeddings(void* container);
+float* llama_api_get_embeddings(void* container);
 char* llama_api_token_to_str(void* container, int token);
 int llama_api_token_bos();
 int llama_api_token_eos();

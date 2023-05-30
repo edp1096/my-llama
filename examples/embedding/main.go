@@ -1,5 +1,6 @@
 package main // import "embedding"
 
+import "C"
 import (
 	"fmt"
 
@@ -28,4 +29,7 @@ func main() {
 
 	embdCount := l.LlamaApiNumEmbd()
 	fmt.Println("Embedding count:", embdCount)
+
+	embeddings := l.LlamaApiGetEmbeddings(embdCount)
+	fmt.Println("Embeddings:", embeddings)
 }
