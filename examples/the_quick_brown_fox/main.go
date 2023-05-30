@@ -6,6 +6,7 @@ import (
 
 func main() {
 	modelName := "vicuna-7B-1.1-ggml_q4_0-ggjt_v3.bin"
+	prompt := "The quick brown fox"
 
 	l, err := llama.New()
 	if err != nil {
@@ -24,5 +25,9 @@ func main() {
 
 	l.LlamaApiInitFromFile(modelName)
 
-	l.LlamaApiTokenize("Hello world!", true)
+	tokenCount := l.LlamaApiTokenize(prompt, true)
+
+	println(tokenCount)
+
+	// l.LlamaApiEval(text string, addBOS bool)
 }

@@ -131,7 +131,6 @@ func (l *LLama) LlamaApiSetRandomNumberGenerationSeed(seed int) {
 // Not done
 func (l *LLama) LlamaApiEval(text string, addBOS bool) {}
 
-// Not done
 func (l *LLama) LlamaApiTokenize(text string, addBOS bool) int {
 	return int(C.llama_api_tokenize(l.Container, C.CString(text), C.bool(addBOS)))
 }
