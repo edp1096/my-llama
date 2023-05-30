@@ -1,6 +1,7 @@
 package myllama
 
 // #include "binding.h"
+// #include "myllama_params.h"
 import "C"
 import (
 	"errors"
@@ -33,11 +34,11 @@ func (l *LLama) GetTopP() float64 {
 
 /* Setters - gpt_params */
 func (l *LLama) SetThreadsCount(threads int) {
-	C.bd_set_params_n_threads(l.Container, C.int(threads))
+	C.set_params_n_threads(l.Container, C.int(threads))
 }
 
 func (l *LLama) SetUseMlock(useMlock bool) {
-	C.bd_set_params_use_mlock(l.Container, C.bool(useMlock))
+	C.set_params_use_mlock(l.Container, C.bool(useMlock))
 }
 
 /* Setters - gpt_params / sampling parameters */

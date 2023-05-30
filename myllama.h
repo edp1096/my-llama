@@ -22,7 +22,8 @@ struct myllama_container {
     void* embd_inp;
 
     void* ctx;
-    void* params;
+    void* gptparams;
+    void* ctxparams;
 
     char* user_input;
 };
