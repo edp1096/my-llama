@@ -3,7 +3,7 @@
 #include "myllama_params.h"
 
 void init_params(void* container) {
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
     gpt_params* params = (gpt_params*)c->params;
 
     llama_context_params* lparams = new llama_context_params(llama_context_default_params());

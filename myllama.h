@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 
-struct variables_container {
+struct myllama_container {
     int n_past;
     int n_remain;
     int n_consumed;
