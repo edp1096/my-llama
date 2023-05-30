@@ -7,6 +7,13 @@ import (
 	"errors"
 )
 
+func (l *LLama) InitGptParams() {
+	C.init_gpt_params(l.Container)
+}
+func (l *LLama) InitContextParams() {
+	C.init_context_params(l.Container)
+}
+
 func (l *LLama) AllocateVariables() (err error) {
 	container := l.Container
 	result := bool(C.bd_allocate_variables(container))
@@ -34,11 +41,11 @@ func (l *LLama) GetTopP() float64 {
 
 /* Setters - gpt_params */
 func (l *LLama) SetThreadsCount(threads int) {
-	C.set_params_n_threads(l.Container, C.int(threads))
+	C.set_gptparams_n_threads(l.Container, C.int(threads))
 }
 
 func (l *LLama) SetUseMlock(useMlock bool) {
-	C.set_params_use_mlock(l.Container, C.bool(useMlock))
+	C.set_gptparams_use_mlock(l.Container, C.bool(useMlock))
 }
 
 /* Setters - gpt_params / sampling parameters */
@@ -71,8 +78,4 @@ func (l *LLama) SetTemperature(temper float64) {
 }
 func (l *LLama) SetRepeatPenalty(penalty float64) {
 	C.bd_set_params_repeat_penalty(l.Container, C.float(penalty))
-}
-
-func (l *LLama) InitParams() {
-	C.bd_init_params(l.Container)
 }

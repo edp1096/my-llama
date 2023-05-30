@@ -183,7 +183,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		requestCount := 0 // to ignore prompt
 
-		l.InitParams()
+		l.InitContextParams()
 
 		l.SetThreadsCount(l.Threads)
 		l.SetUseMlock(useMlock)

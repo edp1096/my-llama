@@ -15,7 +15,7 @@ func main() {
 		panic(err)
 	}
 
-	l.InitParams()
+	l.InitContextParams()
 	l.SetThreadsCount(4)
 	l.SetUseMlock(true)
 

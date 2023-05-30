@@ -34,7 +34,7 @@ int64_t llama_api_time_us() {
 
 void llama_api_init_from_file(void* container, char* path_model) {
     myllama_container* c = (myllama_container*)container;
-    llama_context_params params = *(llama_context_params*)c->gptparams;
+    llama_context_params params = *(llama_context_params*)c->ctxparams;
 
     llama_context* ctx = llama_init_from_file(path_model, params);
     c->ctx = (void*)ctx;
