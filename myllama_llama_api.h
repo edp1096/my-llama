@@ -11,7 +11,7 @@ bool llama_api_mlock_supported();
 void llama_api_init_backend();
 
 int64_t llama_api_time_us();
-void* llama_api_init_from_file(char* path_model, void* params_p);
+void llama_api_init_from_file(void* container, char* path_model);
 void llama_api_free(void* container);
 
 int llama_api_model_quantize(char* fname_inp, char* fname_out, int ftype, int nthread);

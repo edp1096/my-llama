@@ -4,7 +4,7 @@ package myllama
 #cgo CXXFLAGS: -Ivendors/llama.cpp -Ivendors/llama.cpp/examples
 #include <stdlib.h>
 #include "binding.h"
-#include "binding_llama_api.h"
+#include "myllama_llama_api.h"
 */
 import "C"
 
@@ -116,8 +116,9 @@ func (l *LLama) LlamaApiTimeUs() int64 {
 	return int64(C.llama_api_time_us())
 }
 
-// Not done
-func (l *LLama) LlamaApiInitFromFile(fname string) {}
+func (l *LLama) LlamaApiInitFromFile(fname string) {
+	C.llama_api_init_from_file(l.Container, C.CString(fname))
+}
 
 func (l *LLama) LlamaApiFree() {
 	C.llama_api_free(l.Container)

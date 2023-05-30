@@ -16,10 +16,12 @@ func main() {
 	l.SetThreadsCount(4)
 	l.SetUseMlock(true)
 
-	err = l.LoadModel(modelName)
-	if err != nil {
-		panic(err)
-	}
+	// err = l.LoadModel(modelName)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	l.LlamaApiInitFromFile(modelName)
 
 	l.LlamaApiTokenize("Hello world!", true)
 }

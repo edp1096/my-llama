@@ -3,8 +3,8 @@
 
 // #include "llama.h"
 #include "common.h"
-#include "binding.h"  // including struct variables_container
-#include "binding_llama_api.h"
+#include "myllama.h"  // including struct variables_container
+#include "myllama_llama_api.h"
 
 void free_pointer(void* ptr) {
     free(ptr);
@@ -32,10 +32,12 @@ int64_t llama_api_time_us() {
     return llama_time_us();
 }
 
-void* llama_api_init_from_file(char* path_model, void* params_p) {
-    llama_context_params params = *(llama_context_params*)params_p;
+void llama_api_init_from_file(void* container, char* path_model) {
+    variables_container* c = (variables_container*)container;
+    llama_context_params params = *(llama_context_params*)c->params;
 
-    return (void*)llama_init_from_file(path_model, params);
+    llama_context* ctx = llama_init_from_file(path_model, params);
+    c->ctx = (void*)ctx;
 }
 
 void llama_api_free(void* container) {
