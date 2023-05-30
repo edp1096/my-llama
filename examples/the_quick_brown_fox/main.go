@@ -1,9 +1,6 @@
-package main // import "embedding"
-
+package main // import "the_quick_brown_fox"
 import "C"
 import (
-	"fmt"
-
 	llama "github.com/edp1096/my-llama"
 )
 
@@ -25,10 +22,4 @@ func main() {
 	}
 
 	l.LlamaApiTokenize("Hello world!", true)
-
-	embdCount := l.LlamaApiNumEmbd()
-	fmt.Println("Embedding count:", embdCount)
-
-	embeddings := l.LlamaApiGetEmbeddings(embdCount)
-	fmt.Println("Embeddings:", embeddings)
 }

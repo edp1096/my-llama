@@ -99,7 +99,16 @@ cd my-llama
 build_lib.ps1 cuda
 ```
 
-### Then build runner in cmd folder
+* Clean
+```powershell
+clean.ps1
+
+# or
+
+clean.ps1 all
+```
+
+### Then build runner in cmd folder or in example folder
 * CPU
 ```powershell
 cd cmd
@@ -115,6 +124,16 @@ go build -tags clblast
 cd cmd
 go build -tags cuda
 ```
+
+### Linux
+* See [build_lib.sh](/build_lib.sh) and [clean.sh](/clean.sh)
+* Tested with nVidia driver 530, CUDA toolkit 12.1
+    * Ubuntu 20.04, RTX 1080ti
+    * Ubuntu 20.04, RTX 3090
+    * WSL Ubuntu 22.04, RTX 3060ti
+* WSL
+    * Because [not support opencl](https://github.com/microsoft/WSL/issues/6951), clblast not work
+    * Set environment value `export GGML_CUDA_NO_PINNED=1` if CUDA not work
 
 
 ## Todo
