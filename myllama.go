@@ -21,7 +21,7 @@ type LLama struct {
 }
 
 func New() (*LLama, error) {
-	container := C.bd_init_container()
+	container := C.init_container()
 	if container == nil {
 		return nil, fmt.Errorf("failed to initialize the container")
 	}
@@ -128,19 +128,22 @@ func (l *LLama) LlamaApiSetRandomNumberGenerationSeed(seed int) {
 	C.llama_api_set_rng_seed(l.Container, C.int(seed))
 }
 
-func (l *LLama) LlamaApiEval() {
+func (l *LLama) LlamaApiEval(tokens []int, tokenCount int, numPast int) {
 	threadsCount := l.GetThreadsCount()
-	isFail := int(C.llama_api_eval(l.Container, C.int(threadsCount)))
+
+	tokensPtr := &tokens[0]
+
+	isFail := int(C.llama_api_eval(l.Container, (*C.int)(unsafe.Pointer(tokensPtr)), C.int(tokenCount), C.int(numPast), C.int(threadsCount)))
 
 	fmt.Println("llama eval isFail:", isFail)
 }
 
-func (l *LLama) LlamaApiTokenize(text string, addBOS bool) (tokens []int, tokenSize int) {
-	tokenSize = int(C.llama_api_tokenize(l.Container, C.CString(text), C.bool(addBOS)))
+func (l *LLama) LlamaApiTokenize(text string, addBOS bool) ([]int, int) {
+	tokenSize := int(C.llama_api_tokenize(l.Container, C.CString(text), C.bool(addBOS)))
 	tokenPtr := C.get_tokens(l.Container)
-	defer C.free(unsafe.Pointer(tokenPtr))
+	// defer C.free(unsafe.Pointer(tokenPtr))
 
-	tokens = make([]int, tokenSize)
+	tokens := make([]int, tokenSize)
 	for i := 0; i < tokenSize; i++ {
 		tokens[i] = int(*(*C.int)(unsafe.Pointer(uintptr(unsafe.Pointer(tokenPtr)) + uintptr(i)*unsafe.Sizeof(C.int(0)))))
 	}
@@ -190,4 +193,53 @@ func (l *LLama) LlamaApiTokenEOS() int {
 
 func (l *LLama) LlamaApiTokenNL() int {
 	return int(C.llama_api_token_nl())
+}
+
+//	func (l *LLama) LlamaApiSampleRepetitionPenalty() {
+//		return C.llama_api_sample_repetition_penalty(l.Container)
+//	}
+//
+//	func (l *LLama) LlamaApiSampleFrequencyAndPresencePenalties() {
+//		return C.llama_api_sample_frequency_and_presence_penalties(l.Container)
+//	}
+//
+//	func (l *LLama) LlamaApiSampleSoftmax() {
+//		return C.llama_api_sample_softmax(l.Container)
+//	}
+//
+//	func (l *LLama) LlamaApiSampleTopK() {
+//		return C.llama_api_sample_top_k(l.Container)
+//	}
+//
+//	func (l *LLama) LlamaApiSampleTopP() {
+//		return C.llama_api_sample_top_p(l.Container)
+//	}
+//
+//	func (l *LLama) LlamaApiSampleTailFree() {
+//		return C.llama_api_sample_tail_free(l.Container)
+//	}
+//
+//	func (l *LLama) LlamaApiSampleTypical() {
+//		return C.llama_api_sample_typical(l.Container)
+//	}
+//
+//	func (l *LLama) LlamaApiSampleTemperature() {
+//		return C.llama_api_sample_temperature(l.Container)
+//	}
+//
+//	func (l *LLama) LlamaApiSampleTokenMirostatV2() {
+//		return C.llama_api_sample_token_mirostat_v2(l.Container)
+//	}
+//
+//	func (l *LLama) LlamaApiSampleTokenGreedy() int {
+//		return int(C.llama_api_sample_token_greedy(l.Container))
+//	}
+func (l *LLama) LlamaApiSampleToken() int {
+	return int(C.llama_api_sample_token(l.Container))
+}
+
+/* Misc. */
+
+func (l *LLama) PrepareCandidates(numVocab int) {
+	C.prepare_candidates(l.Container, C.int(numVocab))
 }

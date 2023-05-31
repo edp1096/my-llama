@@ -26,3 +26,19 @@ int* get_tokens(void* container) {
 
     return (int*)c->tokens;
 }
+
+void prepare_candidates(void* container, int n_vocab) {
+    myllama_container* c = (myllama_container*)container;
+    gpt_params* gptparams = (gpt_params*)c->gptparams;
+
+    float* logits = (float*)c->logits;
+
+    std::vector<llama_token_data> candidates;
+    candidates.reserve(n_vocab);
+    for (llama_token token_id = 0; token_id < n_vocab; token_id++) {
+        candidates.emplace_back(llama_token_data{token_id, logits[token_id], 0.0f});
+    }
+    llama_token_data_array* candidates_p = new llama_token_data_array{ candidates.data(), candidates.size(), false };
+
+    c->candidates_p = (void*)candidates_p;
+}

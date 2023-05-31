@@ -41,6 +41,7 @@ void* init_container();
 
 void allocate_tokens(void* container, char* text, bool add_bos);
 int* get_tokens(void* container);
+void prepare_candidates(void* container, int n_vocab);
 
 #ifdef __cplusplus
 }

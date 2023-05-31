@@ -13,6 +13,8 @@ func main() {
 	threadsCount := 4
 	predictCount := 16
 
+	numPast := 0
+
 	l, err := llama.New()
 	if err != nil {
 		panic(err)
@@ -26,18 +28,28 @@ func main() {
 
 	l.LlamaApiInitFromFile(modelName)
 
-	tokens, tokenCount := l.LlamaApiTokenize(prompt, true)
+	promptTokens, promptTokenCount := l.LlamaApiTokenize(prompt, true)
+	fmt.Println("promptTokens:", promptTokens)
 
-	fmt.Println(tokens)
-	fmt.Println(tokenCount)
+	if promptTokenCount < 1 {
+		panic("tokenCount < 1")
+	}
 
-	l.LlamaApiEval()
+	l.LlamaApiEval(promptTokens, promptTokenCount, numPast)
+	numPast += promptTokenCount
 
 	fmt.Println("predictCount:", predictCount)
 	for i := 0; i < predictCount; i++ {
 		l.LlamaApiGetLogits()
 		numVocab := l.LlamaApiNumVocab()
-		fmt.Println("numVocab:", numVocab)
+		l.PrepareCandidates(numVocab)
+		nextToken := l.LlamaApiSampleToken()
+		nextTokenStr := l.LlamaApiTokenToStr(nextToken)
+
+		fmt.Println(nextTokenStr)
+		l.LlamaApiEval([]int{nextToken}, 1, numPast)
+
+		numPast++
 	}
 
 	l.LlamaApiFree()

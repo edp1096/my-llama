@@ -125,18 +125,20 @@ bool llama_api_save_session_file(void* container, char* path_session, void* toke
     return result;
 }
 
-int llama_api_eval(void* container, int n_threads) {
+int llama_api_eval(void* container, int* tokens, int n_tokens, int n_past, int n_threads) {
     int result = 1;  // 0: success, 1: fail
 
     myllama_container* c = (myllama_container*)container;
     if ((llama_context*)c->ctx != NULL) {
-        int n_tokens = *(int*)c->n_tokens;
-        int n_past = c->n_past;
-        int* tokens = (int*)c->tokens;
+        // int* tokens = (int*)c->tokens;
+        // int n_tokens = *(int*)c->n_tokens;
+        // int n_past = c->n_past;
 
-        result = llama_eval((llama_context*)c->ctx, tokens, n_tokens, n_past, n_threads);
+        printf("n_tokens, n_past, n_threads: %d, %d, %d\n", n_tokens, n_past, n_threads);
 
-        c->n_past += n_tokens;
+        result = llama_eval((llama_context*)c->ctx, (llama_token*)tokens, n_tokens, n_past, n_threads);
+
+        // c->n_past += n_tokens;
     }
 
     return result;
@@ -312,12 +314,12 @@ int llama_api_sample_token_greedy(void* container, void* candidates_a_p) {
     return id;
 }
 
-int llama_api_sample_token(void* container, void* candidates_a_p) {
+int llama_api_sample_token(void* container) {
     int id = 0;
 
     myllama_container* c = (myllama_container*)container;
     if ((llama_context*)c->ctx != NULL) {
-        id = (int)llama_sample_token((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p);
+        id = (int)llama_sample_token((llama_context*)c->ctx, (llama_token_data_array*)c->candidates_p);
     }
 
     return id;

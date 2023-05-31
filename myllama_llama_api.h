@@ -24,7 +24,7 @@ int llama_api_set_state_data(void* container, void* src_p);
 bool llama_api_load_session_file(void* container, char* path_session, void* tokens_out, int n_token_capacity, int* n_token_count_out);
 bool llama_api_save_session_file(void* container, char* path_session, void* tokens, int n_token_count);
 
-int llama_api_eval(void* container, int n_threads);
+int llama_api_eval(void* container, int* tokens, int n_tokens, int n_past, int n_threads);
 int llama_api_tokenize(void* container, char* text, bool add_bos);
 int llama_api_n_vocab(void* container);
 int llama_api_n_ctx(void* container);
@@ -47,7 +47,7 @@ void llama_api_sample_typical(void* container, void* candidates_a_p, float typic
 void llama_api_sample_temperature(void* container, void* candidates_a_p, float temperature);
 void llama_api_sample_token_mirostat_v2(void* container, void* candidates_a_p, float mirostat_tau, float mirostat_eta, float mirostat_mu);
 int llama_api_sample_token_greedy(void* container, void* candidates_a_p);
-int llama_api_sample_token(void* container, void* candidates_a_p);
+int llama_api_sample_token(void* container);
 
 void llama_api_print_timings(void* container);
 void llama_api_reset_timings(void* container);
