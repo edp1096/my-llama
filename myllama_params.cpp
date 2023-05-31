@@ -43,3 +43,7 @@ void set_gptparams_n_threads(void* container, int value) {
 void set_gptparams_use_mlock(void* container, bool value) {
     ((gpt_params*)((myllama_container*)container)->gptparams)->use_mlock = value;
 }
+
+void set_gptparams_n_predict(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->n_predict = value;
+}

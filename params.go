@@ -48,6 +48,10 @@ func (l *LLama) SetUseMlock(useMlock bool) {
 	C.set_gptparams_use_mlock(l.Container, C.bool(useMlock))
 }
 
+func (l *LLama) SetPredictCount(predicts int) {
+	C.set_gptparams_n_predict(l.Container, C.int(predicts))
+}
+
 /* Setters - gpt_params / sampling parameters */
 func (l *LLama) SetNCtx(nCtx int) {
 	C.bd_set_params_n_ctx(l.Container, C.int(nCtx))

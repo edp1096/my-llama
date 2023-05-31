@@ -3,7 +3,7 @@
 
 // #include "llama.h"
 #include "common.h"
-#include "myllama.h"  // including struct myllama_container
+#include "myllama.h"
 #include "myllama_llama_api.h"
 
 void free_pointer(void* ptr) {
@@ -78,7 +78,7 @@ int llama_api_get_state_size(void* container) {
         result = (int)llama_get_state_size((llama_context*)c->ctx);
     }
 
-    return result;        
+    return result;
 }
 
 int llama_api_copy_state_data(void* container, void* dst_p) {
@@ -125,32 +125,43 @@ bool llama_api_save_session_file(void* container, char* path_session, void* toke
     return result;
 }
 
-int llama_api_eval(void* container, int* tokens, int n_tokens, int n_past, int n_threads) {
+int llama_api_eval(void* container, int n_threads) {
     int result = 1;  // 0: success, 1: fail
 
     myllama_container* c = (myllama_container*)container;
     if ((llama_context*)c->ctx != NULL) {
-        result = llama_eval((llama_context*)c->ctx, tokens, n_tokens, n_past, (int32_t)n_threads);
+        int n_tokens = *(int*)c->n_tokens;
+        int n_past = c->n_past;
+        int* tokens = (int*)c->tokens;
+
+        result = llama_eval((llama_context*)c->ctx, tokens, n_tokens, n_past, n_threads);
+
+        c->n_past += n_tokens;
     }
 
     return result;
 }
 
 int llama_api_tokenize(void* container, char* text, bool add_bos) {
-    int result = 0;
-
     myllama_container* c = (myllama_container*)container;
+
+    std::vector<llama_token> tokens(strlen(text) + (int)add_bos);
+    int* n_tokens = new int(tokens.size());
+
     if ((llama_context*)c->ctx != NULL) {
-        std::vector<llama_token> tokens(strlen(text) + (int)add_bos);
-        const int n = llama_tokenize((llama_context*)c->ctx, text, tokens.data(), tokens.size(), add_bos);
+        const int n = llama_tokenize((llama_context*)c->ctx, text, tokens.data(), *n_tokens, add_bos);
+        *n_tokens = n;
         if (n > 0) {
-            result = n;
             tokens.resize(n);
-            c->embd_inp = (void*)new std::vector<llama_token>(tokens);
+            *n_tokens = tokens.size();
+            c->embd_inp = (void*)new std::vector<llama_token>(tokens);  // will be removed
         }
     }
 
-    return result;
+    c->tokens = (void*)tokens.data();
+    c->n_tokens = (void*)n_tokens;
+
+    return *n_tokens;
 }
 
 int llama_api_n_vocab(void* container) {
@@ -183,15 +194,11 @@ int llama_api_n_embd(void* container) {
     return n_embd;
 }
 
-void* llama_api_get_logits(void* container) {
-    void* logits;
-
+void llama_api_get_logits(void* container) {
     myllama_container* c = (myllama_container*)container;
     if ((llama_context*)c->ctx != NULL) {
-        void* logits = (void*)llama_get_logits((llama_context*)c->ctx);
+        c->logits = (void*)llama_get_logits((llama_context*)c->ctx);
     }
-
-    return logits;
 }
 
 float* llama_api_get_embeddings(void* container) {
@@ -243,7 +250,6 @@ void llama_api_sample_frequency_and_presence_penalties(void* container, void* ca
     if ((llama_context*)c->ctx != NULL) {
         llama_sample_frequency_and_presence_penalties((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, (llama_token*)last_tokens, (size_t)last_tokens_size, alpha_frequency, alpha_presence);
     }
-
 }
 
 void llama_api_sample_softmax(void* container, void* candidates_a_p) {

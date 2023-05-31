@@ -13,20 +13,34 @@ struct myllama_container {
     bool input_noecho;
     int n_ctx;
 
-    void* session_tokens;
-
-    void* last_n_tokens;
-    void* llama_token_newline;
-
-    void* embd;
-    void* embd_inp;
-
     void* ctx;
     void* gptparams;
     void* ctxparams;
 
-    char* user_input;
+    void* tokens;
+    void* n_tokens;
+
+    void* logits;
+    int n_logits;
+    int n_vocab;
+    void* candidates;
+    void* candidates_p;
+
+    void* embd;
+    void* embd_inp;  // will be removed
+
+    void* session_tokens;  // will be removed
+
+    void* last_n_tokens;
+    void* llama_token_newline;
+
+    char* user_input;  // will be removed
 };
+
+void* init_container();
+
+void allocate_tokens(void* container, char* text, bool add_bos);
+int* get_tokens(void* container);
 
 #ifdef __cplusplus
 }

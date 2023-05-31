@@ -128,11 +128,24 @@ func (l *LLama) LlamaApiSetRandomNumberGenerationSeed(seed int) {
 	C.llama_api_set_rng_seed(l.Container, C.int(seed))
 }
 
-// Not done
-func (l *LLama) LlamaApiEval(text string, addBOS bool) {}
+func (l *LLama) LlamaApiEval() {
+	threadsCount := l.GetThreadsCount()
+	isFail := int(C.llama_api_eval(l.Container, C.int(threadsCount)))
 
-func (l *LLama) LlamaApiTokenize(text string, addBOS bool) int {
-	return int(C.llama_api_tokenize(l.Container, C.CString(text), C.bool(addBOS)))
+	fmt.Println("llama eval isFail:", isFail)
+}
+
+func (l *LLama) LlamaApiTokenize(text string, addBOS bool) (tokens []int, tokenSize int) {
+	tokenSize = int(C.llama_api_tokenize(l.Container, C.CString(text), C.bool(addBOS)))
+	tokenPtr := C.get_tokens(l.Container)
+	defer C.free(unsafe.Pointer(tokenPtr))
+
+	tokens = make([]int, tokenSize)
+	for i := 0; i < tokenSize; i++ {
+		tokens[i] = int(*(*C.int)(unsafe.Pointer(uintptr(unsafe.Pointer(tokenPtr)) + uintptr(i)*unsafe.Sizeof(C.int(0)))))
+	}
+
+	return tokens, tokenSize
 }
 
 func (l *LLama) LlamaApiNumVocab() int {
@@ -147,8 +160,8 @@ func (l *LLama) LlamaApiNumEmbd() int {
 	return int(C.llama_api_n_embd(l.Container))
 }
 
-func (l *LLama) LlamaApiGetLogits() unsafe.Pointer {
-	return C.llama_api_get_logits(l.Container)
+func (l *LLama) LlamaApiGetLogits() {
+	C.llama_api_get_logits(l.Container)
 }
 
 func (l *LLama) LlamaApiGetEmbeddings(embeddingSize int) []float64 {

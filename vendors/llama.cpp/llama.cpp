@@ -212,6 +212,9 @@ struct llama_vocab {
 };
 
 struct llama_context {
+    int n_gpu = 0;
+    int n_gpu_output = 0;
+
     std::mt19937 rng;
 
     int64_t t_load_us = 0;
@@ -1095,10 +1098,13 @@ static void llama_model_load_internal(
 
 #ifdef GGML_USE_CUBLAS
         const int n_gpu = std::min(n_gpu_layers, int(hparams.n_layer));
+        lctx.n_gpu = n_gpu;
 
         fprintf(stderr, "%s: [cublas] offloading %d layers to GPU\n", __func__, n_gpu);
         if (n_gpu_layers > (int) hparams.n_layer) {
             fprintf(stderr, "%s: [cublas] offloading output layer to GPU\n", __func__);
+
+            lctx.n_gpu_output = 1;
         }
         fprintf(stderr, "%s: [cublas] total VRAM used: %zu MB\n", __func__, vram_total / 1024 / 1024);
 #elif !defined(GGML_USE_CLBLAST)
@@ -1153,9 +1159,14 @@ static void llama_model_load_internal(
             ggml_cl_transform_tensor(layer.w2); vram_total += ggml_nbytes(layer.w2);
             ggml_cl_transform_tensor(layer.w3); vram_total += ggml_nbytes(layer.w3);
         }
+
+        lctx.n_gpu = n_gpu;
+
         if (n_gpu_layers > (int) hparams.n_layer) {
             fprintf(stderr, "ggml_opencl: offloading output layer to GPU\n");
             ggml_cl_transform_tensor(model.output); vram_total += ggml_nbytes(model.output);
+
+            lctx.n_gpu_output = 1;
         }
 
         fprintf(stderr, "ggml_opencl: total VRAM used: %zu MB\n", vram_total / 1024 / 1024);
@@ -2295,6 +2306,44 @@ struct llama_context * llama_init_from_file(
 }
 
 void llama_free(struct llama_context * ctx) {
+#ifdef GGML_USE_CUBLAS
+    int n_gpu = ctx->n_gpu;
+
+    for (int i = 0; i < n_gpu; ++i) {
+        ggml_cuda_free(ctx->model.layers[i].wq->data);
+        ggml_cuda_free(ctx->model.layers[i].wk->data);
+        ggml_cuda_free(ctx->model.layers[i].wv->data);
+        ggml_cuda_free(ctx->model.layers[i].wo->data);
+        ggml_cuda_free(ctx->model.layers[i].w1->data);
+        ggml_cuda_free(ctx->model.layers[i].w2->data);
+        ggml_cuda_free(ctx->model.layers[i].w3->data);
+    }
+
+    if (ctx->n_gpu_output > 0) {
+        ggml_cuda_free(ctx->model.output->data);
+    }
+
+#endif
+#ifdef GGML_USE_CLBLAST
+    int n_gpu = ctx->n_gpu;
+    for (int i = 0; i < n_gpu; ++i) {
+        ggml_cl_mem_free(*(cl_mem *)ctx->model.layers[i].wq->data);
+        ggml_cl_mem_free(*(cl_mem *)ctx->model.layers[i].wk->data);
+        ggml_cl_mem_free(*(cl_mem *)ctx->model.layers[i].wv->data);
+        ggml_cl_mem_free(*(cl_mem *)ctx->model.layers[i].wo->data);
+        ggml_cl_mem_free(*(cl_mem *)ctx->model.layers[i].w1->data);
+        ggml_cl_mem_free(*(cl_mem *)ctx->model.layers[i].w2->data);
+        ggml_cl_mem_free(*(cl_mem *)ctx->model.layers[i].w3->data);
+    }
+
+    if (ctx->n_gpu_output > 0) {
+        ggml_cl_mem_free(*(cl_mem *)ctx->model.output->data);
+    }
+    // Not work
+    // ggml_cl_destroy();
+
+#endif
+
     delete ctx;
 }
 

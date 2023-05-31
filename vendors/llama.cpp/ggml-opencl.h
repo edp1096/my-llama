@@ -1,5 +1,6 @@
 #pragma once
 
+#include <clblast_c.h>
 #include "ggml.h"
 
 #ifdef  __cplusplus
@@ -14,6 +15,9 @@ void   ggml_cl_mul_mat(const struct ggml_tensor * src0, const struct ggml_tensor
 
 void * ggml_cl_host_malloc(size_t size);
 void   ggml_cl_host_free(void * ptr);
+
+void ggml_cl_mem_free(cl_mem mem);
+void ggml_cl_destroy(void);
 
 void ggml_cl_transform_tensor(struct ggml_tensor * tensor);
 

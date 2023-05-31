@@ -24,13 +24,13 @@ int llama_api_set_state_data(void* container, void* src_p);
 bool llama_api_load_session_file(void* container, char* path_session, void* tokens_out, int n_token_capacity, int* n_token_count_out);
 bool llama_api_save_session_file(void* container, char* path_session, void* tokens, int n_token_count);
 
-int llama_api_eval(void* container, int* tokens, int n_tokens, int n_past, int n_threads);
+int llama_api_eval(void* container, int n_threads);
 int llama_api_tokenize(void* container, char* text, bool add_bos);
 int llama_api_n_vocab(void* container);
 int llama_api_n_ctx(void* container);
 int llama_api_n_embd(void* container);
 
-void* llama_api_get_logits(void* container);
+void llama_api_get_logits(void* container);
 float* llama_api_get_embeddings(void* container);
 char* llama_api_token_to_str(void* container, int token);
 int llama_api_token_bos();

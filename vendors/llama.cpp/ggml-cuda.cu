@@ -445,6 +445,35 @@ static cudaStream_t g_cudaStreams[GGML_CUDA_MAX_STREAMS] = { nullptr };
 static cudaStream_t g_cudaStreams2[GGML_CUDA_MAX_STREAMS] = { nullptr };
 static cudaEvent_t g_cudaEvents[GGML_CUDA_MAX_EVENTS] = { nullptr };
 
+void ggml_cuda_free(void *ptr) {
+    if (ptr != nullptr) {
+        CUDA_CHECK(cudaFree(ptr));
+    }
+}
+
+void ggml_cuda_destroy() {
+    for (int i = 0; i < GGML_CUDA_MAX_STREAMS; ++i) {
+        if (g_cudaStreams[i] != nullptr) {
+            CUDA_CHECK(cudaStreamDestroy(g_cudaStreams[i]));
+            g_cudaStreams[i] = nullptr;
+        }
+        if (g_cudaStreams2[i] != nullptr) {
+            CUDA_CHECK(cudaStreamDestroy(g_cudaStreams2[i]));
+            g_cudaStreams2[i] = nullptr;
+        }
+    }
+    for (int i = 0; i < GGML_CUDA_MAX_EVENTS; ++i) {
+        if (g_cudaEvents[i] != nullptr) {
+            CUDA_CHECK(cudaEventDestroy(g_cudaEvents[i]));
+            g_cudaEvents[i] = nullptr;
+        }
+    }
+    if (g_cublasH != nullptr) {
+        CUBLAS_CHECK(cublasDestroy(g_cublasH));
+        g_cublasH = nullptr;
+    }
+}
+
 void ggml_init_cublas() {
     if (g_cublasH == nullptr) {
         // create streams
