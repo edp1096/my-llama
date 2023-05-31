@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 
 // #include "llama.h"
 #include "common.h"
@@ -130,15 +131,7 @@ int llama_api_eval(void* container, int* tokens, int n_tokens, int n_past, int n
 
     myllama_container* c = (myllama_container*)container;
     if ((llama_context*)c->ctx != NULL) {
-        // int* tokens = (int*)c->tokens;
-        // int n_tokens = *(int*)c->n_tokens;
-        // int n_past = c->n_past;
-
-        printf("n_tokens, n_past, n_threads: %d, %d, %d\n", n_tokens, n_past, n_threads);
-
         result = llama_eval((llama_context*)c->ctx, (llama_token*)tokens, n_tokens, n_past, n_threads);
-
-        // c->n_past += n_tokens;
     }
 
     return result;
@@ -147,21 +140,22 @@ int llama_api_eval(void* container, int* tokens, int n_tokens, int n_past, int n
 int llama_api_tokenize(void* container, char* text, bool add_bos) {
     myllama_container* c = (myllama_container*)container;
 
-    std::vector<llama_token> tokens(strlen(text) + (int)add_bos);
-    int* n_tokens = new int(tokens.size());
+    // std::vector<llama_token> tokens(strlen(text) + (int)add_bos);
+    // int* n_tokens = new int(tokens.size());
+
+    auto tokens = std::vector<llama_token>(((llama_context_params*)c->ctxparams)->n_ctx);
+    tokens.resize(c->n_tokens);
+    std::copy_n((llama_token*)c->tokens, c->n_tokens, tokens.begin());
+
+    int* n_tokens = new int(0);
 
     if ((llama_context*)c->ctx != NULL) {
-        const int n = llama_tokenize((llama_context*)c->ctx, text, tokens.data(), *n_tokens, add_bos);
-        *n_tokens = n;
-        if (n > 0) {
-            tokens.resize(n);
-            *n_tokens = tokens.size();
-            c->embd_inp = (void*)new std::vector<llama_token>(tokens);  // will be removed
-        }
+        // const int n = llama_tokenize((llama_context*)c->ctx, text, tokens.data(), tokens.size(), add_bos);
+        *n_tokens = llama_tokenize((llama_context*)c->ctx, text, tokens.data(), tokens.size(), add_bos);
     }
 
     c->tokens = (void*)tokens.data();
-    c->n_tokens = (void*)n_tokens;
+    c->n_tokens = *n_tokens;
 
     return *n_tokens;
 }
@@ -199,7 +193,7 @@ int llama_api_n_embd(void* container) {
 void llama_api_get_logits(void* container) {
     myllama_container* c = (myllama_container*)container;
     if ((llama_context*)c->ctx != NULL) {
-        c->logits = (void*)llama_get_logits((llama_context*)c->ctx);
+        c->logits = llama_get_logits((llama_context*)c->ctx);
     }
 }
 
@@ -318,8 +312,10 @@ int llama_api_sample_token(void* container) {
     int id = 0;
 
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        id = (int)llama_sample_token((llama_context*)c->ctx, (llama_token_data_array*)c->candidates_p);
+    if ((llama_context*)c->ctx != nullptr) {
+        auto candidates = *(llama_token_data_array*)c->candidates_p;
+
+        auto next_token = llama_sample_token((llama_context*)c->ctx, &candidates);
     }
 
     return id;

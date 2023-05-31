@@ -128,14 +128,18 @@ func (l *LLama) LlamaApiSetRandomNumberGenerationSeed(seed int) {
 	C.llama_api_set_rng_seed(l.Container, C.int(seed))
 }
 
-func (l *LLama) LlamaApiEval(tokens []int, tokenCount int, numPast int) {
-	threadsCount := l.GetThreadsCount()
+func (l *LLama) LlamaApiEval(tokens []int, tokenCount int, numPast int) (result bool) {
+	result = false
 
+	threadsCount := l.GetThreadsCount()
 	tokensPtr := &tokens[0]
 
 	isFail := int(C.llama_api_eval(l.Container, (*C.int)(unsafe.Pointer(tokensPtr)), C.int(tokenCount), C.int(numPast), C.int(threadsCount)))
+	if isFail == 0 {
+		result = true
+	}
 
-	fmt.Println("llama eval isFail:", isFail)
+	return result
 }
 
 func (l *LLama) LlamaApiTokenize(text string, addBOS bool) ([]int, int) {
@@ -240,6 +244,11 @@ func (l *LLama) LlamaApiSampleToken() int {
 
 /* Misc. */
 
-func (l *LLama) PrepareCandidates(numVocab int) {
-	C.prepare_candidates(l.Container, C.int(numVocab))
+func (l *LLama) AllocateTokens() {
+	C.allocate_tokens(l.Container)
+}
+
+func (l *LLama) PrepareCandidates(numVocab int) int {
+	// C.prepare_candidates(l.Container, C.int(numVocab))
+	return int(C.prepare_candidates(l.Container, C.int(numVocab)))
 }

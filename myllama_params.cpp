@@ -14,7 +14,12 @@ void init_gpt_params(void* container) {
     gptparams->use_mmap = false;
     gptparams->use_mlock = true;
 
-    gptparams->prompt.insert(0, 1, ' ');
+    gptparams->seed = 42;
+    gptparams->n_threads = 4;
+    gptparams->repeat_last_n = 64;
+    gptparams->prompt = "The quick brown fox ";
+
+    // gptparams->prompt.insert(0, 1, ' ');
 }
 
 void init_context_params(void* container) {

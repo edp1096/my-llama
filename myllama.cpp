@@ -13,12 +13,14 @@ void* init_container() {
     return c;
 }
 
-void allocate_tokens(void* container, char* text, bool add_bos) {
+// void allocate_tokens(void* container, char* text, bool add_bos) {
+void allocate_tokens(void* container) {
     myllama_container* c = (myllama_container*)container;
-    std::vector<llama_token> tokens(strlen(text) + (int)add_bos);
+    // std::vector<llama_token> tokens(strlen(text) + (int)add_bos);
+    std::vector<llama_token> tokens(((llama_context_params*)c->ctxparams)->n_ctx);
 
     c->tokens = (void*)tokens.data();
-    c->n_tokens = (void*)new int(tokens.size());
+    c->n_tokens = tokens.size();
 }
 
 int* get_tokens(void* container) {
@@ -27,18 +29,24 @@ int* get_tokens(void* container) {
     return (int*)c->tokens;
 }
 
-void prepare_candidates(void* container, int n_vocab) {
+// void prepare_candidates(void* container, int n_vocab) {
+int prepare_candidates(void* container, int n_vocab) {
     myllama_container* c = (myllama_container*)container;
-    gpt_params* gptparams = (gpt_params*)c->gptparams;
-
-    float* logits = (float*)c->logits;
 
     std::vector<llama_token_data> candidates;
     candidates.reserve(n_vocab);
     for (llama_token token_id = 0; token_id < n_vocab; token_id++) {
-        candidates.emplace_back(llama_token_data{token_id, logits[token_id], 0.0f});
+        candidates.emplace_back(llama_token_data{token_id, c->logits[token_id], 0.0f});
     }
-    llama_token_data_array* candidates_p = new llama_token_data_array{ candidates.data(), candidates.size(), false };
 
-    c->candidates_p = (void*)candidates_p;
+    llama_token_data_array candidates_da = {candidates.data(), candidates.size(), false};
+
+    int id = 0;
+
+    if ((llama_context*)c->ctx != nullptr) {
+        auto next_token = llama_sample_token((llama_context*)c->ctx, &candidates_da);
+        id = (int)next_token;
+    }
+
+    return id;
 }

@@ -18,9 +18,9 @@ struct myllama_container {
     void* ctxparams;
 
     void* tokens;
-    void* n_tokens;
+    int n_tokens;
 
-    void* logits;
+    float* logits;
     int n_logits;
     int n_vocab;
     void* candidates;
@@ -39,9 +39,10 @@ struct myllama_container {
 
 void* init_container();
 
-void allocate_tokens(void* container, char* text, bool add_bos);
+void allocate_tokens(void* container);
 int* get_tokens(void* container);
-void prepare_candidates(void* container, int n_vocab);
+// void prepare_candidates(void* container, int n_vocab);
+int prepare_candidates(void* container, int n_vocab);
 
 #ifdef __cplusplus
 }

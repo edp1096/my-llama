@@ -28,6 +28,8 @@ func main() {
 
 	l.LlamaApiInitFromFile(modelName)
 
+	l.AllocateTokens()
+
 	promptTokens, promptTokenCount := l.LlamaApiTokenize(prompt, true)
 	fmt.Println("promptTokens:", promptTokens)
 
@@ -35,22 +37,29 @@ func main() {
 		panic("tokenCount < 1")
 	}
 
-	l.LlamaApiEval(promptTokens, promptTokenCount, numPast)
+	isOK := l.LlamaApiEval(promptTokens, promptTokenCount, numPast)
 	numPast += promptTokenCount
+
+	fmt.Println("n_prompt_token, n_past, isOK:", promptTokenCount, numPast, isOK)
 
 	fmt.Println("predictCount:", predictCount)
 	for i := 0; i < predictCount; i++ {
 		l.LlamaApiGetLogits()
 		numVocab := l.LlamaApiNumVocab()
-		l.PrepareCandidates(numVocab)
-		nextToken := l.LlamaApiSampleToken()
-		nextTokenStr := l.LlamaApiTokenToStr(nextToken)
+		// l.PrepareCandidates(numVocab)
+		nextToken := l.PrepareCandidates(numVocab)
+		// nextToken := l.LlamaApiSampleToken()
+		// nextTokenStr := l.LlamaApiTokenToStr(nextToken)
+		_ = l.LlamaApiTokenToStr(nextToken)
 
-		fmt.Println(nextTokenStr)
+		// fmt.Print(nextTokenStr)
+		fmt.Println("n_predict, n_vocab, n_token, n_past:", i, numVocab, nextToken, numPast)
 		l.LlamaApiEval([]int{nextToken}, 1, numPast)
 
 		numPast++
 	}
+
+	fmt.Println()
 
 	l.LlamaApiFree()
 }
