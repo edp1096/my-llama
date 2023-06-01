@@ -14,8 +14,9 @@ void init_gpt_params(void* container) {
     // gptparams->use_mmap = false;
     // gptparams->use_mlock = true;
 
-    // gptparams->seed = 42;
+    gptparams->seed = 42;
     gptparams->n_threads = 4;
+    gptparams->n_predict = 16;
     // gptparams->repeat_last_n = 64;
     // gptparams->prompt = "The quick brown fox ";
 

@@ -24,8 +24,8 @@ struct myllama_container {
     float* logits;
     int n_logits;
     int n_vocab;
+
     void* candidates;
-    void* candidates_p;
 
     void* embd;
     void* embd_inp;  // will be removed
@@ -40,8 +40,9 @@ void* init_container();
 
 void allocate_tokens(void* container);
 int* get_tokens(void* container);
-// void prepare_candidates(void* container, int n_vocab);
-int prepare_candidates(void* container, int n_vocab);
+void prepare_candidates(void* container, int n_vocab);
+// int prepare_candidates(void* container, int n_vocab);
+void mini_run_main();
 
 #ifdef __cplusplus
 }
