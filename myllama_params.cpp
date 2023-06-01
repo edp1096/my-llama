@@ -4,20 +4,20 @@
 
 void init_gpt_params(void* container) {
     myllama_container* c = (myllama_container*)container;
-    gpt_params* gptparams = new gpt_params;
+    gpt_params* gptparams = (gpt_params*)c->gptparams;
 
-    gptparams->interactive = true;
-    gptparams->interactive_first = gptparams->interactive;
-    gptparams->antiprompt = {};
+    // gptparams->interactive = true;
+    // gptparams->interactive_first = gptparams->interactive;
+    // gptparams->antiprompt = {};
 
     // gptparams->n_predict = 512;
-    gptparams->use_mmap = false;
-    gptparams->use_mlock = true;
+    // gptparams->use_mmap = false;
+    // gptparams->use_mlock = true;
 
-    gptparams->seed = 42;
+    // gptparams->seed = 42;
     gptparams->n_threads = 4;
-    gptparams->repeat_last_n = 64;
-    gptparams->prompt = "The quick brown fox ";
+    // gptparams->repeat_last_n = 64;
+    // gptparams->prompt = "The quick brown fox ";
 
     // gptparams->prompt.insert(0, 1, ' ');
 }
@@ -25,19 +25,16 @@ void init_gpt_params(void* container) {
 void init_context_params(void* container) {
     myllama_container* c = (myllama_container*)container;
     gpt_params* gptparams = (gpt_params*)c->gptparams;
-
-    llama_context_params* ctxparams = new llama_context_params(llama_context_default_params());
+    llama_context_params* ctxparams = (llama_context_params*)c->ctxparams;
 
     ctxparams->n_ctx = gptparams->n_ctx;
-    ctxparams->n_gpu_layers = gptparams->n_gpu_layers;
+    // ctxparams->n_gpu_layers = gptparams->n_gpu_layers;
     ctxparams->seed = gptparams->seed;
     ctxparams->f16_kv = gptparams->memory_f16;
     ctxparams->use_mmap = gptparams->use_mmap;
     ctxparams->use_mlock = gptparams->use_mlock;
-    ctxparams->logits_all = gptparams->perplexity;
-    ctxparams->embedding = gptparams->embedding;
-
-    c->ctxparams = ctxparams;
+    // ctxparams->logits_all = gptparams->perplexity;
+    // ctxparams->embedding = gptparams->embedding;
 }
 
 /* Setters - gptparams. require restart */

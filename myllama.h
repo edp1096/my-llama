@@ -3,6 +3,11 @@ extern "C" {
 #endif
 
 struct myllama_container {
+    void* ctx;
+    void* gptparams;
+    void* ctxparams;
+    void* session_tokens;
+
     int n_past;
     int n_remain;
     int n_consumed;
@@ -12,10 +17,6 @@ struct myllama_container {
     bool is_interacting;
     bool input_noecho;
     int n_ctx;
-
-    void* ctx;
-    void* gptparams;
-    void* ctxparams;
 
     void* tokens;
     int n_tokens;
@@ -28,8 +29,6 @@ struct myllama_container {
 
     void* embd;
     void* embd_inp;  // will be removed
-
-    void* session_tokens;  // will be removed
 
     void* last_n_tokens;
     void* llama_token_newline;

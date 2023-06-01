@@ -10,7 +10,7 @@ func main() {
 	modelName := "vicuna-7B-1.1-ggml_q4_0-ggjt_v3.bin"
 	prompt := "The quick brown fox"
 
-	threadsCount := 4
+	// threadsCount := 4
 	predictCount := 16
 
 	numPast := 0
@@ -22,9 +22,9 @@ func main() {
 
 	l.InitGptParams()
 	l.InitContextParams()
-	l.SetThreadsCount(threadsCount)
-	l.SetUseMlock(true)
-	l.SetPredictCount(predictCount)
+	// l.SetThreadsCount(threadsCount)
+	// l.SetUseMlock(true)
+	// l.SetPredictCount(predictCount)
 
 	l.LlamaApiInitFromFile(modelName)
 
@@ -44,16 +44,18 @@ func main() {
 
 	fmt.Println("predictCount:", predictCount)
 	for i := 0; i < predictCount; i++ {
-		l.LlamaApiGetLogits()
-		numVocab := l.LlamaApiNumVocab()
-		// l.PrepareCandidates(numVocab)
-		nextToken := l.PrepareCandidates(numVocab)
-		// nextToken := l.LlamaApiSampleToken()
-		// nextTokenStr := l.LlamaApiTokenToStr(nextToken)
-		_ = l.LlamaApiTokenToStr(nextToken)
+		// l.LlamaApiGetLogits()
 
-		// fmt.Print(nextTokenStr)
-		fmt.Println("n_predict, n_vocab, n_token, n_past:", i, numVocab, nextToken, numPast)
+		// numVocab := l.LlamaApiNumVocab()
+		// l.PrepareCandidates(numVocab)
+		// nextToken := l.PrepareCandidates(numVocab)
+		nextToken := l.PrepareCandidates(0)
+		// nextToken := l.LlamaApiSampleToken()
+		nextTokenStr := l.LlamaApiTokenToStr(nextToken)
+		// _ = l.LlamaApiTokenToStr(nextToken)
+
+		fmt.Print(nextTokenStr)
+		// fmt.Println("n_predict, n_vocab, n_token, n_past:", i, numVocab, nextToken, numPast)
 		l.LlamaApiEval([]int{nextToken}, 1, numPast)
 
 		numPast++
