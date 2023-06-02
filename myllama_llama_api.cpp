@@ -165,6 +165,7 @@ int llama_api_tokenize(void* container, char* prompt, bool add_bos) {
 
     int n_prompt_tokens = llama_tokenize(ctx, prompt, prompt_tokens->data, prompt_tokens->size, add_bos);
     c->tokens = (void*)prompt_tokens;
+    c->n_tokens = n_prompt_tokens;
 
     return n_prompt_tokens;
 }

@@ -2,7 +2,6 @@ package main // import "the_quick_brown_fox"
 
 import (
 	"fmt"
-	"os"
 
 	llama "github.com/edp1096/my-llama"
 )
@@ -39,8 +38,8 @@ func main() {
 		panic("tokenCount < 1")
 	}
 
-	l.MiniRunMain(numPast, prompt)
-	os.Exit(0)
+	// l.MiniRunMain(numPast, prompt)
+	// os.Exit(0)
 
 	isOK := l.LlamaApiEval(promptTokens, promptNumTokens, numPast)
 	numPast += promptNumTokens

@@ -99,13 +99,16 @@ void mini_run_main(void* container, int n_past, char* prompt) {
     // // init
     // llama_context* ctx = llama_init_from_file(model_fname, *ctxparams);
 
-    auto tokens = std::vector<llama_token>(gptparams->n_ctx);
-    auto n_prompt_tokens = llama_tokenize(ctx, prompt, tokens.data(), tokens.size(), true);
+    // auto tokens = std::vector<llama_token>(gptparams->n_ctx);
+    // auto n_prompt_tokens = llama_tokenize(ctx, prompt, tokens.data(), tokens.size(), true);
 
-    if (n_prompt_tokens < 1) {
-        fprintf(stderr, "%s : failed to tokenize prompt\n", __func__);
-        return;
-    }
+    // if (n_prompt_tokens < 1) {
+    //     fprintf(stderr, "%s : failed to tokenize prompt\n", __func__);
+    //     return;
+    // }
+
+    std::vector<llama_token> tokens((llama_token*)c->tokens, (llama_token*)c->tokens + c->n_tokens);
+    int n_prompt_tokens = c->n_tokens;
 
     // print tokens.data() numbers loop
     for (auto i = 0; i < n_prompt_tokens; i++) {
