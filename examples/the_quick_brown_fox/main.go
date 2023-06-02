@@ -1,7 +1,8 @@
 package main // import "the_quick_brown_fox"
-import "C"
+
 import (
 	"fmt"
+	"os"
 
 	llama "github.com/edp1096/my-llama"
 )
@@ -30,35 +31,34 @@ func main() {
 
 	l.AllocateTokens()
 
-	// promptTokens, promptTokenCount := l.LlamaApiTokenize(prompt, true)
-	// fmt.Println("promptTokens:", promptTokens)
-	promptTokenCount := l.LlamaApiTokenize(prompt, true)
+	promptTokens, promptNumTokens := l.LlamaApiTokenize(prompt, true)
+	fmt.Println("promptTokens:", promptTokens)
 
-	if promptTokenCount < 1 {
+	if promptNumTokens < 1 {
 		fmt.Println("tokenCount < 1")
 		panic("tokenCount < 1")
 	}
 
-	// isOK := l.LlamaApiEval(promptTokens, promptTokenCount, numPast)
-	isOK := l.LlamaApiEval(promptTokenCount, numPast)
-	numPast += promptTokenCount
+	l.MiniRunMain(numPast, prompt)
+	os.Exit(0)
 
-	fmt.Println("n_prompt_token, n_past, isOK:", promptTokenCount, numPast, isOK)
+	isOK := l.LlamaApiEval(promptTokens, promptNumTokens, numPast)
+	numPast += promptNumTokens
 
+	fmt.Println("n_prompt_token, n_past, isOK:", promptNumTokens, numPast, isOK)
 	fmt.Println("predictCount:", predictCount)
+
 	for i := 0; i < predictCount; i++ {
-		// l.LlamaApiGetLogits()
+		l.LlamaApiGetLogits()
 		numVocab := 0
-		// numVocab = l.LlamaApiNumVocab()
+		numVocab = l.LlamaApiNumVocab()
 
 		l.PrepareCandidates(numVocab)
 		nextToken := l.LlamaApiSampleToken()
 		nextTokenStr := l.LlamaApiTokenToStr(nextToken)
 
 		fmt.Print(nextTokenStr)
-		// fmt.Println("n_predict, n_vocab, n_token, n_past:", i, numVocab, nextToken, numPast)
-		// l.LlamaApiEval([]int{nextToken}, 1, numPast)
-		l.LlamaApiEval(1, numPast)
+		l.LlamaApiEval([]int{nextToken}, 1, numPast)
 
 		numPast++
 	}

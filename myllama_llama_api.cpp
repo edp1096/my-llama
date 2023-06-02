@@ -126,48 +126,54 @@ bool llama_api_save_session_file(void* container, char* path_session, void* toke
     return result;
 }
 
-int llama_api_eval(void* container, int n_tokens, int n_past, int n_threads) {
-    int result = 1;  // 0: success, 1: fail
-
+int llama_api_eval(void* container, int* tokens, int n_tokens, int n_past, int n_threads) {
     myllama_container* c = (myllama_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
 
-    llama_token* tokens = (llama_token*)c->tokens;
+    int result = llama_eval(ctx, tokens, n_tokens, n_past, n_threads);
 
-    // result = llama_eval(ctx, (llama_token*)tokens, n_tokens, n_past, n_threads);
-    result = llama_eval(ctx, tokens, n_tokens, n_past, n_threads);
-    // result = llama_eval(ctx, (llama_token*)c->tokens, c->n_tokens, n_past, n_threads);
-
-    return result;
+    return result;  // 0: success, 1: fail
 }
 
-int llama_api_tokenize(void* container, char* text, bool add_bos) {
+// int llama_api_tokenize(void* container, char* text, bool add_bos) {
+//     myllama_container* c = (myllama_container*)container;
+//     llama_context* ctx = (llama_context*)c->ctx;
+
+//     gpt_params* gptparams = (gpt_params*)c->gptparams; 
+
+//     auto tokens = std::vector<llama_token>(gptparams->n_ctx);
+//     int n_tokens = 0;
+
+//     c->n_tokens = llama_tokenize(ctx, text, tokens.data(), tokens.size(), add_bos);
+
+//     c->tokens = nullptr;
+//     c->tokens = (void*)malloc(tokens.size() * sizeof(llama_token));
+//     memcpy(c->tokens, tokens.data(), tokens.size() * sizeof(llama_token));
+//     n_tokens = tokens.size();
+
+//     return c->n_tokens;
+// }
+
+int llama_api_tokenize(void* container, char* prompt, bool add_bos) {
     myllama_container* c = (myllama_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
 
-    gpt_params* gptparams = (gpt_params*)c->gptparams; 
+    gpt_params* gptparams = (gpt_params*)c->gptparams;
 
-    auto tokens = std::vector<llama_token>(gptparams->n_ctx);
-    int n_tokens = 0;
+    tokens_array* prompt_tokens = (tokens_array*)malloc(gptparams->n_ctx * sizeof(tokens_array));
+    prompt_tokens->size = gptparams->n_ctx;
 
-    c->n_tokens = llama_tokenize(ctx, text, tokens.data(), tokens.size(), add_bos);
+    int n_prompt_tokens = llama_tokenize(ctx, prompt, prompt_tokens->data, prompt_tokens->size, add_bos);
+    c->tokens = (void*)prompt_tokens;
 
-    c->tokens = nullptr;
-    c->tokens = (void*)malloc(tokens.size() * sizeof(llama_token));
-    memcpy(c->tokens, tokens.data(), tokens.size() * sizeof(llama_token));
-    n_tokens = tokens.size();
-
-    // c->n_tokens = llama_tokenize(ctx, text, (llama_token*)c->tokens, c->n_tokens, add_bos);
-
-    return c->n_tokens;
+    return n_prompt_tokens;
 }
 
 int llama_api_n_vocab(void* container) {
-    int n_vocab = 0;
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        n_vocab = llama_n_vocab((llama_context*)c->ctx);
-    }
+    llama_context* ctx = (llama_context*)c->ctx;
+
+    int n_vocab = llama_n_vocab(ctx);
 
     return n_vocab;
 }
@@ -314,9 +320,9 @@ int llama_api_sample_token(void* container) {
     myllama_container* c = (myllama_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
 
-    llama_token_data_array candidates = *(llama_token_data_array*)c->candidates;
+    llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
 
-    llama_token next_token = llama_sample_token(ctx, &candidates);
+    llama_token next_token = llama_sample_token(ctx, candidates_p);
 
     return next_token;
 }

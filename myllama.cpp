@@ -1,4 +1,5 @@
 #include <cstring>
+#include <algorithm>
 
 #include "common.h"
 #include "myllama.h"
@@ -31,40 +32,61 @@ int* get_tokens(void* container) {
     return (int*)c->tokens;
 }
 
-// int prepare_candidates(void* container, int n_vocab) {
+// // int prepare_candidates(void* container, int n_vocab) {
+// void prepare_candidates(void* container, int n_vocab) {
+//     myllama_container* c = (myllama_container*)container;
+//     llama_context* ctx = (llama_context*)c->ctx;
+
+//     // float* logits = c->logits;
+//     float* logits = llama_get_logits(ctx);
+//     n_vocab = llama_n_vocab(ctx);
+
+//     std::vector<llama_token_data> candidates;
+//     candidates.reserve(n_vocab);
+//     for (llama_token token_id = 0; token_id < n_vocab; token_id++) {
+//         candidates.emplace_back(llama_token_data{token_id, logits[token_id], 0.0f});
+//     }
+
+//     llama_token_data_array candidates_p = {candidates.data(), candidates.size(), false};
+
+//     c->candidates = (void*)new llama_token_data_array(candidates_p);
+// }
+
 void prepare_candidates(void* container, int n_vocab) {
     myllama_container* c = (myllama_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
 
-    // float* logits = c->logits;
-    float* logits = llama_get_logits(ctx);
-    n_vocab = llama_n_vocab(ctx);
+    float* logits = c->logits;
 
-    std::vector<llama_token_data> candidates;
-    candidates.reserve(n_vocab);
+    llama_token_data_array* candidates_p = (llama_token_data_array*)malloc(sizeof(llama_token_data_array));
+    candidates_p->data = (llama_token_data*)malloc(sizeof(llama_token_data) * n_vocab);
+    candidates_p->size = n_vocab;
+    candidates_p->sorted = false;
+
     for (llama_token token_id = 0; token_id < n_vocab; token_id++) {
-        candidates.emplace_back(llama_token_data{token_id, logits[token_id], 0.0f});
+        candidates_p->data[token_id] = llama_token_data{token_id, logits[token_id], 0.0f};
     }
 
-    llama_token_data_array candidates_p = {candidates.data(), candidates.size(), false};
-
-    c->candidates = (void*)new llama_token_data_array(candidates_p);
-
-    llama_token next_token = llama_sample_token(ctx, &candidates_p);
+    c->candidates = (void*)candidates_p;
 }
 
-void mini_run_main() {
-    const char* model_fname = "vicuna-7B-1.1-ggml_q4_0-ggjt_v3.bin";
-    const char* prompt = "The quick brown fox";
+void mini_run_main(void* container, int n_past, char* prompt) {
+    // const char* model_fname = "vicuna-7B-1.1-ggml_q4_0-ggjt_v3.bin";
+    // const char* prompt = "The quick brown fox";
 
-    auto gptparams = new gpt_params;
+    // auto gptparams = new gpt_params;
+
+    myllama_container* c = (myllama_container*)container;
+    llama_context* ctx = (llama_context*)c->ctx;
+    gpt_params* gptparams = (gpt_params*)c->gptparams;
+    llama_context_params* ctxparams = (llama_context_params*)c->ctxparams;
 
     gptparams->seed = 42;
     gptparams->n_threads = 4;
-    // gptparams->repeat_last_n = 64;
+    gptparams->repeat_last_n = 64;
     gptparams->n_predict = 16;
 
-    llama_context_params* ctxparams = new llama_context_params(llama_context_default_params());
+    // llama_context_params* ctxparams = new llama_context_params(llama_context_default_params());
 
     ctxparams->n_ctx = gptparams->n_ctx;
     ctxparams->seed = gptparams->seed;
@@ -72,10 +94,11 @@ void mini_run_main() {
     ctxparams->use_mmap = gptparams->use_mmap;
     ctxparams->use_mlock = gptparams->use_mlock;
 
-    auto n_past = 0;
+    // auto n_past = 0;
 
-    // init
-    llama_context* ctx = llama_init_from_file(model_fname, *ctxparams);
+    // // init
+    // llama_context* ctx = llama_init_from_file(model_fname, *ctxparams);
+
     auto tokens = std::vector<llama_token>(gptparams->n_ctx);
     auto n_prompt_tokens = llama_tokenize(ctx, prompt, tokens.data(), tokens.size(), true);
 
@@ -84,16 +107,16 @@ void mini_run_main() {
         return;
     }
 
+    // print tokens.data() numbers loop
+    for (auto i = 0; i < n_prompt_tokens; i++) {
+        printf("%d ", tokens.data()[i]);
+    }
+
     // evaluate prompt
     llama_eval(ctx, tokens.data(), n_prompt_tokens, n_past, gptparams->n_threads);
     n_past += n_prompt_tokens;
 
-    // print tokens number loop
-    for (int i = 0; i < n_prompt_tokens; i++) {
-        printf("%d ", tokens[i]);
-    }
-    printf("\n");
-    printf("n_prompt_tokens, n_past: %d, %d\n", n_prompt_tokens, n_past);
+    printf("tokens.size(): %d\n", tokens.size());
 
     for (auto i = 0; i < gptparams->n_predict; i++) {
         auto logits = llama_get_logits(ctx);

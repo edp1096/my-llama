@@ -2,6 +2,12 @@
 extern "C" {
 #endif
 
+struct tokens_array {
+    int* data;
+    int size;
+    bool sorted;
+};
+
 struct myllama_container {
     void* ctx;
     void* gptparams;
@@ -42,7 +48,8 @@ void allocate_tokens(void* container);
 int* get_tokens(void* container);
 void prepare_candidates(void* container, int n_vocab);
 // int prepare_candidates(void* container, int n_vocab);
-void mini_run_main();
+// void mini_run_main();
+void mini_run_main(void* container, int n_past, char* prompt);
 
 #ifdef __cplusplus
 }
