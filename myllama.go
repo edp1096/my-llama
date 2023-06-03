@@ -128,7 +128,7 @@ func (l *LLama) LlamaApiSetRandomNumberGenerationSeed(seed int) {
 	C.llama_api_set_rng_seed(l.Container, C.int(seed))
 }
 
-func (l *LLama) LlamaApiEval(tokens []int, tokenCount int, numPast int) (result bool) {
+func (l *LLama) LlamaApiEval(tokens []int32, tokenCount int, numPast int) (result bool) {
 	result = false
 
 	threadsCount := l.GetThreadsCount()
@@ -142,14 +142,14 @@ func (l *LLama) LlamaApiEval(tokens []int, tokenCount int, numPast int) (result 
 	return result
 }
 
-func (l *LLama) LlamaApiTokenize(text string, addBOS bool) ([]int, int) {
+func (l *LLama) LlamaApiTokenize(text string, addBOS bool) ([]int32, int) {
 	tokenSize := int(C.llama_api_tokenize(l.Container, C.CString(text), C.bool(addBOS)))
 	tokenPtr := C.get_tokens(l.Container)
 	// defer C.free(unsafe.Pointer(tokenPtr))
 
-	tokens := make([]int, tokenSize)
+	tokens := make([]int32, tokenSize)
 	for i := 0; i < tokenSize; i++ {
-		tokens[i] = int(*(*C.int)(unsafe.Pointer(uintptr(unsafe.Pointer(tokenPtr)) + uintptr(i)*unsafe.Sizeof(C.int(0)))))
+		tokens[i] = int32(*(*C.int)(unsafe.Pointer(uintptr(unsafe.Pointer(tokenPtr)) + uintptr(i)*unsafe.Sizeof(C.int(0)))))
 	}
 
 	return tokens, tokenSize
@@ -183,7 +183,7 @@ func (l *LLama) LlamaApiGetEmbeddings(embeddingSize int) []float64 {
 	return embeddingSlice
 }
 
-func (l *LLama) LlamaApiTokenToStr(token int) string {
+func (l *LLama) LlamaApiTokenToStr(token int32) string {
 	return C.GoString(C.llama_api_token_to_str(l.Container, C.int(token)))
 }
 
@@ -238,8 +238,8 @@ func (l *LLama) LlamaApiTokenNL() int {
 //	func (l *LLama) LlamaApiSampleTokenGreedy() int {
 //		return int(C.llama_api_sample_token_greedy(l.Container))
 //	}
-func (l *LLama) LlamaApiSampleToken() int {
-	return int(C.llama_api_sample_token(l.Container))
+func (l *LLama) LlamaApiSampleToken() int32 {
+	return int32(C.llama_api_sample_token(l.Container))
 }
 
 /* Misc. */
@@ -250,8 +250,4 @@ func (l *LLama) AllocateTokens() {
 
 func (l *LLama) PrepareCandidates(numVocab int) {
 	C.prepare_candidates(l.Container, C.int(numVocab))
-}
-
-func (l *LLama) MiniRunMain(numPast int, prompt string) {
-	C.mini_run_main(l.Container, C.int(numPast), C.CString(prompt))
 }

@@ -38,9 +38,6 @@ func main() {
 		panic("tokenCount < 1")
 	}
 
-	// l.MiniRunMain(numPast, prompt)
-	// os.Exit(0)
-
 	isOK := l.LlamaApiEval(promptTokens, promptNumTokens, numPast)
 	numPast += promptNumTokens
 
@@ -57,7 +54,7 @@ func main() {
 		nextTokenStr := l.LlamaApiTokenToStr(nextToken)
 
 		fmt.Print(nextTokenStr)
-		l.LlamaApiEval([]int{nextToken}, 1, numPast)
+		l.LlamaApiEval([]int32{nextToken}, 1, numPast)
 
 		numPast++
 	}
