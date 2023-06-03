@@ -16,7 +16,7 @@ func main() {
 	}
 
 	l.InitContextParams()
-	l.SetThreadsCount(4)
+	l.SetNumThreads(4)
 	l.SetUseMlock(true)
 
 	err = l.LoadModel(modelName)

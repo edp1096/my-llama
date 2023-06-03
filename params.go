@@ -40,7 +40,7 @@ func (l *LLama) GetTopP() float64 {
 }
 
 /* Setters - gpt_params */
-func (l *LLama) SetThreadsCount(threads int) {
+func (l *LLama) SetNumThreads(threads int) {
 	C.set_gptparams_n_threads(l.Container, C.int(threads))
 }
 
@@ -48,7 +48,7 @@ func (l *LLama) SetUseMlock(useMlock bool) {
 	C.set_gptparams_use_mlock(l.Container, C.bool(useMlock))
 }
 
-func (l *LLama) SetPredictCount(predicts int) {
+func (l *LLama) SetNumPredict(predicts int) {
 	C.set_gptparams_n_predict(l.Container, C.int(predicts))
 }
 

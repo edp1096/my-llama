@@ -145,7 +145,7 @@ func (l *LLama) LlamaApiEval(tokens []int32, tokenCount int, numPast int) (resul
 func (l *LLama) LlamaApiTokenize(text string, addBOS bool) ([]int32, int) {
 	tokenSize := int(C.llama_api_tokenize(l.Container, C.CString(text), C.bool(addBOS)))
 	tokenPtr := C.get_tokens(l.Container)
-	// defer C.free(unsafe.Pointer(tokenPtr))
+	defer C.free(unsafe.Pointer(tokenPtr))
 
 	tokens := make([]int32, tokenSize)
 	for i := 0; i < tokenSize; i++ {

@@ -47,7 +47,6 @@ void* init_container();
 void allocate_tokens(void* container);
 int* get_tokens(void* container);
 void prepare_candidates(void* container, int n_vocab);
-// int prepare_candidates(void* container, int n_vocab);
 
 #ifdef __cplusplus
 }

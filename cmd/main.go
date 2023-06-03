@@ -185,7 +185,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		l.InitContextParams()
 
-		l.SetThreadsCount(l.Threads)
+		l.SetNumThreads(l.Threads)
 		l.SetUseMlock(useMlock)
 
 		fmt.Println("Threads:", l.Threads)
