@@ -216,9 +216,6 @@ struct llama_vocab {
 };
 
 struct llama_context {
-    int n_gpu = 0;
-    int n_gpu_output = 0;
-
     std::mt19937 rng;
 
     int64_t t_load_us = 0;
@@ -1112,10 +1109,8 @@ static void llama_model_load_internal(
 
 #if defined(GGML_USE_CUBLAS) || defined(GGML_USE_CLBLAST)
         fprintf(stderr, "%s: offloading %d layers to GPU\n", __func__, n_gpu);
-        lctx.n_gpu = n_gpu;
         if (n_gpu_layers > (int) hparams.n_layer) {
             fprintf(stderr, "%s: offloading output layer to GPU\n", __func__);
-            lctx.n_gpu_output = 1;
         }
         fprintf(stderr, "%s: total VRAM used: %zu MB\n", __func__, vram_total / 1024 / 1024);
 #else
@@ -2361,6 +2356,20 @@ struct llama_context * llama_init_from_file(
 }
 
 void llama_free(struct llama_context * ctx) {
+#ifdef GGML_USE_CUBLAS
+    for (auto &lt : ctx->model.tensors_by_name) {
+        if (lt.second->backend == GGML_BACKEND_CUDA) {
+            ggml_cuda_free(lt.second);
+        }
+    }
+#endif
+#ifdef GGML_USE_CLBLAST
+    for (auto &lt : ctx->model.tensors_by_name) {
+        if (lt.second->backend == GGML_BACKEND_CL) {
+            ggml_cl_mem_free(lt.second);
+        }
+    }
+#endif
     delete ctx;
 }
 

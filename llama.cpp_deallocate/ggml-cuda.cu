@@ -447,7 +447,8 @@ static cudaEvent_t g_cudaEvents[GGML_CUDA_MAX_EVENTS] = { nullptr };
 
 void ggml_cuda_free(void *ptr) {
     if (ptr != nullptr) {
-        CUDA_CHECK(cudaFree(ptr));
+        auto cuda_data = ((ggml_tensor*)ptr)->data;
+        CUDA_CHECK(cudaFree(cuda_data));
     }
 }
 
