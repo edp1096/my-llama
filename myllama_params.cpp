@@ -14,6 +14,7 @@ void init_gpt_params(void* container) {
     // gptparams->use_mmap = false;
     // gptparams->use_mlock = true;
 
+    gptparams->n_gpu_layers = 32;
     gptparams->seed = 42;
     gptparams->n_threads = 4;
     gptparams->n_predict = 16;
@@ -29,7 +30,7 @@ void init_context_params(void* container) {
     llama_context_params* ctxparams = (llama_context_params*)c->ctxparams;
 
     ctxparams->n_ctx = gptparams->n_ctx;
-    // ctxparams->n_gpu_layers = gptparams->n_gpu_layers;
+    ctxparams->n_gpu_layers = gptparams->n_gpu_layers;
     ctxparams->seed = gptparams->seed;
     ctxparams->f16_kv = gptparams->memory_f16;
     ctxparams->use_mmap = gptparams->use_mmap;
