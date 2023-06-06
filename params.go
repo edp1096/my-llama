@@ -1,10 +1,18 @@
 package myllama
 
 // #include "binding.h"
+// #include "myllama_params.h"
 import "C"
 import (
 	"errors"
 )
+
+func (l *LLama) InitGptParams() {
+	C.init_gpt_params(l.Container)
+}
+func (l *LLama) InitContextParams() {
+	C.init_context_params(l.Container)
+}
 
 func (l *LLama) AllocateVariables() (err error) {
 	container := l.Container
@@ -32,12 +40,16 @@ func (l *LLama) GetTopP() float64 {
 }
 
 /* Setters - gpt_params */
-func (l *LLama) SetThreadsCount(threads int) {
-	C.bd_set_params_n_threads(l.Container, C.int(threads))
+func (l *LLama) SetNumThreads(threads int) {
+	C.set_gptparams_n_threads(l.Container, C.int(threads))
 }
 
 func (l *LLama) SetUseMlock(useMlock bool) {
-	C.bd_set_params_use_mlock(l.Container, C.bool(useMlock))
+	C.set_gptparams_use_mlock(l.Container, C.bool(useMlock))
+}
+
+func (l *LLama) SetNumPredict(predicts int) {
+	C.set_gptparams_n_predict(l.Container, C.int(predicts))
 }
 
 /* Setters - gpt_params / sampling parameters */
@@ -70,8 +82,4 @@ func (l *LLama) SetTemperature(temper float64) {
 }
 func (l *LLama) SetRepeatPenalty(penalty float64) {
 	C.bd_set_params_repeat_penalty(l.Container, C.float(penalty))
-}
-
-func (l *LLama) InitParams() {
-	C.bd_init_params(l.Container)
 }

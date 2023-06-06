@@ -61,7 +61,7 @@ if ($args[0] -eq "clblast") {
 
 if ($args[0] -eq "cuda") {
     # llama.cpp compile error bdbda1b1 so always copy
-    # cp -f llama.cpp_deallocate/* vendors/llama.cpp/
+    cp -f llama.cpp_deallocate/* vendors/llama.cpp/
 
     $dllName="llama_cu.dll"
     $defName="llama_cu.def"
@@ -94,11 +94,10 @@ if ($args[0] -eq "cuda") {
 }
 dlltool -k -d ./$defName -l ./$libLlamaName
 
-
 <# Compile binding #>
-# g++ -O3 -DNDEBUG -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
-g++ -fomit-frame-pointer -s -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
-ar src $libBindingName binding.o
+g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
+g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples myllama_llama_api.cpp -o myllama_llama_api.o -c
+ar src $libBindingName myllama_llama_api.o binding.o
 
 
 # <# Restore overwritten vendors/llama.cpp_deallocate for clblast/cuda to original commit #>

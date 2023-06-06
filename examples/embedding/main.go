@@ -1,5 +1,6 @@
 package main // import "embedding"
 
+import "C"
 import (
 	"fmt"
 
@@ -7,7 +8,6 @@ import (
 )
 
 func main() {
-
 	modelName := "vicuna-7B-1.1-ggml_q4_0-ggjt_v3.bin"
 
 	l, err := llama.New()
@@ -15,8 +15,8 @@ func main() {
 		panic(err)
 	}
 
-	l.InitParams()
-	l.SetThreadsCount(4)
+	l.InitContextParams()
+	l.SetNumThreads(4)
 	l.SetUseMlock(true)
 
 	err = l.LoadModel(modelName)
@@ -28,4 +28,7 @@ func main() {
 
 	embdCount := l.LlamaApiNumEmbd()
 	fmt.Println("Embedding count:", embdCount)
+
+	embeddings := l.LlamaApiGetEmbeddings(embdCount)
+	fmt.Println("Embeddings:", embeddings)
 }

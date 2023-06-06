@@ -2,8 +2,9 @@ package myllama
 
 /*
 #cgo CXXFLAGS: -Ivendors/llama.cpp -Ivendors/llama.cpp/examples
+#include <stdlib.h>
 #include "binding.h"
-#include "binding_llama_api.h"
+#include "myllama_llama_api.h"
 */
 import "C"
 
@@ -20,7 +21,7 @@ type LLama struct {
 }
 
 func New() (*LLama, error) {
-	container := C.bd_init_container()
+	container := C.init_container()
 	if container == nil {
 		return nil, fmt.Errorf("failed to initialize the container")
 	}
@@ -115,8 +116,9 @@ func (l *LLama) LlamaApiTimeUs() int64 {
 	return int64(C.llama_api_time_us())
 }
 
-// Not done
-func (l *LLama) LlamaApiInitFromFile(fname string) {}
+func (l *LLama) LlamaApiInitFromFile(fname string) {
+	C.llama_api_init_from_file(l.Container, C.CString(fname))
+}
 
 func (l *LLama) LlamaApiFree() {
 	C.llama_api_free(l.Container)
@@ -126,12 +128,31 @@ func (l *LLama) LlamaApiSetRandomNumberGenerationSeed(seed int) {
 	C.llama_api_set_rng_seed(l.Container, C.int(seed))
 }
 
-// Not done
-func (l *LLama) LlamaApiEval(text string, addBOS bool) {}
+func (l *LLama) LlamaApiEval(tokens []int32, tokenCount int, numPast int) (result bool) {
+	result = false
 
-// Not done
-func (l *LLama) LlamaApiTokenize(text string, addBOS bool) int {
-	return int(C.llama_api_tokenize(l.Container, C.CString(text), C.bool(addBOS)))
+	threadsCount := l.GetThreadsCount()
+	tokensPtr := &tokens[0]
+
+	isFail := int(C.llama_api_eval(l.Container, (*C.int)(unsafe.Pointer(tokensPtr)), C.int(tokenCount), C.int(numPast), C.int(threadsCount)))
+	if isFail == 0 {
+		result = true
+	}
+
+	return result
+}
+
+func (l *LLama) LlamaApiTokenize(text string, addBOS bool) ([]int32, int) {
+	tokenSize := int(C.llama_api_tokenize(l.Container, C.CString(text), C.bool(addBOS)))
+	tokenPtr := C.get_tokens(l.Container)
+	defer C.free(unsafe.Pointer(tokenPtr))
+
+	tokens := make([]int32, tokenSize)
+	for i := 0; i < tokenSize; i++ {
+		tokens[i] = int32(*(*C.int)(unsafe.Pointer(uintptr(unsafe.Pointer(tokenPtr)) + uintptr(i)*unsafe.Sizeof(C.int(0)))))
+	}
+
+	return tokens, tokenSize
 }
 
 func (l *LLama) LlamaApiNumVocab() int {
@@ -146,15 +167,23 @@ func (l *LLama) LlamaApiNumEmbd() int {
 	return int(C.llama_api_n_embd(l.Container))
 }
 
-func (l *LLama) LlamaApiGetLogits() unsafe.Pointer {
-	return C.llama_api_get_logits(l.Container)
+func (l *LLama) LlamaApiGetLogits() {
+	C.llama_api_get_logits(l.Container)
 }
 
-func (l *LLama) LlamaApiGetEmbeddings() unsafe.Pointer {
-	return C.llama_api_get_embeddings(l.Container)
+func (l *LLama) LlamaApiGetEmbeddings(embeddingSize int) []float64 {
+	embeddings := C.llama_api_get_embeddings(l.Container)
+	defer C.free(unsafe.Pointer(embeddings))
+
+	embeddingSlice := make([]float64, embeddingSize)
+	for i := 0; i < embeddingSize; i++ {
+		embeddingSlice[i] = float64(*(*C.float)(unsafe.Pointer(uintptr(unsafe.Pointer(&embeddings)) + uintptr(i)*unsafe.Sizeof(C.float(0)))))
+	}
+
+	return embeddingSlice
 }
 
-func (l *LLama) LlamaApiTokenToStr(token int) string {
+func (l *LLama) LlamaApiTokenToStr(token int32) string {
 	return C.GoString(C.llama_api_token_to_str(l.Container, C.int(token)))
 }
 
@@ -168,4 +197,50 @@ func (l *LLama) LlamaApiTokenEOS() int {
 
 func (l *LLama) LlamaApiTokenNL() int {
 	return int(C.llama_api_token_nl())
+}
+
+//	func (l *LLama) LlamaApiSampleRepetitionPenalty() {
+//		return C.llama_api_sample_repetition_penalty(l.Container)
+//	}
+//
+//	func (l *LLama) LlamaApiSampleFrequencyAndPresencePenalties() {
+//		return C.llama_api_sample_frequency_and_presence_penalties(l.Container)
+//	}
+func (l *LLama) LlamaApiSampleSoftmax() {
+	C.llama_api_sample_softmax(l.Container)
+}
+func (l *LLama) LlamaApiSampleTopK(topK int) {
+	C.llama_api_sample_top_k(l.Container, C.int(topK))
+}
+func (l *LLama) LlamaApiSampleTopP(topP float64) {
+	C.llama_api_sample_top_p(l.Container, C.float(topP))
+}
+func (l *LLama) LlamaApiSampleTailFree(tfsZ float64) {
+	C.llama_api_sample_tail_free(l.Container, C.float(tfsZ))
+}
+func (l *LLama) LlamaApiSampleTypical(typicalP float64) {
+	C.llama_api_sample_typical(l.Container, C.float(typicalP))
+}
+func (l *LLama) LlamaApiSampleTemperature(temperature float64) {
+	C.llama_api_sample_temperature(l.Container, C.float(temperature))
+}
+
+func (l *LLama) LlamaApiSampleTokenMirostatV2(mirostatTAU, mirostatETA, mirostatMU float64) int32 {
+	return int32(C.llama_api_sample_token_mirostat_v2(l.Container, C.float(mirostatTAU), C.float(mirostatETA), C.float(mirostatMU)))
+}
+func (l *LLama) LlamaApiSampleTokenGreedy() int32 {
+	return int32(C.llama_api_sample_token_greedy(l.Container))
+}
+func (l *LLama) LlamaApiSampleToken() int32 {
+	return int32(C.llama_api_sample_token(l.Container))
+}
+
+/* Misc. */
+
+func (l *LLama) AllocateTokens() {
+	C.allocate_tokens(l.Container)
+}
+
+func (l *LLama) PrepareCandidates(numVocab int) {
+	C.prepare_candidates(l.Container, C.int(numVocab))
 }

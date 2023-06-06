@@ -23,8 +23,8 @@ std::vector<llama_token> binding_tokenize(struct llama_context* ctx, const std::
 }
 
 void* bd_init_container() {
-    variables_container* c = new variables_container;
-    c->params = new gpt_params;
+    myllama_container* c = new myllama_container;
+    c->gptparams = new gpt_params;
     c->session_tokens = new std::vector<llama_token>;
 
     return c;
@@ -65,8 +65,8 @@ struct llama_context* llama_init_from_gpt_params(const gpt_params& params) {
 
 bool bd_load_model(void* container) {
     bool result = false;
-    variables_container* c = (variables_container*)container;
-    gpt_params* params = (gpt_params*)c->params;
+    myllama_container* c = (myllama_container*)container;
+    gpt_params* params = (gpt_params*)c->gptparams;
 
     if (params->seed < 0) {
         params->seed = time(NULL);
@@ -76,7 +76,7 @@ bool bd_load_model(void* container) {
      ggml or opencl may have a bug when offloading output layer to GPU
      Hence, set 32 instead of 33 for now
      */
-    params->n_gpu_layers = 32;  // for 3060ti, CUDA only
+    params->n_gpu_layers = 32;
     printf("n_gpu_layers: %d\n", params->n_gpu_layers);
 
     llama_context* ctx = llama_init_from_gpt_params(*params);
@@ -93,8 +93,8 @@ bool bd_load_model(void* container) {
 
 bool bd_allocate_variables(void* container) {
     bool result = false;
-    variables_container* c = (variables_container*)container;
-    gpt_params* params = (gpt_params*)c->params;
+    myllama_container* c = (myllama_container*)container;
+    gpt_params* params = (gpt_params*)c->gptparams;
 
     c->is_interacting = false;
     c->embd = new std::vector<llama_token>;
@@ -138,7 +138,7 @@ bool bd_allocate_variables(void* container) {
 }
 
 void bd_init_params(void* container) {
-    gpt_params* params = (gpt_params*)((variables_container*)container)->params;
+    gpt_params* params = (gpt_params*)((myllama_container*)container)->gptparams;
 
     params->interactive = true;
     params->interactive_first = params->interactive;
@@ -151,14 +151,14 @@ void bd_init_params(void* container) {
 
 bool bd_predict_tokens(void* container) {
     bool result = false;
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
 
     std::vector<llama_token>* last_n_tokens = (std::vector<llama_token>*)c->last_n_tokens;
     std::vector<llama_token>* llama_token_newline = (std::vector<llama_token>*)c->llama_token_newline;
     std::vector<llama_token>* embd = (std::vector<llama_token>*)c->embd;
     std::vector<llama_token>* embd_inp = (std::vector<llama_token>*)c->embd_inp;
     llama_context* ctx = (llama_context*)c->ctx;
-    gpt_params* params = (gpt_params*)c->params;
+    gpt_params* params = (gpt_params*)c->gptparams;
 
     std::vector<llama_token>* session_tokens = (std::vector<llama_token>*)c->session_tokens;
 
@@ -336,11 +336,11 @@ bool bd_predict_tokens(void* container) {
 
 bool bd_receive_input(void* container) {
     bool result = false;
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
 
     std::vector<llama_token>* embd_inp = (std::vector<llama_token>*)c->embd_inp;
     llama_context* ctx = (llama_context*)c->ctx;
-    gpt_params* params = (gpt_params*)c->params;
+    gpt_params* params = (gpt_params*)c->gptparams;
 
     std::string buffer;
     if (!params->input_prefix.empty()) {
@@ -383,7 +383,7 @@ bool bd_receive_input(void* container) {
 
 bool bd_append_input(void* container) {
     bool result = false;
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
 
     std::vector<llama_token>* embd_inp = (std::vector<llama_token>*)c->embd_inp;
     llama_context* ctx = (llama_context*)c->ctx;
@@ -405,8 +405,8 @@ bool bd_append_input(void* container) {
 }
 
 bool bd_wait_or_continue(void* container) {
-    variables_container* c = (variables_container*)container;
-    gpt_params* params = (gpt_params*)c->params;
+    myllama_container* c = (myllama_container*)container;
+    gpt_params* params = (gpt_params*)c->gptparams;
 
     // check for reverse prompt
     if (params->antiprompt.size()) {
@@ -438,25 +438,25 @@ bool bd_wait_or_continue(void* container) {
 }
 
 int bd_get_embed_id(void* container, int index) {
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
     return ((std::vector<llama_token>*)c->embd)->at(index);
 }
 
 char* bd_get_embed_string(void* container, int id) {
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
     return const_cast<char*>(llama_token_to_str((llama_context*)c->ctx, id));
 }
 
 /* Frees */
 void bd_free_params(void* container) {
-    gpt_params* params = (gpt_params*)((variables_container*)container)->params;
+    gpt_params* params = (gpt_params*)((myllama_container*)container)->gptparams;
     if (params != NULL) {
         delete params;
     }
 }
 
 void bd_free_model(void* container) {
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
     if ((llama_context*)c->ctx != NULL) {
         llama_free((llama_context*)c->ctx);
     }
@@ -464,130 +464,130 @@ void bd_free_model(void* container) {
 
 /* Getters */
 int bd_get_n_remain(void* container) {
-    return ((variables_container*)container)->n_remain;
+    return ((myllama_container*)container)->n_remain;
 }
 
 int bd_get_params_n_predict(void* container) {
-    return ((gpt_params*)((variables_container*)container)->params)->n_predict;
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->n_predict;
 }
 
 bool bd_get_noecho(void* container) {
-    return ((variables_container*)container)->input_noecho;
+    return ((myllama_container*)container)->input_noecho;
 }
 
 int bd_get_embd_size(void* container) {
-    return (int)((std::vector<llama_token>*)((variables_container*)container)->embd)->size();
+    return (int)((std::vector<llama_token>*)((myllama_container*)container)->embd)->size();
 }
 
 int bd_get_embd_inp_size(void* container) {
-    return (int)((std::vector<llama_token>*)((variables_container*)container)->embd_inp)->size();
+    return (int)((std::vector<llama_token>*)((myllama_container*)container)->embd_inp)->size();
 }
 
 int bd_get_n_consumed(void* container) {
-    return ((variables_container*)container)->n_consumed;
+    return ((myllama_container*)container)->n_consumed;
 }
 
 bool bd_get_params_interactive_first(void* container) {
-    return ((gpt_params*)((variables_container*)container)->params)->interactive_first;
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->interactive_first;
 }
 
 bool bd_get_params_interactive(void* container) {
-    return ((gpt_params*)((variables_container*)container)->params)->interactive;
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->interactive;
 }
 
 /* Getters - gpt_params */
 int bd_get_params_n_threads(void* container) {
-    return ((gpt_params*)((variables_container*)container)->params)->n_threads;
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->n_threads;
 }
 
 /* Getters - gpt_params / sampling parameters */
 int bd_get_params_top_k(void* container) {
-    return ((gpt_params*)((variables_container*)container)->params)->top_k;
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->top_k;
 }
 
 float bd_get_params_top_p(void* container) {
-    return ((gpt_params*)((variables_container*)container)->params)->top_p;
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->top_p;
 }
 
 float bd_get_params_temper(void* container) {
-    return ((gpt_params*)((variables_container*)container)->params)->temp;
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->temp;
 }
 
 float bd_get_params_repeat_penalty(void* container) {
-    return ((gpt_params*)((variables_container*)container)->params)->repeat_penalty;
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->repeat_penalty;
 }
 
 /* Setters */
 void bd_set_params_interactive_first(void* container) {
-    bool interactive = ((gpt_params*)((variables_container*)container)->params)->interactive;
-    ((gpt_params*)((variables_container*)container)->params)->interactive_first = interactive;
+    bool interactive = ((gpt_params*)((myllama_container*)container)->gptparams)->interactive;
+    ((gpt_params*)((myllama_container*)container)->gptparams)->interactive_first = interactive;
 }
 
 void bd_set_is_interacting(void* container, bool is_interacting) {
-    ((variables_container*)container)->is_interacting = is_interacting;
+    ((myllama_container*)container)->is_interacting = is_interacting;
 }
 
 void bd_set_n_remain(void* container, int n_predict) {
-    ((variables_container*)container)->n_remain = n_predict;
+    ((myllama_container*)container)->n_remain = n_predict;
 }
 
 void bd_set_model_path(void* container, char* path) {
-    ((gpt_params*)((variables_container*)container)->params)->model = path;
+    ((gpt_params*)((myllama_container*)container)->gptparams)->model = path;
 }
 
 void bd_set_params_antiprompt(void* container, char* antiprompt) {
-    ((gpt_params*)((variables_container*)container)->params)->antiprompt.push_back(strdup(antiprompt));
+    ((gpt_params*)((myllama_container*)container)->gptparams)->antiprompt.push_back(strdup(antiprompt));
 }
 
 void bd_set_params_prompt(void* container, char* prompt) {
-    ((gpt_params*)((variables_container*)container)->params)->prompt = strdup(prompt);
+    ((gpt_params*)((myllama_container*)container)->gptparams)->prompt = strdup(prompt);
 }
 
 void bd_set_user_input(void* container, const char* user_input) {
-    ((variables_container*)container)->user_input = strdup(user_input);
+    ((myllama_container*)container)->user_input = strdup(user_input);
 }
 
 /* Setters - gpt_params */
-void bd_set_params_n_threads(void* container, int value) {
-    ((gpt_params*)((variables_container*)container)->params)->n_threads = value;
-}
+// void bd_set_params_n_threads(void* container, int value) {
+//     ((gpt_params*)((myllama_container*)container)->params)->n_threads = value;
+// }
 
-void bd_set_params_use_mlock(void* container, bool value) {
-    ((gpt_params*)((variables_container*)container)->params)->use_mlock = value;
-}
+// void bd_set_params_use_mlock(void* container, bool value) {
+//     ((gpt_params*)((myllama_container*)container)->params)->use_mlock = value;
+// }
 
 /* Setters - gpt_params / sampling parameters */
 void bd_set_params_n_ctx(void* container, int value) {
-    ((gpt_params*)((variables_container*)container)->params)->n_ctx = value;
+    ((gpt_params*)((myllama_container*)container)->gptparams)->n_ctx = value;
 }
 
 void bd_set_params_n_batch(void* container, int value) {
-    ((gpt_params*)((variables_container*)container)->params)->n_batch = value;
+    ((gpt_params*)((myllama_container*)container)->gptparams)->n_batch = value;
 }
 
 void bd_set_sampling_method(void* container, int value) {
-    ((gpt_params*)((variables_container*)container)->params)->mirostat = value;
+    ((gpt_params*)((myllama_container*)container)->gptparams)->mirostat = value;
 }
 
 void bd_set_params_top_k(void* container, int value) {
-    ((gpt_params*)((variables_container*)container)->params)->top_k = value;
+    ((gpt_params*)((myllama_container*)container)->gptparams)->top_k = value;
 }
 
 void bd_set_params_top_p(void* container, float value) {
-    ((gpt_params*)((variables_container*)container)->params)->top_p = value;
+    ((gpt_params*)((myllama_container*)container)->gptparams)->top_p = value;
 }
 
 void bd_set_params_temper(void* container, float value) {
-    ((gpt_params*)((variables_container*)container)->params)->temp = value;
+    ((gpt_params*)((myllama_container*)container)->gptparams)->temp = value;
 }
 
 void bd_set_params_repeat_penalty(void* container, float value) {
-    ((gpt_params*)((variables_container*)container)->params)->repeat_penalty = value;
+    ((gpt_params*)((myllama_container*)container)->gptparams)->repeat_penalty = value;
 }
 
 /* State dump */
 void bd_save_state(void* container, char* fname) {
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
 
     size_t ctx_size = llama_get_state_size(ctx);
@@ -605,7 +605,7 @@ void bd_save_state(void* container, char* fname) {
 }
 
 void bd_load_state(void* container, char* fname) {
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
     // llama_context* ctx = (llama_context*)c->ctx;
 
     FILE* fp_read = fopen(fname, "rb");
@@ -629,14 +629,14 @@ void bd_load_state(void* container, char* fname) {
 }
 
 void bd_save_session(void* container, char* fname) {
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
 
     llama_save_session_file(ctx, fname, ((std::vector<llama_token>*)c->session_tokens)->data(), ((std::vector<llama_token>*)c->session_tokens)->size());
 }
 
 void bd_load_session(void* container, char* fname) {
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
 
     // fopen to check for existing session
@@ -644,7 +644,7 @@ void bd_load_session(void* container, char* fname) {
     if (fp != NULL) {
         std::fclose(fp);
 
-        ((std::vector<llama_token>*)c->session_tokens)->resize(((gpt_params*)c->params)->n_ctx);
+        ((std::vector<llama_token>*)c->session_tokens)->resize(((gpt_params*)c->gptparams)->n_ctx);
         size_t n_token_count_out = 0;
         if (!llama_load_session_file(ctx, fname, ((std::vector<llama_token>*)c->session_tokens)->data(), ((std::vector<llama_token>*)c->session_tokens)->capacity(), &n_token_count_out)) {
             fprintf(stderr, "%s: error: failed to load session file '%s'\n", __func__, fname);
@@ -661,10 +661,10 @@ void bd_load_session(void* container, char* fname) {
 /* Others */
 bool bd_check_prompt_or_continue(void* container) {
     bool result = true;
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
 
     // in interactive mode, and not currently processing queued inputs. check if we should prompt the user for more
-    if (((gpt_params*)c->params)->interactive && (int)((std::vector<llama_token>*)c->embd_inp)->size() <= c->n_consumed) {
+    if (((gpt_params*)c->gptparams)->interactive && (int)((std::vector<llama_token>*)c->embd_inp)->size() <= c->n_consumed) {
         result = bd_wait_or_continue(c);
     }
 
@@ -680,16 +680,16 @@ bool bd_check_prompt_or_continue(void* container) {
 }
 
 void bd_dropback_user_input(void* container) {
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
 
     // In interactive mode, respect the maximum number of tokens and drop back to user input when reached.
-    if (c->n_remain <= 0 && ((gpt_params*)c->params)->n_predict != -1) {
-        c->n_remain = ((gpt_params*)c->params)->n_predict;
+    if (c->n_remain <= 0 && ((gpt_params*)c->gptparams)->n_predict != -1) {
+        c->n_remain = ((gpt_params*)c->gptparams)->n_predict;
     }
 }
 
 void bd_print_timings(void* container) {
-    variables_container* c = (variables_container*)container;
+    myllama_container* c = (myllama_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
 
     llama_print_timings(ctx);

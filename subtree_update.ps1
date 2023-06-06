@@ -1,5 +1,4 @@
+# git subtree add --prefix=vendors/llama.cpp https://github.com/ggerganov/llama.cpp.git master --squash
 # Update subtree
 git subtree pull --prefix=vendors/llama.cpp https://github.com/ggerganov/llama.cpp.git master --squash
-
-# Update submodule
-git submodule update --recursive --remote
+# git subtree pull --prefix=vendors/llama.cpp https://github.com/ggerganov/llama.cpp.git tags/master-136476e --squash
