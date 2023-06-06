@@ -38,8 +38,8 @@ int llama_api_token_bos();
 int llama_api_token_eos();
 int llama_api_token_nl();
 
-void llama_api_sample_repetition_penalty(void* container, void* candidates_a_p, void* last_tokens, int last_tokens_size, float penalty);
-void llama_api_sample_frequency_and_presence_penalties(void* container, void* candidates_a_p, void* last_tokens, int last_tokens_size, float alpha_frequency, float alpha_presence);
+void llama_api_sample_repetition_penalty(void* container, void* last_tokens, int last_tokens_size, float penalty);
+void llama_api_sample_frequency_and_presence_penalties(void* container, void* last_tokens, int last_tokens_size, float alpha_frequency, float alpha_presence);
 void llama_api_sample_softmax(void* container);
 void llama_api_sample_top_k(void* container, int top_k);
 void llama_api_sample_top_p(void* container, float top_p);
