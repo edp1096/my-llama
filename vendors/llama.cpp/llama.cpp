@@ -53,6 +53,7 @@ enum e_model {
     MODEL_65B,
 };
 
+
 static const size_t MB = 1024*1024;
 
 // computed for n_ctx == 2048
@@ -289,15 +290,15 @@ template <typename T>
 static T checked_mul(T a, T b) {
     T ret = a * b;
     if (a != 0 && ret / a != b) {
-        throw std::runtime_error(format("overflow multiplying %llu * %llu",
-                     (unsigned long long) a, (unsigned long long) b));
+        throw format("overflow multiplying %llu * %llu",
+                     (unsigned long long) a, (unsigned long long) b);
     }
     return ret;
 }
 
 static size_t checked_div(size_t a, size_t b) {
     if (b == 0 || a % b != 0) {
-        throw std::runtime_error(format("error dividing %zu / %zu", a, b));
+        throw format("error dividing %zu / %zu", a, b);
     }
     return a / b;
 }
@@ -361,7 +362,7 @@ struct llama_load_tensor {
         const auto & first_shard = shards.at(0);
         for (const auto & shard : shards) {
             if (shard.type != first_shard.type) {
-                throw std::runtime_error(format("inconsistent tensor shard type in '%s'", name.c_str()));
+                throw format("inconsistent tensor shard type in '%s'", name.c_str());
             }
         }
         type = first_shard.type;
@@ -384,8 +385,8 @@ struct llama_load_tensor {
         const auto & first_shard = shards.at(0);
         for (const auto & shard : shards) {
             if (shard.ne != first_shard.ne) {
-                throw std::runtime_error(format("inconsistent tensor shard shape in '%s': first was %s, other was %s",
-                             name.c_str(), llama_format_tensor_shape(first_shard.ne).c_str(), llama_format_tensor_shape(shard.ne).c_str()));
+                throw format("inconsistent tensor shard shape in '%s': first was %s, other was %s",
+                             name.c_str(), llama_format_tensor_shape(first_shard.ne).c_str(), llama_format_tensor_shape(shard.ne).c_str());
             }
         }
         ne = first_shard.ne;
@@ -463,8 +464,8 @@ struct llama_file_loader {
                 }
         }
 
-        throw std::runtime_error(format("unknown (magic, version) combination: %08x, %08x; is this really a GGML file?",
-                     magic, version));
+        throw format("unknown (magic, version) combination: %08x, %08x; is this really a GGML file?",
+                     magic, version);
     }
     void read_hparams() {
         hparams.n_vocab = file.read_u32();
@@ -504,7 +505,7 @@ struct llama_file_loader {
             file.read_raw(shard.ne.data(), sizeof(shard.ne[0]) * n_dims);
             std::string name = file.read_string(name_len);
             if (n_dims < 1 || n_dims > 2) {
-                throw std::runtime_error(format("llama.cpp: tensor '%s' should not be %u-dimensional", name.c_str(), n_dims));
+                throw format("llama.cpp: tensor '%s' should not be %u-dimensional", name.c_str(), n_dims);
             }
             switch (shard.type) {
                 case GGML_TYPE_F32:
@@ -521,7 +522,7 @@ struct llama_file_loader {
                 case GGML_TYPE_Q6_K:
                     break;
                 default: {
-                    throw std::runtime_error(format("unrecognized tensor type %u\n", shard.type));
+                    throw format("unrecognized tensor type %u\n", shard.type);
                 }
             }
 
@@ -630,7 +631,7 @@ struct llama_model_loader {
             auto * ith_file = new llama_file_loader(fname.c_str(), i, tensors_map);
             file_loaders.emplace_back(ith_file);
             if (ith_file->hparams != first_file->hparams) {
-                throw std::runtime_error(format("llama.cpp: hparams inconsistent between files"));
+                throw format("llama.cpp: hparams inconsistent between files");
             }
         }
         if (!llama_mmap::SUPPORTED) {
@@ -660,7 +661,7 @@ struct llama_model_loader {
     uint32_t guess_n_parts() const {
         auto it = tensors_map.name_to_idx.find("tok_embeddings.weight");
         if (it == tensors_map.name_to_idx.end()) {
-            throw std::runtime_error(std::string("missing tok_embeddings.weight"));
+            throw std::string("missing tok_embeddings.weight");
         }
         const llama_load_tensor & lt = tensors_map.tensors.at(it->second);
         return file_loaders.at(0)->hparams.n_embd / lt.shards.at(0).ne.at(0);
@@ -677,12 +678,12 @@ struct llama_model_loader {
     struct ggml_tensor * get_tensor(const std::string & name, const std::vector<uint32_t> & ne, ggml_backend backend) {
         auto it = tensors_map.name_to_idx.find(name);
         if (it == tensors_map.name_to_idx.end()) {
-            throw std::runtime_error(std::runtime_error(format("llama.cpp: tensor '%s' is missing from model", name.c_str())));
+            throw format("llama.cpp: tensor '%s' is missing from model", name.c_str());
         }
         llama_load_tensor & lt = tensors_map.tensors.at(it->second);
         if (lt.ne != ne) {
-            throw std::runtime_error(format("llama.cpp: tensor '%s' has wrong shape; expected %s, got %s",
-                         name.c_str(), llama_format_tensor_shape(ne).c_str(), llama_format_tensor_shape(lt.ne).c_str()));
+            throw format("llama.cpp: tensor '%s' has wrong shape; expected %s, got %s",
+                         name.c_str(), llama_format_tensor_shape(ne).c_str(), llama_format_tensor_shape(lt.ne).c_str());
         }
 
         return get_tensor_for(lt, backend);
@@ -706,7 +707,7 @@ struct llama_model_loader {
 
     void done_getting_tensors() const {
         if (num_ggml_tensors_created != tensors_map.tensors.size()) {
-            throw std::runtime_error(std::string("llama.cpp: file contained more tensors than expected"));
+            throw std::string("llama.cpp: file contained more tensors than expected");
         }
     }
 
@@ -994,7 +995,7 @@ static void llama_model_load_internal(
         if (hparams.ftype != LLAMA_FTYPE_ALL_F32     &&
             hparams.ftype != LLAMA_FTYPE_MOSTLY_F16  &&
             hparams.ftype != LLAMA_FTYPE_MOSTLY_Q8_0) {
-            throw std::runtime_error(format("this format is no longer supported (see https://github.com/ggerganov/llama.cpp/pull/1405)"));
+            throw format("this format is no longer supported (see https://github.com/ggerganov/llama.cpp/pull/1405)");
         }
     }
 
@@ -1002,7 +1003,7 @@ static void llama_model_load_internal(
         if (hparams.ftype == LLAMA_FTYPE_MOSTLY_Q4_0 ||
             hparams.ftype == LLAMA_FTYPE_MOSTLY_Q4_1 ||
             hparams.ftype == LLAMA_FTYPE_MOSTLY_Q8_0) {
-            throw std::runtime_error(format("this format is no longer supported (see https://github.com/ggerganov/llama.cpp/pull/1508)"));
+            throw format("this format is no longer supported (see https://github.com/ggerganov/llama.cpp/pull/1508)");
         }
     }
 
@@ -1033,7 +1034,7 @@ static void llama_model_load_internal(
 
         model.ctx = ggml_init(params);
         if (!model.ctx) {
-            throw std::runtime_error(format("ggml_init() failed"));
+            throw format("ggml_init() failed");
         }
     }
 
@@ -1214,8 +1215,8 @@ static bool llama_model_load(
         llama_model_load_internal(fname, lctx, n_ctx, n_gpu_layers, memory_type, use_mmap, use_mlock,
                                   vocab_only, progress_callback, progress_callback_user_data);
         return true;
-    } catch (const std::exception & err) {
-        fprintf(stderr, "error loading model: %s\n", err.what());
+    } catch (const std::string & err) {
+        fprintf(stderr, "error loading model: %s\n", err.c_str());
         return false;
     }
 }
@@ -1279,6 +1280,12 @@ static bool llama_eval_internal(
     struct ggml_tensor * embd = ggml_new_tensor_1d(ctx0, GGML_TYPE_I32, N);
     ggml_set_name(embd, "embd");
     memcpy(embd->data, tokens, N*ggml_element_size(embd));
+
+#ifdef GGML_USE_METAL
+    if (lctx.ctx_metal && N == 1) {
+        ggml_metal_set_tensor(lctx.ctx_metal, embd);
+    }
+#endif
 
     struct ggml_tensor * cur;
     struct ggml_tensor * inpL = ggml_get_rows(ctx0, model.tok_embeddings, embd);
@@ -1477,6 +1484,12 @@ static bool llama_eval_internal(
         }
 
         ggml_graph_compute(ctx0, &gf);
+
+        if (lctx.ctx_metal) {
+            // We need to sync the CPU KV cache with the GPU KV cache
+            ggml_metal_set_tensor(lctx.ctx_metal, kv_self.k);
+            ggml_metal_set_tensor(lctx.ctx_metal, kv_self.v);
+        }
     }
 #else
     ggml_graph_compute(ctx0, &gf);
@@ -2120,9 +2133,8 @@ static void llama_model_quantize_internal(const std::string & fname_inp, const s
         case LLAMA_FTYPE_MOSTLY_Q5_0: quantized_type = GGML_TYPE_Q5_0; break;
         case LLAMA_FTYPE_MOSTLY_Q5_1: quantized_type = GGML_TYPE_Q5_1; break;
         case LLAMA_FTYPE_MOSTLY_Q8_0: quantized_type = GGML_TYPE_Q8_0; break;
-
         // K-quants
-        case LLAMA_FTYPE_MOSTLY_Q2_K:   quantized_type = GGML_TYPE_Q2_K; break;
+        case LLAMA_FTYPE_MOSTLY_Q2_K: quantized_type = GGML_TYPE_Q2_K; break;
         case LLAMA_FTYPE_MOSTLY_Q3_K_S:
         case LLAMA_FTYPE_MOSTLY_Q3_K_M:
         case LLAMA_FTYPE_MOSTLY_Q3_K_L: quantized_type = GGML_TYPE_Q3_K; break;
@@ -2130,8 +2142,8 @@ static void llama_model_quantize_internal(const std::string & fname_inp, const s
         case LLAMA_FTYPE_MOSTLY_Q4_K_M: quantized_type = GGML_TYPE_Q4_K; break;
         case LLAMA_FTYPE_MOSTLY_Q5_K_S:
         case LLAMA_FTYPE_MOSTLY_Q5_K_M: quantized_type = GGML_TYPE_Q5_K; break;
-        case LLAMA_FTYPE_MOSTLY_Q6_K:   quantized_type = GGML_TYPE_Q6_K; break;
-        default: throw std::runtime_error(format("invalid output file type %d\n", ftype));
+        case LLAMA_FTYPE_MOSTLY_Q6_K: quantized_type = GGML_TYPE_Q6_K; break;
+        default: throw format("invalid output file type %d\n", ftype);
     }
 
     if (nthread <= 0) {
@@ -2198,12 +2210,8 @@ static void llama_model_quantize_internal(const std::string & fname_inp, const s
             printf("size = %8.3f MB\n", tensor.size/1024.0/1024.0);
         } else {
             new_type = quantized_type;
-            // TODO: temporary disabled until Metal / OpenCL support is available
-            //       ref: https://github.com/ggerganov/llama.cpp/issues/1711
-            //if (tensor.name == "output.weight") {
-            //    new_type = GGML_TYPE_Q6_K;
-            //}
-            if (tensor.name.find("attention.wv.weight") != std::string::npos) {
+            if (tensor.name == "output.weight") new_type = GGML_TYPE_Q6_K;
+            else if (tensor.name.find("attention.wv.weight") != std::string::npos) {
                 if      (ftype == LLAMA_FTYPE_MOSTLY_Q3_K_M || ftype == LLAMA_FTYPE_MOSTLY_Q2_K) new_type = GGML_TYPE_Q4_K;
                 else if (ftype == LLAMA_FTYPE_MOSTLY_Q3_K_L) new_type = GGML_TYPE_Q5_K;
                 else if ((ftype == LLAMA_FTYPE_MOSTLY_Q4_K_M || ftype == LLAMA_FTYPE_MOSTLY_Q5_K_M) &&
@@ -2211,7 +2219,7 @@ static void llama_model_quantize_internal(const std::string & fname_inp, const s
                          (i_attention_wv - n_attention_wv/8)%3 == 2)) new_type = GGML_TYPE_Q6_K;
                 ++i_attention_wv;
             }
-            if (tensor.name.find("feed_forward.w2.weight") != std::string::npos) {
+            else if (tensor.name.find("feed_forward.w2.weight") != std::string::npos) {
                 if      (ftype == LLAMA_FTYPE_MOSTLY_Q3_K_M || ftype == LLAMA_FTYPE_MOSTLY_Q2_K) new_type = GGML_TYPE_Q4_K;
                 else if (ftype == LLAMA_FTYPE_MOSTLY_Q3_K_L) new_type = GGML_TYPE_Q5_K;
                 else if ((ftype == LLAMA_FTYPE_MOSTLY_Q4_K_M || ftype == LLAMA_FTYPE_MOSTLY_Q5_K_M) &&
@@ -2219,11 +2227,10 @@ static void llama_model_quantize_internal(const std::string & fname_inp, const s
                          (i_feed_forward_w2 - n_feed_forward_w2/8)%3 == 2)) new_type = GGML_TYPE_Q6_K;
                 ++i_feed_forward_w2;
             }
-            if (tensor.name.find("attention.wo.weight") != std::string::npos) {
+            else if (tensor.name.find("attention.wo.weight") != std::string::npos) {
                 if      (ftype == LLAMA_FTYPE_MOSTLY_Q3_K_M || ftype == LLAMA_FTYPE_MOSTLY_Q2_K) new_type = GGML_TYPE_Q4_K;
                 else if (ftype == LLAMA_FTYPE_MOSTLY_Q3_K_L) new_type = GGML_TYPE_Q5_K;
             }
-
             float * f32_data;
             size_t nelements = tensor.ne.at(0) * tensor.ne.at(1);
             llama_buffer f32_conv_buf;
@@ -2237,7 +2244,7 @@ static void llama_model_quantize_internal(const std::string & fname_inp, const s
                     f32_data[i] = ggml_fp16_to_fp32(f16_data[i]);
                 }
             } else {
-                throw std::runtime_error(format("type %s unsupported for integer quantization", ggml_type_name(tensor.type)));
+                throw format("type %s unsupported for integer quantization", ggml_type_name(tensor.type));
             }
 
             printf("quantizing .. ");
@@ -2410,30 +2417,17 @@ struct llama_context * llama_init_from_file(
         // this allocates all Metal resources and memory buffers
         ctx->ctx_metal = ggml_metal_init();
 
-        void *data_ptr = NULL;
-        size_t data_size = 0;
         if (params.use_mmap) {
-            data_ptr = ctx->model.mapping->addr;
-            data_size= ctx->model.mapping->size;
+            ggml_metal_add_buffer(ctx->ctx_metal, "data", ctx->model.mapping->addr, ctx->model.mapping->size);
+            ggml_metal_add_buffer(ctx->ctx_metal, "eval", ctx->buf_compute.addr,    ctx->buf_compute.size);
         } else {
-            data_ptr = ggml_get_mem_buffer(ctx->model.ctx);
-            data_size= ggml_get_mem_size(ctx->model.ctx);
+            ggml_metal_add_buffer(ctx->ctx_metal, "data", ggml_get_mem_buffer(ctx->model.ctx), ggml_get_mem_size(ctx->model.ctx));
+            ggml_metal_add_buffer(ctx->ctx_metal, "eval", ctx->buf_compute.addr,               ctx->buf_compute.size);
         }
 
-#define LLAMA_METAL_CHECK_BUF(result)                                          \
-    if (!(result)) {                                                           \
-        fprintf(stderr, "%s: failed to add buffer\n", __func__);               \
-        llama_free(ctx);                                                       \
-        return NULL;                                                           \
-    }
-
-        LLAMA_METAL_CHECK_BUF(ggml_metal_add_buffer(ctx->ctx_metal, "data", data_ptr, data_size));
-        LLAMA_METAL_CHECK_BUF(ggml_metal_add_buffer(ctx->ctx_metal, "eval", ctx->buf_compute.addr, ctx->buf_compute.size));
-
-        LLAMA_METAL_CHECK_BUF(ggml_metal_add_buffer(ctx->ctx_metal, "kv",   ctx->model.kv_self.buf.addr, ctx->model.kv_self.buf.size));
-        LLAMA_METAL_CHECK_BUF(ggml_metal_add_buffer(ctx->ctx_metal, "scr0", ctx->buf_scratch[0].addr,    ctx->buf_scratch[0].size));
-        LLAMA_METAL_CHECK_BUF(ggml_metal_add_buffer(ctx->ctx_metal, "scr1", ctx->buf_scratch[1].addr,    ctx->buf_scratch[1].size));
-#undef LLAMA_METAL_CHECK_BUF
+        ggml_metal_add_buffer(ctx->ctx_metal, "kv",   ctx->model.kv_self.buf.addr, ctx->model.kv_self.buf.size);
+        ggml_metal_add_buffer(ctx->ctx_metal, "scr0", ctx->buf_scratch[0].addr,    ctx->buf_scratch[0].size);
+        ggml_metal_add_buffer(ctx->ctx_metal, "scr1", ctx->buf_scratch[1].addr,    ctx->buf_scratch[1].size);
     }
 #endif
 
@@ -2452,8 +2446,8 @@ int llama_model_quantize(
     try {
         llama_model_quantize_internal(fname_inp, fname_out, ftype, nthread);
         return 0;
-    } catch (const std::exception & err) {
-        fprintf(stderr, "%s: failed to quantize: %s\n", __func__, err.what());
+    } catch (const std::string & err) {
+        fprintf(stderr, "%s: failed to quantize: %s\n", __func__, err.c_str());
         return 1;
     }
 }
@@ -2706,8 +2700,8 @@ int llama_apply_lora_from_file_internal(struct llama_context * ctx, const char *
 int llama_apply_lora_from_file(struct llama_context * ctx, const char * path_lora, const char * path_base_model, int n_threads) {
     try {
         return llama_apply_lora_from_file_internal(ctx, path_lora, path_base_model, n_threads);
-    } catch (const std::exception & err) {
-        fprintf(stderr, "%s: failed to apply lora adapter: %s\n", __func__, err.what());
+    } catch (const std::string & err) {
+        fprintf(stderr, "%s: failed to apply lora adapter: %s\n", __func__, err.c_str());
         return 1;
     }
 }
