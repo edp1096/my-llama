@@ -2,6 +2,7 @@
 #define _GNU_SOURCE
 
 #include "ggml.h"
+#include "ggml-quants-k.h"
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include <malloc.h> // using malloc.h with MSC/MINGW
@@ -20,6 +21,10 @@
 #include <stdio.h>
 #include <float.h>
 #include <limits.h>
+
+#ifdef GGML_USE_METAL
+#include <unistd.h>
+#endif
 
 // if C99 - static_assert is noop
 // ref: https://stackoverflow.com/a/53923785/4039976
@@ -121,7 +126,11 @@ typedef void* thread_ret_t;
 #else
 inline static void* ggml_aligned_malloc(size_t size) {
     void* aligned_memory = NULL;
+#ifdef GGML_USE_METAL
+    int result = posix_memalign(&aligned_memory, getpagesize(), size);
+#else
     int result = posix_memalign(&aligned_memory, GGML_MEM_ALIGN, size);
+#endif
     if (result != 0) {
         // Handle allocation failure
         return NULL;
@@ -403,21 +412,27 @@ void ggml_fp32_to_fp16_row(const float * x, ggml_fp16_t * y, size_t n) {
 //
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
-static int64_t timer_freq;
+static int64_t timer_freq, timer_start;
 void ggml_time_init(void) {
-    LARGE_INTEGER frequency;
-    QueryPerformanceFrequency(&frequency);
-    timer_freq = frequency.QuadPart;
+    LARGE_INTEGER t;
+    QueryPerformanceFrequency(&t);
+    timer_freq = t.QuadPart;
+
+    // The multiplication by 1000 or 1000000 below can cause an overflow if timer_freq
+    // and the uptime is high enough.
+    // We subtract the program start time to reduce the likelihood of that happening.
+    QueryPerformanceCounter(&t);
+    timer_start = t.QuadPart;
 }
 int64_t ggml_time_ms(void) {
     LARGE_INTEGER t;
     QueryPerformanceCounter(&t);
-    return (t.QuadPart * 1000) / timer_freq;
+    return ((t.QuadPart-timer_start) * 1000) / timer_freq;
 }
 int64_t ggml_time_us(void) {
     LARGE_INTEGER t;
     QueryPerformanceCounter(&t);
-    return (t.QuadPart * 1000000) / timer_freq;
+    return ((t.QuadPart-timer_start) * 1000000) / timer_freq;
 }
 #else
 void ggml_time_init(void) {}
@@ -1564,6 +1579,46 @@ static const quantize_fns_t quantize_fns[GGML_TYPE_COUNT] = {
         .quantize_row_q_dot       = quantize_row_q8_1,
         .vec_dot_q                = NULL,   // TODO
         .vec_dot_type             = GGML_TYPE_Q8_1,
+    },
+    [GGML_TYPE_Q2_K] = {
+        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q2_k,
+        .quantize_row_q           = quantize_row_q2_k,
+        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q2_k_reference,
+        .quantize_row_q_dot       = quantize_row_q8_k,
+        .vec_dot_q                = ggml_vec_dot_q2_k_q8_k,
+        .vec_dot_type             = GGML_TYPE_Q8_K,
+    },
+    [GGML_TYPE_Q3_K] = {
+        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q3_k,
+        .quantize_row_q           = quantize_row_q3_k,
+        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q3_k_reference,
+        .quantize_row_q_dot       = quantize_row_q8_k,
+        .vec_dot_q                = ggml_vec_dot_q3_k_q8_k,
+        .vec_dot_type             = GGML_TYPE_Q8_K,
+    },
+    [GGML_TYPE_Q4_K] = {
+        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q4_k,
+        .quantize_row_q           = quantize_row_q4_k,
+        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q4_k_reference,
+        .quantize_row_q_dot       = quantize_row_q8_k,
+        .vec_dot_q                = ggml_vec_dot_q4_k_q8_k,
+        .vec_dot_type             = GGML_TYPE_Q8_K,
+    },
+    [GGML_TYPE_Q5_K] = {
+        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q5_k,
+        .quantize_row_q           = quantize_row_q5_k,
+        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q5_k_reference,
+        .quantize_row_q_dot       = quantize_row_q8_k,
+        .vec_dot_q                = ggml_vec_dot_q5_k_q8_k,
+        .vec_dot_type             = GGML_TYPE_Q8_K,
+    },
+    [GGML_TYPE_Q6_K] = {
+        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q6_k,
+        .quantize_row_q           = quantize_row_q6_k,
+        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q6_k_reference,
+        .quantize_row_q_dot       = quantize_row_q8_k,
+        .vec_dot_q                = ggml_vec_dot_q6_k_q8_k,
+        .vec_dot_type             = GGML_TYPE_Q8_K,
     },
 };
 
@@ -3444,11 +3499,17 @@ static const int GGML_BLCK_SIZE[GGML_TYPE_COUNT] = {
     [GGML_TYPE_Q5_1] = QK5_1,
     [GGML_TYPE_Q8_0] = QK8_0,
     [GGML_TYPE_Q8_1] = QK8_1,
+    [GGML_TYPE_Q2_K] = QK_K,
+    [GGML_TYPE_Q3_K] = QK_K,
+    [GGML_TYPE_Q4_K] = QK_K,
+    [GGML_TYPE_Q5_K] = QK_K,
+    [GGML_TYPE_Q6_K] = QK_K,
+    [GGML_TYPE_Q8_K] = QK_K,
     [GGML_TYPE_I8]   = 1,
     [GGML_TYPE_I16]  = 1,
     [GGML_TYPE_I32]  = 1,
 };
-static_assert(GGML_TYPE_COUNT == 13, "GGML_BLCK_SIZE is outdated");
+static_assert(GGML_TYPE_COUNT == 19, "GGML_BLCK_SIZE is outdated");
 
 static const size_t GGML_TYPE_SIZE[GGML_TYPE_COUNT] = {
     [GGML_TYPE_F32]  = sizeof(float),
@@ -3459,11 +3520,17 @@ static const size_t GGML_TYPE_SIZE[GGML_TYPE_COUNT] = {
     [GGML_TYPE_Q5_1] = sizeof(block_q5_1),
     [GGML_TYPE_Q8_0] = sizeof(block_q8_0),
     [GGML_TYPE_Q8_1] = sizeof(block_q8_1),
+    [GGML_TYPE_Q2_K] = sizeof(block_q2_k),
+    [GGML_TYPE_Q3_K] = sizeof(block_q3_k),
+    [GGML_TYPE_Q4_K] = sizeof(block_q4_k),
+    [GGML_TYPE_Q5_K] = sizeof(block_q5_k),
+    [GGML_TYPE_Q6_K] = sizeof(block_q6_k),
+    [GGML_TYPE_Q8_K] = sizeof(block_q8_k),
     [GGML_TYPE_I8]   = sizeof(int8_t),
     [GGML_TYPE_I16]  = sizeof(int16_t),
     [GGML_TYPE_I32]  = sizeof(int32_t),
 };
-static_assert(GGML_TYPE_COUNT == 13, "GGML_TYPE_SIZE is outdated");
+static_assert(GGML_TYPE_COUNT == 19, "GGML_TYPE_SIZE is outdated");
 
 
 static const char * GGML_TYPE_NAME[GGML_TYPE_COUNT] = {
@@ -3475,11 +3542,17 @@ static const char * GGML_TYPE_NAME[GGML_TYPE_COUNT] = {
     [GGML_TYPE_Q5_1] = "q5_1",
     [GGML_TYPE_Q8_0] = "q8_0",
     [GGML_TYPE_Q8_1] = "q8_1",
+    [GGML_TYPE_Q2_K] = "q2_k",
+    [GGML_TYPE_Q3_K] = "q3_k",
+    [GGML_TYPE_Q4_K] = "q4_k",
+    [GGML_TYPE_Q5_K] = "q5_k",
+    [GGML_TYPE_Q6_K] = "q6_k",
+    [GGML_TYPE_Q8_K] = "q8_k",
     [GGML_TYPE_I8]   = "i8",
     [GGML_TYPE_I16]  = "i16",
     [GGML_TYPE_I32]  = "i32",
 };
-static_assert(GGML_TYPE_COUNT == 13, "GGML_TYPE_NAME is outdated");
+static_assert(GGML_TYPE_COUNT == 19, "GGML_TYPE_NAME is outdated");
 
 static bool GGML_IS_QUANTIZED[GGML_TYPE_COUNT] = {
     [GGML_TYPE_F32]  = false,
@@ -3490,11 +3563,17 @@ static bool GGML_IS_QUANTIZED[GGML_TYPE_COUNT] = {
     [GGML_TYPE_Q5_1] = true,
     [GGML_TYPE_Q8_0] = true,
     [GGML_TYPE_Q8_1] = true,
+    [GGML_TYPE_Q2_K] = true,
+    [GGML_TYPE_Q3_K] = true,
+    [GGML_TYPE_Q4_K] = true,
+    [GGML_TYPE_Q5_K] = true,
+    [GGML_TYPE_Q6_K] = true,
+    [GGML_TYPE_Q8_K] = true,
     [GGML_TYPE_I8]   = false,
     [GGML_TYPE_I16]  = false,
     [GGML_TYPE_I32]  = false,
 };
-static_assert(GGML_TYPE_COUNT == 13, "GGML_IS_QUANTIZED is outdated");
+static_assert(GGML_TYPE_COUNT == 19, "GGML_IS_QUANTIZED is outdated");
 
 static const char * GGML_OP_NAME[GGML_OP_COUNT] = {
     "NONE",
@@ -3808,6 +3887,11 @@ enum ggml_type ggml_ftype_to_ggml_type(enum ggml_ftype ftype) {
         case GGML_FTYPE_MOSTLY_Q5_0:          wtype = GGML_TYPE_Q5_0;  break;
         case GGML_FTYPE_MOSTLY_Q5_1:          wtype = GGML_TYPE_Q5_1;  break;
         case GGML_FTYPE_MOSTLY_Q8_0:          wtype = GGML_TYPE_Q8_0;  break;
+        case GGML_FTYPE_MOSTLY_Q2_K:          wtype = GGML_TYPE_Q2_K;  break;
+        case GGML_FTYPE_MOSTLY_Q3_K:          wtype = GGML_TYPE_Q3_K;  break;
+        case GGML_FTYPE_MOSTLY_Q4_K:          wtype = GGML_TYPE_Q4_K;  break;
+        case GGML_FTYPE_MOSTLY_Q5_K:          wtype = GGML_TYPE_Q5_K;  break;
+        case GGML_FTYPE_MOSTLY_Q6_K:          wtype = GGML_TYPE_Q6_K;  break;
         case GGML_FTYPE_UNKNOWN:              wtype = GGML_TYPE_COUNT; break;
         case GGML_FTYPE_MOSTLY_Q4_1_SOME_F16: wtype = GGML_TYPE_COUNT; break;
     }
@@ -7623,6 +7707,11 @@ static void ggml_compute_forward_add(
         case GGML_TYPE_Q5_0:
         case GGML_TYPE_Q5_1:
         case GGML_TYPE_Q8_0:
+        case GGML_TYPE_Q2_K:
+        case GGML_TYPE_Q3_K:
+        case GGML_TYPE_Q4_K:
+        case GGML_TYPE_Q5_K:
+        case GGML_TYPE_Q6_K:
             {
                 ggml_compute_forward_add_q_f32(params, src0, src1, dst);
             } break;
@@ -7926,6 +8015,11 @@ static void ggml_compute_forward_add1(
         case GGML_TYPE_Q5_1:
         case GGML_TYPE_Q8_0:
         case GGML_TYPE_Q8_1:
+        case GGML_TYPE_Q2_K:
+        case GGML_TYPE_Q3_K:
+        case GGML_TYPE_Q4_K:
+        case GGML_TYPE_Q5_K:
+        case GGML_TYPE_Q6_K:
             {
                 ggml_compute_forward_add1_q_f32(params, src0, src1, dst);
             } break;
@@ -8048,6 +8142,11 @@ static void ggml_compute_forward_acc(
         case GGML_TYPE_Q5_1:
         case GGML_TYPE_Q8_0:
         case GGML_TYPE_Q8_1:
+        case GGML_TYPE_Q2_K:
+        case GGML_TYPE_Q3_K:
+        case GGML_TYPE_Q4_K:
+        case GGML_TYPE_Q5_K:
+        case GGML_TYPE_Q6_K:
         default:
             {
                 GGML_ASSERT(false);
@@ -10148,6 +10247,11 @@ static void ggml_compute_forward_mul_mat(
         case GGML_TYPE_Q5_1:
         case GGML_TYPE_Q8_0:
         case GGML_TYPE_Q8_1:
+        case GGML_TYPE_Q2_K:
+        case GGML_TYPE_Q3_K:
+        case GGML_TYPE_Q4_K:
+        case GGML_TYPE_Q5_K:
+        case GGML_TYPE_Q6_K:
             {
                 ggml_compute_forward_mul_mat_q_f32(params, src0, src1, dst);
             } break;
@@ -10331,6 +10435,11 @@ static void ggml_compute_forward_set(
         case GGML_TYPE_Q5_1:
         case GGML_TYPE_Q8_0:
         case GGML_TYPE_Q8_1:
+        case GGML_TYPE_Q2_K:
+        case GGML_TYPE_Q3_K:
+        case GGML_TYPE_Q4_K:
+        case GGML_TYPE_Q5_K:
+        case GGML_TYPE_Q6_K:
         default:
             {
                 GGML_ASSERT(false);
@@ -10496,6 +10605,11 @@ static void ggml_compute_forward_get_rows(
         case GGML_TYPE_Q5_1:
         case GGML_TYPE_Q8_0:
         case GGML_TYPE_Q8_1:
+        case GGML_TYPE_Q2_K:
+        case GGML_TYPE_Q3_K:
+        case GGML_TYPE_Q4_K:
+        case GGML_TYPE_Q5_K:
+        case GGML_TYPE_Q6_K:
             {
                 ggml_compute_forward_get_rows_q(params, src0, src1, dst);
             } break;
@@ -11042,6 +11156,12 @@ static void ggml_compute_forward_alibi(
         case GGML_TYPE_Q5_1:
         case GGML_TYPE_Q8_0:
         case GGML_TYPE_Q8_1:
+        case GGML_TYPE_Q2_K:
+        case GGML_TYPE_Q3_K:
+        case GGML_TYPE_Q4_K:
+        case GGML_TYPE_Q5_K:
+        case GGML_TYPE_Q6_K:
+        case GGML_TYPE_Q8_K:
         case GGML_TYPE_I8:
         case GGML_TYPE_I16:
         case GGML_TYPE_I32:
@@ -11113,6 +11233,12 @@ static void ggml_compute_forward_clamp(
         case GGML_TYPE_Q5_1:
         case GGML_TYPE_Q8_0:
         case GGML_TYPE_Q8_1:
+        case GGML_TYPE_Q2_K:
+        case GGML_TYPE_Q3_K:
+        case GGML_TYPE_Q4_K:
+        case GGML_TYPE_Q5_K:
+        case GGML_TYPE_Q6_K:
+        case GGML_TYPE_Q8_K:
         case GGML_TYPE_I8:
         case GGML_TYPE_I16:
         case GGML_TYPE_I32:
@@ -14627,7 +14753,7 @@ static void ggml_graph_export_leaf(const struct ggml_tensor * tensor, FILE * fou
     const int64_t * ne = tensor->ne;
     const size_t  * nb = tensor->nb;
 
-    fprintf(fout, "%-6s %-12s %8d %8lld %8lld %8lld %8lld %16zu %16zu %16zu %16zu %16p %32s\n",
+    fprintf(fout, "%-6s %-12s %8d %8jd %jd %jd %jd %16zu %16zu %16zu %16zu %16p %32s\n",
             ggml_type_name(tensor->type),
             ggml_op_name  (tensor->op),
             tensor->n_dims,
@@ -14641,7 +14767,7 @@ static void ggml_graph_export_node(const struct ggml_tensor * tensor, const char
     const int64_t * ne = tensor->ne;
     const size_t  * nb = tensor->nb;
 
-    fprintf(fout, "%-6s %-6s %-12s %8d %8lld %8lld %8lld %8lld %16zu %16zu %16zu %16zu %8d %16p %32s\n",
+    fprintf(fout, "%-6s %-6s %-12s %8d %jd %jd %jd %jd %16zu %16zu %16zu %16zu %8d %16p %32s\n",
             arg,
             ggml_type_name(tensor->type),
             ggml_op_name  (tensor->op),
@@ -14670,11 +14796,11 @@ void ggml_graph_export(const struct ggml_cgraph * cgraph, const char * fname) {
         FILE * fout = stdout;
 
         fprintf(fout, "\n");
-        fprintf(fout, "%-16s %8x\n",   "magic",   GGML_FILE_MAGIC);
-        fprintf(fout, "%-16s %8d\n",   "version", GGML_FILE_VERSION);
-        fprintf(fout, "%-16s %8d\n",   "leafs",   cgraph->n_leafs);
-        fprintf(fout, "%-16s %8d\n",   "nodes",   cgraph->n_nodes);
-        fprintf(fout, "%-16s %8llu\n", "eval",    size_eval);
+        fprintf(fout, "%-16s %8x\n",  "magic",   GGML_FILE_MAGIC);
+        fprintf(fout, "%-16s %8d\n",  "version", GGML_FILE_VERSION);
+        fprintf(fout, "%-16s %8d\n",  "leafs",   cgraph->n_leafs);
+        fprintf(fout, "%-16s %8d\n",  "nodes",   cgraph->n_nodes);
+        fprintf(fout, "%-16s %8ju\n", "eval",    size_eval);
 
         // header
         fprintf(fout, "\n");
@@ -14907,7 +15033,11 @@ struct ggml_cgraph ggml_graph_import(const char * fname, struct ggml_context ** 
 
         data = ggml_new_tensor_1d(*ctx_data, GGML_TYPE_I8, fsize);
 
-        fread(data->data, sizeof(char), fsize, fin);
+        const size_t ret = fread(data->data, sizeof(char), fsize, fin);
+        if (ret != fsize) {
+            fprintf(stderr, "%s: failed to read %s\n", __func__, fname);
+            return result;
+        }
 
         fclose(fin);
     }
@@ -16151,6 +16281,36 @@ size_t ggml_quantize_chunk(enum ggml_type type, const float * src, void * dst, i
                 GGML_ASSERT(start % QK8_0 == 0);
                 block_q8_0 * block = (block_q8_0*)dst + start / QK8_0;
                 result = ggml_quantize_q8_0(src + start, block, n, n, hist);
+            } break;
+        case GGML_TYPE_Q2_K:
+            {
+                GGML_ASSERT(start % QK_K == 0);
+                block_q2_k * block = (block_q2_k*)dst + start / QK_K;
+                result = ggml_quantize_q2_k(src + start, block, n, n, hist);
+            } break;
+        case GGML_TYPE_Q3_K:
+            {
+                GGML_ASSERT(start % QK_K == 0);
+                block_q3_k * block = (block_q3_k*)dst + start / QK_K;
+                result = ggml_quantize_q3_k(src + start, block, n, n, hist);
+            } break;
+        case GGML_TYPE_Q4_K:
+            {
+                GGML_ASSERT(start % QK_K == 0);
+                block_q4_k * block = (block_q4_k*)dst + start / QK_K;
+                result = ggml_quantize_q4_k(src + start, block, n, n, hist);
+            } break;
+        case GGML_TYPE_Q5_K:
+            {
+                GGML_ASSERT(start % QK_K == 0);
+                block_q5_k * block = (block_q5_k*)dst + start / QK_K;
+                result = ggml_quantize_q5_k(src + start, block, n, n, hist);
+            } break;
+        case GGML_TYPE_Q6_K:
+            {
+                GGML_ASSERT(start % QK_K == 0);
+                block_q6_k * block = (block_q6_k*)dst + start / QK_K;
+                result = ggml_quantize_q6_k(src + start, block, n, n, hist);
             } break;
         default:
             assert(false);
