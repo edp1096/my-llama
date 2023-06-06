@@ -206,38 +206,31 @@ func (l *LLama) LlamaApiTokenNL() int {
 //	func (l *LLama) LlamaApiSampleFrequencyAndPresencePenalties() {
 //		return C.llama_api_sample_frequency_and_presence_penalties(l.Container)
 //	}
-//
-//	func (l *LLama) LlamaApiSampleSoftmax() {
-//		return C.llama_api_sample_softmax(l.Container)
-//	}
-//
-//	func (l *LLama) LlamaApiSampleTopK() {
-//		return C.llama_api_sample_top_k(l.Container)
-//	}
-//
-//	func (l *LLama) LlamaApiSampleTopP() {
-//		return C.llama_api_sample_top_p(l.Container)
-//	}
-//
-//	func (l *LLama) LlamaApiSampleTailFree() {
-//		return C.llama_api_sample_tail_free(l.Container)
-//	}
-//
-//	func (l *LLama) LlamaApiSampleTypical() {
-//		return C.llama_api_sample_typical(l.Container)
-//	}
-//
-//	func (l *LLama) LlamaApiSampleTemperature() {
-//		return C.llama_api_sample_temperature(l.Container)
-//	}
-//
-//	func (l *LLama) LlamaApiSampleTokenMirostatV2() {
-//		return C.llama_api_sample_token_mirostat_v2(l.Container)
-//	}
-//
-//	func (l *LLama) LlamaApiSampleTokenGreedy() int {
-//		return int(C.llama_api_sample_token_greedy(l.Container))
-//	}
+func (l *LLama) LlamaApiSampleSoftmax() {
+	C.llama_api_sample_softmax(l.Container)
+}
+func (l *LLama) LlamaApiSampleTopK(topK int) {
+	C.llama_api_sample_top_k(l.Container, C.int(topK))
+}
+func (l *LLama) LlamaApiSampleTopP(topP float64) {
+	C.llama_api_sample_top_p(l.Container, C.float(topP))
+}
+func (l *LLama) LlamaApiSampleTailFree(tfsZ float64) {
+	C.llama_api_sample_tail_free(l.Container, C.float(tfsZ))
+}
+func (l *LLama) LlamaApiSampleTypical(typicalP float64) {
+	C.llama_api_sample_typical(l.Container, C.float(typicalP))
+}
+func (l *LLama) LlamaApiSampleTemperature(temperature float64) {
+	C.llama_api_sample_temperature(l.Container, C.float(temperature))
+}
+
+func (l *LLama) LlamaApiSampleTokenMirostatV2(mirostatTAU, mirostatETA, mirostatMU float64) int32 {
+	return int32(C.llama_api_sample_token_mirostat_v2(l.Container, C.float(mirostatTAU), C.float(mirostatETA), C.float(mirostatMU)))
+}
+func (l *LLama) LlamaApiSampleTokenGreedy() int32 {
+	return int32(C.llama_api_sample_token_greedy(l.Container))
+}
 func (l *LLama) LlamaApiSampleToken() int32 {
 	return int32(C.llama_api_sample_token(l.Container))
 }

@@ -213,82 +213,88 @@ int llama_api_token_nl() {
 
 void llama_api_sample_repetition_penalty(void* container, void* candidates_a_p, void* last_tokens, int last_tokens_size, float penalty) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_sample_repetition_penalty((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, (llama_token*)last_tokens, (size_t)last_tokens_size, penalty);
-    }
+    llama_context* ctx = (llama_context*)c->ctx;
+    llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
+
+    llama_sample_repetition_penalty(ctx, candidates_p, (llama_token*)last_tokens, (size_t)last_tokens_size, penalty);
 }
 
-void llama_api_sample_frequency_and_presence_penalties(void* container, void* candidates_a_p, void* last_tokens, int last_tokens_size, float alpha_frequency, float alpha_presence) {
+void llama_api_sample_frequency_and_presence_penalties(void* container, void* last_tokens, int last_tokens_size, float alpha_frequency, float alpha_presence) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_sample_frequency_and_presence_penalties((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, (llama_token*)last_tokens, (size_t)last_tokens_size, alpha_frequency, alpha_presence);
-    }
+    llama_context* ctx = (llama_context*)c->ctx;
+    llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
+
+    llama_sample_frequency_and_presence_penalties(ctx, candidates_p, (llama_token*)last_tokens, (size_t)last_tokens_size, alpha_frequency, alpha_presence);
 }
 
-void llama_api_sample_softmax(void* container, void* candidates_a_p) {
+void llama_api_sample_softmax(void* container) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_sample_softmax((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p);
-    }
+    llama_sample_softmax((llama_context*)c->ctx, (llama_token_data_array*)c->candidates);
 }
 
-void llama_api_sample_top_k(void* container, void* candidates_a_p, int top_k) {
+void llama_api_sample_top_k(void* container, int top_k) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_sample_top_k((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, top_k, 1);
-    }
+    llama_context* ctx = (llama_context*)c->ctx;
+    llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
+
+    llama_sample_top_k(ctx, candidates_p, top_k, 1);
 }
 
-void llama_api_sample_top_p(void* container, void* candidates_a_p, float top_p) {
+void llama_api_sample_top_p(void* container, float top_p) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_sample_top_p((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, top_p, 1);
-    }
+    llama_context* ctx = (llama_context*)c->ctx;
+    llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
+
+    llama_sample_top_p(ctx, candidates_p, top_p, 1);
 }
 
-void llama_api_sample_tail_free(void* container, void* candidates_a_p, float tfs_z) {
+void llama_api_sample_tail_free(void* container, float tfs_z) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_sample_tail_free((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, tfs_z, 1);
-    }
+    llama_context* ctx = (llama_context*)c->ctx;
+    llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
+
+    llama_sample_tail_free(ctx, candidates_p, tfs_z, 1);
 }
 
-void llama_api_sample_typical(void* container, void* candidates_a_p, float typical_p) {
+void llama_api_sample_typical(void* container, float typical_p) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_sample_typical((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, typical_p, 1);
-    }
+    llama_context* ctx = (llama_context*)c->ctx;
+    llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
+
+    llama_sample_typical(ctx, candidates_p, typical_p, 1);
 }
 
-void llama_api_sample_temperature(void* container, void* candidates_a_p, float temperature) {
+void llama_api_sample_temperature(void* container, float temperature) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_sample_temperature((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, temperature);
-    }
+    llama_context* ctx = (llama_context*)c->ctx;
+    llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
+
+    llama_sample_temperature(ctx, candidates_p, temperature);
 }
 
-void llama_api_sample_token_mirostat_v2(void* container, void* candidates_a_p, float mirostat_tau, float mirostat_eta, float mirostat_mu) {
+int llama_api_sample_token_mirostat_v2(void* container, float mirostat_tau, float mirostat_eta, float mirostat_mu) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_sample_token_mirostat_v2((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p, mirostat_tau, mirostat_eta, &mirostat_mu);
-    }
+    llama_context* ctx = (llama_context*)c->ctx;
+    llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
+
+    llama_token next_token = llama_sample_token_mirostat_v2(ctx, candidates_p, mirostat_tau, mirostat_eta, &mirostat_mu);
+
+    return next_token;
 }
 
-int llama_api_sample_token_greedy(void* container, void* candidates_a_p) {
-    int id = 0;
-
+int llama_api_sample_token_greedy(void* container) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        id = llama_sample_token_greedy((llama_context*)c->ctx, (llama_token_data_array*)candidates_a_p);
-    }
+    llama_context* ctx = (llama_context*)c->ctx;
+    llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
 
-    return id;
+    llama_token next_token = llama_sample_token_greedy((llama_context*)c->ctx, candidates_p);
+
+    return next_token;
 }
 
 int llama_api_sample_token(void* container) {
     myllama_container* c = (myllama_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
-
     llama_token_data_array* candidates_p = (llama_token_data_array*)c->candidates;
 
     llama_token next_token = llama_sample_token(ctx, candidates_p);
@@ -298,16 +304,12 @@ int llama_api_sample_token(void* container) {
 
 void llama_api_print_timings(void* container) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_print_timings((llama_context*)c->ctx);
-    }
+    llama_print_timings((llama_context*)c->ctx);
 }
 
 void llama_api_reset_timings(void* container) {
     myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_reset_timings((llama_context*)c->ctx);
-    }
+    llama_reset_timings((llama_context*)c->ctx);
 }
 
 char* llama_api_print_system_info() {

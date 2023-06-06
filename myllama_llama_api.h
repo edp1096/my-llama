@@ -40,14 +40,15 @@ int llama_api_token_nl();
 
 void llama_api_sample_repetition_penalty(void* container, void* candidates_a_p, void* last_tokens, int last_tokens_size, float penalty);
 void llama_api_sample_frequency_and_presence_penalties(void* container, void* candidates_a_p, void* last_tokens, int last_tokens_size, float alpha_frequency, float alpha_presence);
-void llama_api_sample_softmax(void* container, void* candidates_a_p);
-void llama_api_sample_top_k(void* container, void* candidates_a_p, int top_k);
-void llama_api_sample_top_p(void* container, void* candidates_a_p, float top_p);
-void llama_api_sample_tail_free(void* container, void* candidates_a_p, float tfs_z);
-void llama_api_sample_typical(void* container, void* candidates_a_p, float typical_p);
-void llama_api_sample_temperature(void* container, void* candidates_a_p, float temperature);
-void llama_api_sample_token_mirostat_v2(void* container, void* candidates_a_p, float mirostat_tau, float mirostat_eta, float mirostat_mu);
-int llama_api_sample_token_greedy(void* container, void* candidates_a_p);
+void llama_api_sample_softmax(void* container);
+void llama_api_sample_top_k(void* container, int top_k);
+void llama_api_sample_top_p(void* container, float top_p);
+void llama_api_sample_tail_free(void* container, float tfs_z);
+void llama_api_sample_typical(void* container, float typical_p);
+void llama_api_sample_temperature(void* container, float temperature);
+
+int llama_api_sample_token_mirostat_v2(void* container, float mirostat_tau, float mirostat_eta, float mirostat_mu);
+int llama_api_sample_token_greedy(void* container);
 int llama_api_sample_token(void* container);
 
 void llama_api_print_timings(void* container);
