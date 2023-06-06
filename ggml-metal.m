@@ -195,14 +195,30 @@ bool ggml_metal_add_buffer(
             }
         }
 
+        size_t page_size = getpagesize();
+        size_t aligned_size = size;
+        if ((aligned_size % page_size) != 0) {
+            aligned_size += (page_size - (aligned_size % page_size));
+        }
+
         ctx->buffers[ctx->n_buffers].name = name;
         ctx->buffers[ctx->n_buffers].data = data;
         ctx->buffers[ctx->n_buffers].size = size;
-        ctx->buffers[ctx->n_buffers].metal = [ctx->device newBufferWithBytes:data length:size options:MTLResourceStorageModeShared];
+
+        if (ctx->device.maxBufferLength < aligned_size) {
+            fprintf(stderr, "%s: buffer '%s' size %zu is larger than buffer maximum of %zu\n", __func__, name, aligned_size, ctx->device.maxBufferLength);
+            return false;
+        }
+        ctx->buffers[ctx->n_buffers].metal = [ctx->device newBufferWithBytesNoCopy:data length:aligned_size options:MTLResourceStorageModeShared deallocator:nil];
+
+        if (ctx->buffers[ctx->n_buffers].metal == nil) {
+            fprintf(stderr, "%s: failed to allocate '%-16s' buffer, size = %8.2f MB\n", __func__, name, aligned_size / 1024.0 / 1024.0);
+            return false;
+        } else {
+            fprintf(stderr, "%s: allocated '%-16s' buffer, size = %8.2f MB\n", __func__, name, aligned_size / 1024.0 / 1024.0);
+        }
 
         ++ctx->n_buffers;
-
-        fprintf(stderr, "%s: allocated '%-16s' buffer, size = %8.2f MB\n", __func__, name, size / 1024.0 / 1024.0);
     }
 
     return true;
