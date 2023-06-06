@@ -10,6 +10,7 @@ struct tokens_array {
 
 struct myllama_container {
     void* ctx;
+
     void* gptparams;
     void* ctxparams;
     void* session_tokens;

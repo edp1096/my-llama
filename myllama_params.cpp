@@ -22,6 +22,29 @@ void init_gpt_params(void* container) {
     // gptparams->prompt = "The quick brown fox ";
 
     // gptparams->prompt.insert(0, 1, ' ');
+
+    // running setting
+    gptparams->seed = -1;         // RNG seed
+    gptparams->n_threads = 4;     // CPU threads
+    gptparams->n_predict = -1;    // new tokens to predict
+    gptparams->n_ctx = 512;       // context size
+    gptparams->n_batch = 512;     // batch size for prompt processing (must be >=32 to use BLAS)
+    gptparams->n_keep = 0;        // number of tokens to keep from initial prompt
+    gptparams->n_gpu_layers = 0;  // number of layers to store in VRAM
+
+    // sampling parameters
+    gptparams->top_k = 40;                 // <= 0 to use vocab size
+    gptparams->top_p = 0.95f;              // 1.0 = disabled
+    gptparams->tfs_z = 1.00f;              // 1.0 = disabled
+    gptparams->typical_p = 1.00f;          // 1.0 = disabled
+    gptparams->temp = 0.80f;               // 1.0 = disabled
+    gptparams->repeat_penalty = 1.10f;     // 1.0 = disabled
+    gptparams->repeat_last_n = 64;         // last n tokens to penalize (0 = disable penalty, -1 = context size)
+    gptparams->frequency_penalty = 0.00f;  // 0.0 = disabled
+    gptparams->presence_penalty = 0.00f;   // 0.0 = disabled
+    gptparams->mirostat = 0;               // 0 = disabled, 1 = mirostat, 2 = mirostat 2.0
+    gptparams->mirostat_tau = 5.00f;       // target entropy
+    gptparams->mirostat_eta = 0.10f;       // learning rate
 }
 
 void init_context_params(void* container) {
