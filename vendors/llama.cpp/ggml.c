@@ -2,7 +2,10 @@
 #define _GNU_SOURCE
 
 #include "ggml.h"
-#include "ggml-quants-k.h"
+
+#ifdef GGML_USE_K_QUANTS
+#include "k_quants.h"
+#endif
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include <malloc.h> // using malloc.h with MSC/MINGW
@@ -1580,46 +1583,48 @@ static const quantize_fns_t quantize_fns[GGML_TYPE_COUNT] = {
         .vec_dot_q                = NULL,   // TODO
         .vec_dot_type             = GGML_TYPE_Q8_1,
     },
+#ifdef GGML_USE_K_QUANTS
     [GGML_TYPE_Q2_K] = {
-        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q2_k,
-        .quantize_row_q           = quantize_row_q2_k,
-        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q2_k_reference,
-        .quantize_row_q_dot       = quantize_row_q8_k,
-        .vec_dot_q                = ggml_vec_dot_q2_k_q8_k,
+        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q2_K,
+        .quantize_row_q           = quantize_row_q2_K,
+        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q2_K_reference,
+        .quantize_row_q_dot       = quantize_row_q8_K,
+        .vec_dot_q                = ggml_vec_dot_q2_K_q8_K,
         .vec_dot_type             = GGML_TYPE_Q8_K,
     },
     [GGML_TYPE_Q3_K] = {
-        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q3_k,
-        .quantize_row_q           = quantize_row_q3_k,
-        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q3_k_reference,
-        .quantize_row_q_dot       = quantize_row_q8_k,
-        .vec_dot_q                = ggml_vec_dot_q3_k_q8_k,
+        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q3_K,
+        .quantize_row_q           = quantize_row_q3_K,
+        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q3_K_reference,
+        .quantize_row_q_dot       = quantize_row_q8_K,
+        .vec_dot_q                = ggml_vec_dot_q3_K_q8_K,
         .vec_dot_type             = GGML_TYPE_Q8_K,
     },
     [GGML_TYPE_Q4_K] = {
-        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q4_k,
-        .quantize_row_q           = quantize_row_q4_k,
-        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q4_k_reference,
-        .quantize_row_q_dot       = quantize_row_q8_k,
-        .vec_dot_q                = ggml_vec_dot_q4_k_q8_k,
+        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q4_K,
+        .quantize_row_q           = quantize_row_q4_K,
+        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q4_K_reference,
+        .quantize_row_q_dot       = quantize_row_q8_K,
+        .vec_dot_q                = ggml_vec_dot_q4_K_q8_K,
         .vec_dot_type             = GGML_TYPE_Q8_K,
     },
     [GGML_TYPE_Q5_K] = {
-        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q5_k,
-        .quantize_row_q           = quantize_row_q5_k,
-        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q5_k_reference,
-        .quantize_row_q_dot       = quantize_row_q8_k,
-        .vec_dot_q                = ggml_vec_dot_q5_k_q8_k,
+        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q5_K,
+        .quantize_row_q           = quantize_row_q5_K,
+        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q5_K_reference,
+        .quantize_row_q_dot       = quantize_row_q8_K,
+        .vec_dot_q                = ggml_vec_dot_q5_K_q8_K,
         .vec_dot_type             = GGML_TYPE_Q8_K,
     },
     [GGML_TYPE_Q6_K] = {
-        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q6_k,
-        .quantize_row_q           = quantize_row_q6_k,
-        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q6_k_reference,
-        .quantize_row_q_dot       = quantize_row_q8_k,
-        .vec_dot_q                = ggml_vec_dot_q6_k_q8_k,
+        .dequantize_row_q         = (dequantize_row_q_t) dequantize_row_q6_K,
+        .quantize_row_q           = quantize_row_q6_K,
+        .quantize_row_q_reference = (quantize_row_q_t) quantize_row_q6_K_reference,
+        .quantize_row_q_dot       = quantize_row_q8_K,
+        .vec_dot_q                = ggml_vec_dot_q6_K_q8_K,
         .vec_dot_type             = GGML_TYPE_Q8_K,
     },
+#endif
 };
 
 // For internal test use
@@ -3499,12 +3504,14 @@ static const int GGML_BLCK_SIZE[GGML_TYPE_COUNT] = {
     [GGML_TYPE_Q5_1] = QK5_1,
     [GGML_TYPE_Q8_0] = QK8_0,
     [GGML_TYPE_Q8_1] = QK8_1,
+#ifdef GGML_USE_K_QUANTS
     [GGML_TYPE_Q2_K] = QK_K,
     [GGML_TYPE_Q3_K] = QK_K,
     [GGML_TYPE_Q4_K] = QK_K,
     [GGML_TYPE_Q5_K] = QK_K,
     [GGML_TYPE_Q6_K] = QK_K,
     [GGML_TYPE_Q8_K] = QK_K,
+#endif
     [GGML_TYPE_I8]   = 1,
     [GGML_TYPE_I16]  = 1,
     [GGML_TYPE_I32]  = 1,
@@ -3520,12 +3527,14 @@ static const size_t GGML_TYPE_SIZE[GGML_TYPE_COUNT] = {
     [GGML_TYPE_Q5_1] = sizeof(block_q5_1),
     [GGML_TYPE_Q8_0] = sizeof(block_q8_0),
     [GGML_TYPE_Q8_1] = sizeof(block_q8_1),
-    [GGML_TYPE_Q2_K] = sizeof(block_q2_k),
-    [GGML_TYPE_Q3_K] = sizeof(block_q3_k),
-    [GGML_TYPE_Q4_K] = sizeof(block_q4_k),
-    [GGML_TYPE_Q5_K] = sizeof(block_q5_k),
-    [GGML_TYPE_Q6_K] = sizeof(block_q6_k),
-    [GGML_TYPE_Q8_K] = sizeof(block_q8_k),
+#ifdef GGML_USE_K_QUANTS
+    [GGML_TYPE_Q2_K] = sizeof(block_q2_K),
+    [GGML_TYPE_Q3_K] = sizeof(block_q3_K),
+    [GGML_TYPE_Q4_K] = sizeof(block_q4_K),
+    [GGML_TYPE_Q5_K] = sizeof(block_q5_K),
+    [GGML_TYPE_Q6_K] = sizeof(block_q6_K),
+    [GGML_TYPE_Q8_K] = sizeof(block_q8_K),
+#endif
     [GGML_TYPE_I8]   = sizeof(int8_t),
     [GGML_TYPE_I16]  = sizeof(int16_t),
     [GGML_TYPE_I32]  = sizeof(int32_t),
@@ -3542,12 +3551,12 @@ static const char * GGML_TYPE_NAME[GGML_TYPE_COUNT] = {
     [GGML_TYPE_Q5_1] = "q5_1",
     [GGML_TYPE_Q8_0] = "q8_0",
     [GGML_TYPE_Q8_1] = "q8_1",
-    [GGML_TYPE_Q2_K] = "q2_k",
-    [GGML_TYPE_Q3_K] = "q3_k",
-    [GGML_TYPE_Q4_K] = "q4_k",
-    [GGML_TYPE_Q5_K] = "q5_k",
-    [GGML_TYPE_Q6_K] = "q6_k",
-    [GGML_TYPE_Q8_K] = "q8_k",
+    [GGML_TYPE_Q2_K] = "q2_K",
+    [GGML_TYPE_Q3_K] = "q3_K",
+    [GGML_TYPE_Q4_K] = "q4_K",
+    [GGML_TYPE_Q5_K] = "q5_K",
+    [GGML_TYPE_Q6_K] = "q6_K",
+    [GGML_TYPE_Q8_K] = "q8_K",
     [GGML_TYPE_I8]   = "i8",
     [GGML_TYPE_I16]  = "i16",
     [GGML_TYPE_I32]  = "i32",
@@ -3727,26 +3736,6 @@ struct ggml_context_container {
 };
 
 //
-// compute types
-//
-
-enum ggml_task_type {
-    GGML_TASK_INIT = 0,
-    GGML_TASK_COMPUTE,
-    GGML_TASK_FINALIZE,
-};
-
-struct ggml_compute_params {
-    enum ggml_task_type type;
-
-    int ith, nth;
-
-    // work buffer for all threads
-    size_t wsize;
-    void * wdata;
-};
-
-//
 // ggml state
 //
 
@@ -3819,6 +3808,12 @@ size_t ggml_nbytes(const struct ggml_tensor * tensor) {
     // is enough, but just in case, adding the second part
 
     return MAX(tensor->ne[3]*tensor->nb[3], (ggml_nelements(tensor)*GGML_TYPE_SIZE[tensor->type])/GGML_BLCK_SIZE[tensor->type]);
+}
+
+size_t ggml_nbytes_split(const struct ggml_tensor * tensor, int nrows_split) {
+    static_assert(GGML_MAX_DIMS == 4, "GGML_MAX_DIMS is not 4 - update this function");
+
+    return (nrows_split*tensor->ne[0]*GGML_TYPE_SIZE[tensor->type])/GGML_BLCK_SIZE[tensor->type];
 }
 
 int ggml_blck_size(enum ggml_type type) {
@@ -4248,6 +4243,7 @@ struct ggml_tensor * ggml_new_tensor_impl(
         /*.perf_time_us =*/ 0,
         /*.data         =*/ (data == NULL && !ctx->no_alloc) ? (void *)(result + 1) : data,
         /*.name         =*/ { 0 },
+        /*.extra        =*/ NULL,
         /*.pad          =*/ { 0 },
     };
 
@@ -8265,15 +8261,8 @@ static void ggml_compute_forward_mul_f32(
     const int ith = params->ith;
     const int nth = params->nth;
 
-#ifdef GGML_USE_CUBLAS
-    if (src1->backend == GGML_BACKEND_CUDA) {
-        if (ith == 0) {
-            ggml_cuda_mul(src0, src1, dst);
-        }
-        return;
-    }
-#elif defined(GGML_USE_CLBLAST)
-    if (src1->backend == GGML_BACKEND_CL) {
+#ifdef GGML_USE_CLBLAST
+    if (src1->backend == GGML_BACKEND_GPU) {
         if (ith == 0) {
             ggml_cl_mul(src0, src1, dst);
         }
@@ -9713,14 +9702,7 @@ static void ggml_compute_forward_mul_mat_f32(
     // nb01 >= nb00 - src0 is not transposed
     //   compute by src0 rows
 
-#if defined(GGML_USE_CUBLAS)
-    if (ggml_cuda_can_mul_mat(src0, src1, dst)) {
-        if (params->ith == 0 && params->type == GGML_TASK_COMPUTE) {
-            ggml_cuda_mul_mat(src0, src1, dst, params->wdata, params->wsize);
-        }
-        return;
-    }
-#elif defined(GGML_USE_CLBLAST)
+#if defined(GGML_USE_CLBLAST)
     if (ggml_cl_can_mul_mat(src0, src1, dst)) {
         if (params->ith == 0 && params->type == GGML_TASK_COMPUTE) {
             ggml_cl_mul_mat(src0, src1, dst, params->wdata, params->wsize);
@@ -9885,14 +9867,7 @@ static void ggml_compute_forward_mul_mat_f16_f32(
     // nb01 >= nb00 - src0 is not transposed
     //   compute by src0 rows
 
-#if defined(GGML_USE_CUBLAS)
-    if (ggml_cuda_can_mul_mat(src0, src1, dst)) {
-        if (params->ith == 0 && params->type == GGML_TASK_COMPUTE) {
-            ggml_cuda_mul_mat(src0, src1, dst, params->wdata, params->wsize);
-        }
-        return;
-    }
-#elif defined(GGML_USE_CLBLAST)
+#if defined(GGML_USE_CLBLAST)
     if (ggml_cl_can_mul_mat(src0, src1, dst)) {
         if (params->ith == 0 && params->type == GGML_TASK_COMPUTE) {
             ggml_cl_mul_mat(src0, src1, dst, params->wdata, params->wsize);
@@ -10097,14 +10072,7 @@ static void ggml_compute_forward_mul_mat_q_f32(
     // nb01 >= nb00 - src0 is not transposed
     //   compute by src0 rows
 
-#if defined(GGML_USE_CUBLAS)
-    if (ggml_cuda_can_mul_mat(src0, src1, dst)) {
-        if (params->ith == 0 && params->type == GGML_TASK_COMPUTE) {
-            ggml_cuda_mul_mat(src0, src1, dst, params->wdata, params->wsize);
-        }
-        return;
-    }
-#elif defined(GGML_USE_CLBLAST)
+#if defined(GGML_USE_CLBLAST)
     if (ggml_cl_can_mul_mat(src0, src1, dst)) {
         if (params->ith == 0 && params->type == GGML_TASK_COMPUTE) {
             ggml_cl_mul_mat(src0, src1, dst, params->wdata, params->wsize);
@@ -13057,6 +13025,15 @@ static void ggml_compute_forward_map_binary(
 static void ggml_compute_forward(struct ggml_compute_params * params, struct ggml_tensor * tensor) {
     GGML_ASSERT(params);
 
+#ifdef GGML_USE_CUBLAS
+    bool skip_cpu = ggml_cuda_compute_forward(params, tensor);
+    if (skip_cpu) {
+        return;
+    }
+    GGML_ASSERT(tensor->src0->backend == GGML_BACKEND_CPU);
+    GGML_ASSERT(tensor->src1 == NULL || tensor->src1->backend == GGML_BACKEND_CPU);
+#endif // GGML_USE_CUBLAS
+
     switch (tensor->op) {
         case GGML_OP_DUP:
             {
@@ -14363,7 +14340,6 @@ void ggml_graph_compute(struct ggml_context * ctx, struct ggml_cgraph * cgraph) 
                         if (ggml_cuda_can_mul_mat(node->src0, node->src1, node)) {
                             node->n_tasks = 1; // TODO: this actually is doing nothing
                                                 //       the threads are still spinning
-                            cur = ggml_cuda_mul_mat_get_wsize(node->src0, node->src1, node);
                         }
                         else
 #elif defined(GGML_USE_CLBLAST)
@@ -14753,12 +14729,12 @@ static void ggml_graph_export_leaf(const struct ggml_tensor * tensor, FILE * fou
     const int64_t * ne = tensor->ne;
     const size_t  * nb = tensor->nb;
 
-    fprintf(fout, "%-6s %-12s %8d %8jd %jd %jd %jd %16zu %16zu %16zu %16zu %16p %32s\n",
+    fprintf(fout, "%-6s %-12s %8d %8d %d %d %d %16zu %16zu %16zu %16zu %16p %32s\n",
             ggml_type_name(tensor->type),
             ggml_op_name  (tensor->op),
             tensor->n_dims,
-            ne[0], ne[1], ne[2], ne[3],
-            nb[0], nb[1], nb[2], nb[3],
+            (int) ne[0], (int) ne[1], (int) ne[2], (int) ne[3],
+                  nb[0],       nb[1],       nb[2],       nb[3],
             tensor->data,
             tensor->name);
 }
@@ -14767,13 +14743,13 @@ static void ggml_graph_export_node(const struct ggml_tensor * tensor, const char
     const int64_t * ne = tensor->ne;
     const size_t  * nb = tensor->nb;
 
-    fprintf(fout, "%-6s %-6s %-12s %8d %jd %jd %jd %jd %16zu %16zu %16zu %16zu %8d %16p %32s\n",
+    fprintf(fout, "%-6s %-6s %-12s %8d %d %d %d %d %16zu %16zu %16zu %16zu %8d %16p %32s\n",
             arg,
             ggml_type_name(tensor->type),
             ggml_op_name  (tensor->op),
             tensor->n_dims,
-            ne[0], ne[1], ne[2], ne[3],
-            nb[0], nb[1], nb[2], nb[3],
+            (int) ne[0], (int) ne[1], (int) ne[2], (int) ne[3],
+                  nb[0],       nb[1],       nb[2],       nb[3],
             tensor->n_tasks,
             tensor->data,
             tensor->name);
@@ -14796,11 +14772,11 @@ void ggml_graph_export(const struct ggml_cgraph * cgraph, const char * fname) {
         FILE * fout = stdout;
 
         fprintf(fout, "\n");
-        fprintf(fout, "%-16s %8x\n",  "magic",   GGML_FILE_MAGIC);
-        fprintf(fout, "%-16s %8d\n",  "version", GGML_FILE_VERSION);
-        fprintf(fout, "%-16s %8d\n",  "leafs",   cgraph->n_leafs);
-        fprintf(fout, "%-16s %8d\n",  "nodes",   cgraph->n_nodes);
-        fprintf(fout, "%-16s %8ju\n", "eval",    size_eval);
+        fprintf(fout, "%-16s %8x\n", "magic",   GGML_FILE_MAGIC);
+        fprintf(fout, "%-16s %8d\n", "version", GGML_FILE_VERSION);
+        fprintf(fout, "%-16s %8d\n", "leafs",   cgraph->n_leafs);
+        fprintf(fout, "%-16s %8d\n", "nodes",   cgraph->n_nodes);
+        fprintf(fout, "%-16s %8d\n", "eval",    (int) size_eval);
 
         // header
         fprintf(fout, "\n");
@@ -16282,36 +16258,38 @@ size_t ggml_quantize_chunk(enum ggml_type type, const float * src, void * dst, i
                 block_q8_0 * block = (block_q8_0*)dst + start / QK8_0;
                 result = ggml_quantize_q8_0(src + start, block, n, n, hist);
             } break;
+#ifdef GGML_USE_K_QUANTS
         case GGML_TYPE_Q2_K:
             {
                 GGML_ASSERT(start % QK_K == 0);
-                block_q2_k * block = (block_q2_k*)dst + start / QK_K;
-                result = ggml_quantize_q2_k(src + start, block, n, n, hist);
+                block_q2_K * block = (block_q2_K*)dst + start / QK_K;
+                result = ggml_quantize_q2_K(src + start, block, n, n, hist);
             } break;
         case GGML_TYPE_Q3_K:
             {
                 GGML_ASSERT(start % QK_K == 0);
-                block_q3_k * block = (block_q3_k*)dst + start / QK_K;
-                result = ggml_quantize_q3_k(src + start, block, n, n, hist);
+                block_q3_K * block = (block_q3_K*)dst + start / QK_K;
+                result = ggml_quantize_q3_K(src + start, block, n, n, hist);
             } break;
         case GGML_TYPE_Q4_K:
             {
                 GGML_ASSERT(start % QK_K == 0);
-                block_q4_k * block = (block_q4_k*)dst + start / QK_K;
-                result = ggml_quantize_q4_k(src + start, block, n, n, hist);
+                block_q4_K * block = (block_q4_K*)dst + start / QK_K;
+                result = ggml_quantize_q4_K(src + start, block, n, n, hist);
             } break;
         case GGML_TYPE_Q5_K:
             {
                 GGML_ASSERT(start % QK_K == 0);
-                block_q5_k * block = (block_q5_k*)dst + start / QK_K;
-                result = ggml_quantize_q5_k(src + start, block, n, n, hist);
+                block_q5_K * block = (block_q5_K*)dst + start / QK_K;
+                result = ggml_quantize_q5_K(src + start, block, n, n, hist);
             } break;
         case GGML_TYPE_Q6_K:
             {
                 GGML_ASSERT(start % QK_K == 0);
-                block_q6_k * block = (block_q6_k*)dst + start / QK_K;
-                result = ggml_quantize_q6_k(src + start, block, n, n, hist);
+                block_q6_K * block = (block_q6_K*)dst + start / QK_K;
+                result = ggml_quantize_q6_K(src + start, block, n, n, hist);
             } break;
+#endif
         default:
             assert(false);
     }
