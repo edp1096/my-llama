@@ -2,7 +2,7 @@
 
 # common
 # llama.cpp compile error bdbda1b1 so always copy
-cp -f llama.cpp_mod/* vendors/llama.cpp/
+# cp -f llama.cpp_mod/* vendors/llama.cpp/
 
 if [ "$1" = "cpu" ] || [ -z "$1" ]; then
     # cpu
