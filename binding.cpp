@@ -34,13 +34,18 @@ struct llama_context* llama_init_from_gpt_params(const gpt_params& params) {
     auto lparams = llama_context_default_params();
 
     lparams.n_ctx = params.n_ctx;
+    lparams.n_batch = params.n_batch;
     lparams.n_gpu_layers = params.n_gpu_layers;
+    lparams.main_gpu = params.main_gpu;
+    memcpy(lparams.tensor_split, params.tensor_split, LLAMA_MAX_DEVICES * sizeof(float));
     lparams.seed = params.seed;
     lparams.f16_kv = params.memory_f16;
     lparams.use_mmap = params.use_mmap;
     lparams.use_mlock = params.use_mlock;
     lparams.logits_all = params.perplexity;
     lparams.embedding = params.embedding;
+
+    printf("Model: %s\n", params.model.c_str());
 
     llama_context* lctx = llama_init_from_file(params.model.c_str(), lparams);
 
@@ -72,12 +77,10 @@ bool bd_load_model(void* container) {
         params->seed = time(NULL);
     }
 
-    /*
-     ggml or opencl may have a bug when offloading output layer to GPU
-     Hence, set 32 instead of 33 for now
-     */
     params->n_gpu_layers = 32;
     printf("n_gpu_layers: %d\n", params->n_gpu_layers);
+
+    llama_init_backend();
 
     llama_context* ctx = llama_init_from_gpt_params(*params);
     if (ctx == nullptr) {
