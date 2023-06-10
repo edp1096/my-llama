@@ -61,7 +61,7 @@ if ($args[0] -eq "clblast") {
 
 if ($args[0] -eq "cuda") {
     # llama.cpp compile error bdbda1b1 so always copy
-    cp -f llama.cpp_mod/* vendors/llama.cpp/
+    # cp -f llama.cpp_mod/* vendors/llama.cpp/
 
     $dllName="llama_cu.dll"
     $defName="llama_cu.def"
