@@ -1,4 +1,4 @@
-git restore vendors
+# git restore vendors
 
 # <# cpu #>
 # ./clean.ps1
@@ -32,7 +32,7 @@ git restore vendors
 
 
 <# cuda - cublas #>
-./clean.ps1
+# ./clean.ps1
 ./build_lib.ps1 cuda
 
 cd cmd

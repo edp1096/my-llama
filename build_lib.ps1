@@ -100,7 +100,7 @@ g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./v
 ar src $libBindingName myllama_llama_api.o binding.o
 
 
-# <# Restore overwritten vendors/llama.cpp_mod for clblast/cuda to original commit #>
-if ($args[0] -eq "clblast" -or $args[0] -eq "cuda") {
-    git restore vendors
-}
+# # <# Restore overwritten vendors/llama.cpp_mod for clblast/cuda to original commit #>
+# if ($args[0] -eq "clblast" -or $args[0] -eq "cuda") {
+#     git restore vendors
+# }
