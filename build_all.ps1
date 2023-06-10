@@ -36,7 +36,8 @@
 ./build_lib.ps1 cuda
 
 cd cmd
-go build -tags cuda -trimpath -ldflags="-w -s" -o ../bin/run-myllama_cu.exe
+# go build -tags cuda -trimpath -ldflags="-w -s" -o ../bin/run-myllama_cu.exe
+go build -tags cuda -gcflags "all=-N -l" -o ../bin/run-myllama_cu.exe
 cp -f ../llama_cu.dll ../bin/
 cd ..
 

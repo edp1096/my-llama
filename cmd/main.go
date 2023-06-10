@@ -434,6 +434,8 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	os.Setenv("GGML_CUDA_NO_PINNED", "1")
+
 	cpuPhysicalNUM, _ = cpu.Counts(false)
 	cpuLogicalNUM, _ = cpu.Counts(true)
 
