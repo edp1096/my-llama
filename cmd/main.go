@@ -96,7 +96,7 @@ func setQueryParams(l *llama.LLama, req *http.Request) {
 }
 
 func evalAndResponse(l *llama.LLama, conn *ws.Conn, handler ws.Codec) error {
-	remainCOUNT := l.GetRemainCount()
+	remainCOUNT := l.GetNumRemain()
 
 	responseBufferBytes := []byte{}
 	responseBuffer := ""
@@ -152,7 +152,7 @@ END:
 		}
 		l.DropBackUserInput()
 
-		remainCOUNT = l.GetRemainCount()
+		remainCOUNT = l.GetNumRemain()
 	}
 
 	err := handler.Send(conn, "$$__RESPONSE_PREDICT__$$\n$$__SEPARATOR__$$\n"+"\n$$__RESPONSE_DONE__$$\n")
@@ -161,7 +161,7 @@ END:
 		return err
 	}
 
-	l.PrintTimings()
+	l.LlamaApiPrintTimings()
 
 	return nil
 }
@@ -173,7 +173,7 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 			fmt.Println(err.Error())
 			return
 		}
-		defer l.FreeALL()
+		defer l.Free()
 		defer conn.Close()
 
 		l.Threads = threads

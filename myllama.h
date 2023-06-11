@@ -45,9 +45,25 @@ struct myllama_container {
 
 void* init_container();
 
+void set_model_path(void* container, char* path);
 void allocate_tokens(void* container);
 int* get_tokens(void* container);
 void prepare_candidates(void* container, int n_vocab);
+
+/* Getters */
+int get_n_remain(void* container);
+int get_embd_size(void* container);
+int get_embed_id(void* container, int index);
+char* get_embed_string(void* container, int id);
+
+/* Setters */
+void set_is_interacting(void* container, bool is_interacting);
+
+/* Misc. */
+void save_state(void* container, char* fname);
+void load_state(void* container, char* fname);
+void save_session(void* container, char* fname);
+void load_session(void* container, char* fname);
 
 #ifdef __cplusplus
 }

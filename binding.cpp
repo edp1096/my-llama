@@ -440,35 +440,11 @@ bool bd_wait_or_continue(void* container) {
     return true;
 }
 
-int bd_get_embed_id(void* container, int index) {
-    myllama_container* c = (myllama_container*)container;
-    return ((std::vector<llama_token>*)c->embd)->at(index);
-}
-
-char* bd_get_embed_string(void* container, int id) {
-    myllama_container* c = (myllama_container*)container;
-    return const_cast<char*>(llama_token_to_str((llama_context*)c->ctx, id));
-}
-
-/* Frees */
-void bd_free_params(void* container) {
-    gpt_params* params = (gpt_params*)((myllama_container*)container)->gptparams;
-    if (params != NULL) {
-        delete params;
-    }
-}
-
-void bd_free_model(void* container) {
-    myllama_container* c = (myllama_container*)container;
-    if ((llama_context*)c->ctx != NULL) {
-        llama_free((llama_context*)c->ctx);
-    }
-}
+// int bd_get_embed_id(void* container, int index) {}
+// char* bd_get_embed_string(void* container, int id) {}
 
 /* Getters */
-int bd_get_n_remain(void* container) {
-    return ((myllama_container*)container)->n_remain;
-}
+// int bd_get_n_remain(void* container) {}
 
 int bd_get_params_n_predict(void* container) {
     return ((gpt_params*)((myllama_container*)container)->gptparams)->n_predict;
@@ -478,9 +454,7 @@ bool bd_get_noecho(void* container) {
     return ((myllama_container*)container)->input_noecho;
 }
 
-int bd_get_embd_size(void* container) {
-    return (int)((std::vector<llama_token>*)((myllama_container*)container)->embd)->size();
-}
+// int bd_get_embd_size(void* container) {}
 
 int bd_get_embd_inp_size(void* container) {
     return (int)((std::vector<llama_token>*)((myllama_container*)container)->embd_inp)->size();
@@ -526,17 +500,13 @@ void bd_set_params_interactive_first(void* container) {
     ((gpt_params*)((myllama_container*)container)->gptparams)->interactive_first = interactive;
 }
 
-void bd_set_is_interacting(void* container, bool is_interacting) {
-    ((myllama_container*)container)->is_interacting = is_interacting;
-}
+// void bd_set_is_interacting(void* container, bool is_interacting) {}
 
 void bd_set_n_remain(void* container, int n_predict) {
     ((myllama_container*)container)->n_remain = n_predict;
 }
 
-void bd_set_model_path(void* container, char* path) {
-    ((gpt_params*)((myllama_container*)container)->gptparams)->model = path;
-}
+// void bd_set_model_path(void* container, char* path) {}
 
 void bd_set_params_antiprompt(void* container, char* antiprompt) {
     ((gpt_params*)((myllama_container*)container)->gptparams)->antiprompt.push_back(strdup(antiprompt));
@@ -588,79 +558,6 @@ void bd_set_params_repeat_penalty(void* container, float value) {
     ((gpt_params*)((myllama_container*)container)->gptparams)->repeat_penalty = value;
 }
 
-/* State dump */
-void bd_save_state(void* container, char* fname) {
-    myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
-    size_t ctx_size = llama_get_state_size(ctx);
-    uint8_t* state_mem = new uint8_t[ctx_size];
-    llama_copy_state_data(ctx, state_mem);
-
-    FILE* fp_write = fopen(fname, "wb");
-    fwrite(&ctx_size, 1, sizeof(size_t), fp_write);
-    fwrite(state_mem, 1, ctx_size, fp_write);
-    fwrite(&c->last_n_tokens, 1, sizeof(int), fp_write);
-    fwrite(&c->n_past, 1, sizeof(int), fp_write);
-    fclose(fp_write);
-
-    delete[] state_mem;
-}
-
-void bd_load_state(void* container, char* fname) {
-    myllama_container* c = (myllama_container*)container;
-    // llama_context* ctx = (llama_context*)c->ctx;
-
-    FILE* fp_read = fopen(fname, "rb");
-    size_t ctx_size = llama_get_state_size((llama_context*)c->ctx);
-
-    size_t state_size;
-    uint8_t* state_mem = new uint8_t[ctx_size];
-    fread(&state_size, 1, sizeof(size_t), fp_read);
-
-    if (state_size != ctx_size) {
-        printf("Error: state size mismatch. Expected %zu, got %zu\n", ctx_size, state_size);
-    }
-
-    fread(state_mem, 1, state_size, fp_read);
-    fread(&c->last_n_tokens, 1, sizeof(int), fp_read);
-    fread(&c->n_past, 1, sizeof(int), fp_read);
-    fclose(fp_read);
-
-    llama_set_state_data((llama_context*)c->ctx, state_mem);
-    delete[] state_mem;
-}
-
-void bd_save_session(void* container, char* fname) {
-    myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
-    llama_save_session_file(ctx, fname, ((std::vector<llama_token>*)c->session_tokens)->data(), ((std::vector<llama_token>*)c->session_tokens)->size());
-}
-
-void bd_load_session(void* container, char* fname) {
-    myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
-    // fopen to check for existing session
-    FILE* fp = std::fopen(fname, "rb");
-    if (fp != NULL) {
-        std::fclose(fp);
-
-        ((std::vector<llama_token>*)c->session_tokens)->resize(((gpt_params*)c->gptparams)->n_ctx);
-        size_t n_token_count_out = 0;
-        if (!llama_load_session_file(ctx, fname, ((std::vector<llama_token>*)c->session_tokens)->data(), ((std::vector<llama_token>*)c->session_tokens)->capacity(), &n_token_count_out)) {
-            fprintf(stderr, "%s: error: failed to load session file '%s'\n", __func__, fname);
-            return;
-        }
-        ((std::vector<llama_token>*)c->session_tokens)->resize(n_token_count_out);
-
-        fprintf(stderr, "%s: loaded a session with prompt size of %d tokens\n", __func__, (int)((std::vector<llama_token>*)c->session_tokens)->size());
-    } else {
-        fprintf(stderr, "%s: session file does not exist, will create\n", __func__);
-    }
-}
-
 /* Others */
 bool bd_check_prompt_or_continue(void* container) {
     bool result = true;
@@ -689,11 +586,4 @@ void bd_dropback_user_input(void* container) {
     if (c->n_remain <= 0 && ((gpt_params*)c->gptparams)->n_predict != -1) {
         c->n_remain = ((gpt_params*)c->gptparams)->n_predict;
     }
-}
-
-void bd_print_timings(void* container) {
-    myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
-    llama_print_timings(ctx);
 }
