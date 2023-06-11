@@ -49,8 +49,11 @@ void llama_api_free(void* container) {
 }
 
 int llama_api_model_quantize(char* fname_inp, char* fname_out, int ftype_int, int nthread) {
-    llama_ftype ftype = (llama_ftype)ftype_int;
-    return llama_model_quantize(fname_inp, fname_out, ftype, nthread);
+    llama_model_quantize_params params = llama_model_quantize_default_params();
+    params.ftype = (llama_ftype)ftype_int;
+    params.nthread = nthread;
+
+    return llama_model_quantize(fname_inp, fname_out, &params);
 }
 
 int llama_api_get_kv_cache_token_count(void* container) {

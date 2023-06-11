@@ -1,42 +1,43 @@
-git restore vendors
+# git restore vendors
 
-<# cpu #>
-./clean.ps1
-./build_lib.ps1
+# <# cpu #>
+# ./clean.ps1
+# ./build_lib.ps1
 
-cd cmd
-go build -tags cpu -trimpath -ldflags="-w -s" -o ../bin/run-myllama_cpu.exe
-cp -f ../llama.dll ../bin/
-cd ..
+# cd cmd
+# go build -tags cpu -trimpath -ldflags="-w -s" -o ../bin/run-myllama_cpu.exe
+# cp -f ../llama.dll ../bin/
+# cd ..
 
-cd bin
-tar.exe -a -c -f my-llama_dll_cpu.zip llama.dll
-tar.exe -a -c -f my-llama_cpu.zip run-myllama_cpu.exe llama.dll
-cd ..
+# cd bin
+# tar.exe -a -c -f my-llama_dll_cpu.zip llama.dll
+# tar.exe -a -c -f my-llama_cpu.zip run-myllama_cpu.exe llama.dll
+# cd ..
 
 
-<# clblast #>
-./clean.ps1
-./build_lib.ps1 clblast
+# <# clblast #>
+# ./clean.ps1
+# ./build_lib.ps1 clblast
 
-cd cmd
-go build -tags clblast -trimpath -ldflags="-w -s" -o ../bin/run-myllama_cl.exe
-cp -f ../llama_cl.dll ../bin/
-cp -f ../openclblast/lib/clblast.dll ../bin/
-cd ..
+# cd cmd
+# go build -tags clblast -trimpath -ldflags="-w -s" -o ../bin/run-myllama_cl.exe
+# cp -f ../llama_cl.dll ../bin/
+# cp -f ../openclblast/lib/clblast.dll ../bin/
+# cd ..
 
-cd bin
-tar.exe -a -c -f my-llama_dll_cl.zip llama_cl.dll clblast.dll
-tar.exe -a -c -f my-llama_cl.zip run-myllama_cl.exe llama_cl.dll clblast.dll
-cd ..
+# cd bin
+# tar.exe -a -c -f my-llama_dll_cl.zip llama_cl.dll clblast.dll
+# tar.exe -a -c -f my-llama_cl.zip run-myllama_cl.exe llama_cl.dll clblast.dll
+# cd ..
 
 
 <# cuda - cublas #>
-./clean.ps1
+# ./clean.ps1
 ./build_lib.ps1 cuda
 
 cd cmd
-go build -tags cuda -trimpath -ldflags="-w -s" -o ../bin/run-myllama_cu.exe
+# go build -tags cuda -trimpath -ldflags="-w -s" -o ../bin/run-myllama_cu.exe
+go build -tags cuda -gcflags "all=-N -l" -o ../bin/run-myllama_cu.exe
 cp -f ../llama_cu.dll ../bin/
 cd ..
 

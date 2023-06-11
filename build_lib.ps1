@@ -13,7 +13,7 @@ $cmakeUseCUDA="OFF"
 
 <# All #>
 # llama.cpp compile error bdbda1b1 so always copy
-cp -f llama.cpp_mod/* vendors/llama.cpp/
+# cp -f llama.cpp_mod/* vendors/llama.cpp/
 
 <# Prepare clblast and opencl #>
 if ($args[0] -eq "clblast") {
@@ -61,7 +61,7 @@ if ($args[0] -eq "clblast") {
 
 if ($args[0] -eq "cuda") {
     # llama.cpp compile error bdbda1b1 so always copy
-    cp -f llama.cpp_mod/* vendors/llama.cpp/
+    # cp -f llama.cpp_mod/* vendors/llama.cpp/
 
     $dllName="llama_cu.dll"
     $defName="llama_cu.def"
@@ -79,9 +79,11 @@ mkdir -f build >$null
 cd build
 
 cmake .. -DCMAKE_PREFIX_PATH="$cmakePrefixPath" -DLLAMA_CUBLAS="$cmakeUseCUDA" -DLLAMA_CLBLAST="$cmakeUseCLBLAST" -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
-cmake --build . --config Release
+# cmake --build . --config Release
+cmake --build . --config Debug
 
-cp bin/Release/$llamaCppSharedLibName.$llamaCppSharedLibExt ../../../$dllName
+# cp bin/Release/$llamaCppSharedLibName.$llamaCppSharedLibExt ../../../$dllName
+cp bin/Debug/$llamaCppSharedLibName.$llamaCppSharedLibExt ../../../$dllName
 
 cd ../../..
 
@@ -100,7 +102,7 @@ g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./v
 ar src $libBindingName myllama_llama_api.o binding.o
 
 
-# <# Restore overwritten vendors/llama.cpp_mod for clblast/cuda to original commit #>
-if ($args[0] -eq "clblast" -or $args[0] -eq "cuda") {
-    git restore vendors
-}
+# # <# Restore overwritten vendors/llama.cpp_mod for clblast/cuda to original commit #>
+# if ($args[0] -eq "clblast" -or $args[0] -eq "cuda") {
+#     git restore vendors
+# }

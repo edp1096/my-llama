@@ -6,23 +6,6 @@ void init_gpt_params(void* container) {
     myllama_container* c = (myllama_container*)container;
     gpt_params* gptparams = (gpt_params*)c->gptparams;
 
-    // gptparams->interactive = true;
-    // gptparams->interactive_first = gptparams->interactive;
-    // gptparams->antiprompt = {};
-
-    // gptparams->n_predict = 512;
-    // gptparams->use_mmap = false;
-    // gptparams->use_mlock = true;
-
-    gptparams->n_gpu_layers = 32;
-    gptparams->seed = 42;
-    gptparams->n_threads = 4;
-    gptparams->n_predict = 16;
-    // gptparams->repeat_last_n = 64;
-    // gptparams->prompt = "The quick brown fox ";
-
-    // gptparams->prompt.insert(0, 1, ' ');
-
     // running setting
     gptparams->seed = -1;         // RNG seed
     gptparams->n_threads = 4;     // CPU threads
@@ -45,6 +28,23 @@ void init_gpt_params(void* container) {
     gptparams->mirostat = 0;               // 0 = disabled, 1 = mirostat, 2 = mirostat 2.0
     gptparams->mirostat_tau = 5.00f;       // target entropy
     gptparams->mirostat_eta = 0.10f;       // learning rate
+
+    // gptparams->interactive = true;
+    // gptparams->interactive_first = gptparams->interactive;
+    // gptparams->antiprompt = {};
+
+    // gptparams->n_predict = 512;
+    // gptparams->use_mmap = false;
+    // gptparams->use_mlock = true;
+
+    gptparams->n_gpu_layers = 33;
+    gptparams->seed = 42;
+    gptparams->n_threads = 4;
+    gptparams->n_predict = 16;
+    // gptparams->repeat_last_n = 64;
+    // gptparams->prompt = "The quick brown fox ";
+
+    // gptparams->prompt.insert(0, 1, ' ');
 }
 
 void init_context_params(void* container) {
