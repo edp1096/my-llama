@@ -12,9 +12,9 @@ Llama 7B runner on my windows machine
 
 ## Download pre-compiled binary, dll
 * [DLL](https://github.com/edp1096/my-llama/releases)
-* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.17/my-llama_cpu.zip)
-* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.17/my-llama_cl.zip)
-* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.17/my-llama_cu.zip) - Require [CUDA toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [this](https://github.com/ggerganov/llama.cpp/releases/download/master-66874d4/cudart-llama-bin-win-cu12.1.0-x64.zip)
+* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.18/my-llama_cpu.zip)
+* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.18/my-llama_cl.zip)
+* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.18/my-llama_cu.zip) - Require [CUDA toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [this](https://github.com/ggerganov/llama.cpp/releases/download/master-66874d4/cudart-llama-bin-win-cu12.1.0-x64.zip)
 
 
 ## Usage
@@ -138,15 +138,7 @@ go build -tags cuda
 
 ## Todo
 * [ ] Add Papago, Kakao, DeepL translator
-* `binding.cpp`
-    * GGML Parameter settings - Set parameters from html to websocket server
-        * Not touch. Probably I can't
-            * ~~n_predict - new tokens to predict~~
-            * ~~seed, n_keep, f16_kv, use_mmap, use_mlock~~
-    * Not touch. Probably I can't
-        * ~~Clean up functions~~
-        * ~~Remove and integrate all unnecessary functions~~
-
+* [ ] Remove `binding.cpp`
 
 ## Source
 * https://github.com/ggerganov/llama.cpp
