@@ -53,6 +53,7 @@ void prepare_candidates(void* container, int n_vocab) {
     c->candidates = (void*)candidates_p;
 }
 
+
 /* Getters */
 int get_n_remain(void* container) {
     return ((myllama_container*)container)->n_remain;
@@ -81,6 +82,12 @@ void set_is_interacting(void* container, bool is_interacting) {
     myllama_container* c = (myllama_container*)container;
 
     c->is_interacting = is_interacting;
+}
+
+void set_user_input(void* container, const char* user_input) {
+    myllama_container* c = (myllama_container*)container;
+
+    c->user_input = strdup(user_input);
 }
 
 /* Misc. */

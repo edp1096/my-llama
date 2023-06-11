@@ -19,7 +19,6 @@ struct myllama_container {
     int n_remain;
     int n_consumed;
     int n_session_consumed;
-    int id;
 
     bool is_interacting;
     bool input_noecho;
@@ -35,12 +34,12 @@ struct myllama_container {
     void* candidates;
 
     void* embd;
-    void* embd_inp;  // will be removed
+    void* embd_inp;
 
     void* last_n_tokens;
     void* llama_token_newline;
 
-    char* user_input;  // will be removed
+    char* user_input;
 };
 
 void* init_container();
@@ -58,6 +57,7 @@ char* get_embed_string(void* container, int id);
 
 /* Setters */
 void set_is_interacting(void* container, bool is_interacting);
+void set_user_input(void* container, const char* user_input);
 
 /* Misc. */
 void save_state(void* container, char* fname);

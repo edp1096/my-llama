@@ -5,7 +5,7 @@ extern "C" {
 
 #include <stdint.h>
 
-void* llama_api_context_default_params(void* container);
+void llama_api_context_default_params(void* container);
 
 bool llama_api_mmap_supported();
 bool llama_api_mlock_supported();

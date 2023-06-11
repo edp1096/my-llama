@@ -140,17 +140,7 @@ bool bd_allocate_variables(void* container) {
     return result;
 }
 
-void bd_init_params(void* container) {
-    gpt_params* params = (gpt_params*)((myllama_container*)container)->gptparams;
-
-    params->interactive = true;
-    params->interactive_first = params->interactive;
-    params->antiprompt = {};
-
-    // params->n_predict = 512;
-    params->use_mmap = false;
-    params->use_mlock = true;
-}
+// void bd_init_params(void* container) {}
 
 bool bd_predict_tokens(void* container) {
     bool result = false;
@@ -443,120 +433,6 @@ bool bd_wait_or_continue(void* container) {
 // int bd_get_embed_id(void* container, int index) {}
 // char* bd_get_embed_string(void* container, int id) {}
 
-/* Getters */
-// int bd_get_n_remain(void* container) {}
-
-int bd_get_params_n_predict(void* container) {
-    return ((gpt_params*)((myllama_container*)container)->gptparams)->n_predict;
-}
-
-bool bd_get_noecho(void* container) {
-    return ((myllama_container*)container)->input_noecho;
-}
-
-// int bd_get_embd_size(void* container) {}
-
-int bd_get_embd_inp_size(void* container) {
-    return (int)((std::vector<llama_token>*)((myllama_container*)container)->embd_inp)->size();
-}
-
-int bd_get_n_consumed(void* container) {
-    return ((myllama_container*)container)->n_consumed;
-}
-
-bool bd_get_params_interactive_first(void* container) {
-    return ((gpt_params*)((myllama_container*)container)->gptparams)->interactive_first;
-}
-
-bool bd_get_params_interactive(void* container) {
-    return ((gpt_params*)((myllama_container*)container)->gptparams)->interactive;
-}
-
-/* Getters - gpt_params */
-int bd_get_params_n_threads(void* container) {
-    return ((gpt_params*)((myllama_container*)container)->gptparams)->n_threads;
-}
-
-/* Getters - gpt_params / sampling parameters */
-int bd_get_params_top_k(void* container) {
-    return ((gpt_params*)((myllama_container*)container)->gptparams)->top_k;
-}
-
-float bd_get_params_top_p(void* container) {
-    return ((gpt_params*)((myllama_container*)container)->gptparams)->top_p;
-}
-
-float bd_get_params_temper(void* container) {
-    return ((gpt_params*)((myllama_container*)container)->gptparams)->temp;
-}
-
-float bd_get_params_repeat_penalty(void* container) {
-    return ((gpt_params*)((myllama_container*)container)->gptparams)->repeat_penalty;
-}
-
-/* Setters */
-void bd_set_params_interactive_first(void* container) {
-    bool interactive = ((gpt_params*)((myllama_container*)container)->gptparams)->interactive;
-    ((gpt_params*)((myllama_container*)container)->gptparams)->interactive_first = interactive;
-}
-
-// void bd_set_is_interacting(void* container, bool is_interacting) {}
-
-void bd_set_n_remain(void* container, int n_predict) {
-    ((myllama_container*)container)->n_remain = n_predict;
-}
-
-// void bd_set_model_path(void* container, char* path) {}
-
-void bd_set_params_antiprompt(void* container, char* antiprompt) {
-    ((gpt_params*)((myllama_container*)container)->gptparams)->antiprompt.push_back(strdup(antiprompt));
-}
-
-void bd_set_params_prompt(void* container, char* prompt) {
-    ((gpt_params*)((myllama_container*)container)->gptparams)->prompt = strdup(prompt);
-}
-
-void bd_set_user_input(void* container, const char* user_input) {
-    ((myllama_container*)container)->user_input = strdup(user_input);
-}
-
-/* Setters - gpt_params */
-// void bd_set_params_n_threads(void* container, int value) {
-//     ((gpt_params*)((myllama_container*)container)->params)->n_threads = value;
-// }
-
-// void bd_set_params_use_mlock(void* container, bool value) {
-//     ((gpt_params*)((myllama_container*)container)->params)->use_mlock = value;
-// }
-
-/* Setters - gpt_params / sampling parameters */
-void bd_set_params_n_ctx(void* container, int value) {
-    ((gpt_params*)((myllama_container*)container)->gptparams)->n_ctx = value;
-}
-
-void bd_set_params_n_batch(void* container, int value) {
-    ((gpt_params*)((myllama_container*)container)->gptparams)->n_batch = value;
-}
-
-void bd_set_sampling_method(void* container, int value) {
-    ((gpt_params*)((myllama_container*)container)->gptparams)->mirostat = value;
-}
-
-void bd_set_params_top_k(void* container, int value) {
-    ((gpt_params*)((myllama_container*)container)->gptparams)->top_k = value;
-}
-
-void bd_set_params_top_p(void* container, float value) {
-    ((gpt_params*)((myllama_container*)container)->gptparams)->top_p = value;
-}
-
-void bd_set_params_temper(void* container, float value) {
-    ((gpt_params*)((myllama_container*)container)->gptparams)->temp = value;
-}
-
-void bd_set_params_repeat_penalty(void* container, float value) {
-    ((gpt_params*)((myllama_container*)container)->gptparams)->repeat_penalty = value;
-}
 
 /* Others */
 bool bd_check_prompt_or_continue(void* container) {

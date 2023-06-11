@@ -27,16 +27,16 @@ func (l *LLama) AllocateVariables() (err error) {
 
 /* Getters - gpt_params */
 func (l *LLama) GetThreadsCount() int {
-	return int(C.bd_get_params_n_threads(l.Container))
+	return int(C.get_gptparams_n_threads(l.Container))
 }
 
 /* Getters - gpt_params / sampling parameters */
 func (l *LLama) GetTopK() int {
-	return int(C.bd_get_params_top_k(l.Container))
+	return int(C.get_gptparams_top_k(l.Container))
 }
 
 func (l *LLama) GetTopP() float64 {
-	return float64(C.bd_get_params_top_p(l.Container))
+	return float64(C.get_gptparams_top_p(l.Container))
 }
 
 /* Setters - gpt_params */
@@ -54,10 +54,10 @@ func (l *LLama) SetNumPredict(predicts int) {
 
 /* Setters - gpt_params / sampling parameters */
 func (l *LLama) SetNCtx(nCtx int) {
-	C.bd_set_params_n_ctx(l.Container, C.int(nCtx))
+	C.set_gptparams_n_ctx(l.Container, C.int(nCtx))
 }
 func (l *LLama) SetNBatch(nBatch int) {
-	C.bd_set_params_n_batch(l.Container, C.int(nBatch))
+	C.set_gptparams_n_batch(l.Container, C.int(nBatch))
 }
 func (l *LLama) SetSamplingMethod(method string) {
 	mirostat := 0
@@ -69,17 +69,17 @@ func (l *LLama) SetSamplingMethod(method string) {
 		mirostat = 2
 	}
 
-	C.bd_set_params_top_k(l.Container, C.int(mirostat))
+	C.set_gptparams_top_k(l.Container, C.int(mirostat))
 }
 func (l *LLama) SetTopK(topK int) {
-	C.bd_set_params_top_k(l.Container, C.int(topK))
+	C.set_gptparams_top_k(l.Container, C.int(topK))
 }
 func (l *LLama) SetTopP(topP float64) {
-	C.bd_set_params_top_p(l.Container, C.float(topP))
+	C.set_gptparams_top_p(l.Container, C.float(topP))
 }
-func (l *LLama) SetTemperature(temper float64) {
-	C.bd_set_params_temper(l.Container, C.float(temper))
+func (l *LLama) SetTemperature(temperature float64) {
+	C.set_gptparams_temperature(l.Container, C.float(temperature))
 }
 func (l *LLama) SetRepeatPenalty(penalty float64) {
-	C.bd_set_params_repeat_penalty(l.Container, C.float(penalty))
+	C.set_gptparams_repeat_penalty(l.Container, C.float(penalty))
 }

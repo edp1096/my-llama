@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "common.h"
 #include "myllama.h"
 #include "myllama_params.h"
@@ -33,7 +35,7 @@ void init_gpt_params(void* container) {
     gptparams->mirostat_eta = 0.10f;       // learning rate
 
     // gptparams->interactive = true;
-    // gptparams->interactive_first = gptparams->interactive;
+    // gptparams->interactive_first = false; // instruct
     // gptparams->antiprompt = {};
 
     // gptparams->n_predict = 512;
@@ -65,6 +67,19 @@ void init_context_params(void* container) {
     // ctxparams->embedding = gptparams->embedding;
 }
 
+/* Getters - gptparams */
+int get_gptparams_n_threads(void* container) {
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->n_threads;
+}
+
+int get_gptparams_top_k(void* container) {
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->top_k;
+}
+
+float get_gptparams_top_p(void* container) {
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->top_p;
+}
+
 /* Setters - gptparams. require restart */
 void set_gptparams_n_threads(void* container, int value) {
     ((gpt_params*)((myllama_container*)container)->gptparams)->n_threads = value;
@@ -76,4 +91,45 @@ void set_gptparams_use_mlock(void* container, bool value) {
 
 void set_gptparams_n_predict(void* container, int value) {
     ((gpt_params*)((myllama_container*)container)->gptparams)->n_predict = value;
+}
+
+void set_gptparams_prompt(void* container, char* prompt) {
+    myllama_container* c = (myllama_container*)container;
+
+    ((gpt_params*)c->gptparams)->prompt = strdup(prompt);
+}
+
+void set_gptparams_antiprompt(void* container, char* antiprompt) {
+    myllama_container* c = (myllama_container*)container;
+
+    ((gpt_params*)c->gptparams)->antiprompt.push_back(strdup(antiprompt));
+}
+
+/* Setters - gptparams / sampling parameters */
+void set_gptparams_n_ctx(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->n_ctx = value;
+}
+
+void set_gptparams_n_batch(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->n_batch = value;
+}
+
+void set_gptparams_sampling_method(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->mirostat = value;
+}
+
+void set_gptparams_top_k(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->top_k = value;
+}
+
+void set_gptparams_top_p(void* container, float value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->top_p = value;
+}
+
+void set_gptparams_temperature(void* container, float value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->temp = value;
+}
+
+void set_gptparams_repeat_penalty(void* container, float value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->repeat_penalty = value;
 }

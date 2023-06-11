@@ -11,7 +11,7 @@ void free_pointer(void* ptr) {
     free(ptr);
 }
 
-void* llama_api_context_default_params(void* container) {
+void llama_api_context_default_params(void* container) {
     myllama_container* c = (myllama_container*)container;
 
     c->ctxparams = (void*)new llama_context_params(llama_context_default_params());
