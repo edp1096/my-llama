@@ -7,15 +7,18 @@ void init_gpt_params(void* container) {
     gpt_params* gptparams = (gpt_params*)c->gptparams;
 
     // running setting
-    gptparams->seed = -1;         // RNG seed
-    gptparams->n_threads = 4;     // CPU threads
-    gptparams->n_predict = -1;    // new tokens to predict
-    gptparams->n_ctx = 512;       // context size
-    gptparams->n_batch = 512;     // batch size for prompt processing (must be >=32 to use BLAS)
-    gptparams->n_keep = 0;        // number of tokens to keep from initial prompt
-    gptparams->n_gpu_layers = 0;  // number of layers to store in VRAM
+    gptparams->seed = -1;                              // RNG seed
+    gptparams->n_threads = 4;                          // CPU threads
+    gptparams->n_predict = -1;                         // new tokens to predict
+    gptparams->n_ctx = 512;                            // context size
+    gptparams->n_batch = 512;                          // batch size for prompt processing (must be >=32 to use BLAS)
+    gptparams->n_keep = 0;                             // number of tokens to keep from initial prompt
+    gptparams->n_gpu_layers = 0;                       // number of layers to store in VRAM
+    gptparams->main_gpu = 0;                           // the GPU that is used for scratch and small tensors
+    gptparams->tensor_split[LLAMA_MAX_DEVICES] = {0};  // how split tensors should be distributed across GPUs
 
     // sampling parameters
+    gptparams->logit_bias;                 // logit bias for specific tokens
     gptparams->top_k = 40;                 // <= 0 to use vocab size
     gptparams->top_p = 0.95f;              // 1.0 = disabled
     gptparams->tfs_z = 1.00f;              // 1.0 = disabled
