@@ -138,15 +138,7 @@ go build -tags cuda
 
 ## Todo
 * [ ] Add Papago, Kakao, DeepL translator
-* `binding.cpp`
-    * GGML Parameter settings - Set parameters from html to websocket server
-        * Not touch. Probably I can't
-            * ~~n_predict - new tokens to predict~~
-            * ~~seed, n_keep, f16_kv, use_mmap, use_mlock~~
-    * Not touch. Probably I can't
-        * ~~Clean up functions~~
-        * ~~Remove and integrate all unnecessary functions~~
-
+* [ ] Remove `binding.cpp`
 
 ## Source
 * https://github.com/ggerganov/llama.cpp
