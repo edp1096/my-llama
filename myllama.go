@@ -112,6 +112,16 @@ func (l *LLama) PrintTimings() {
 
 /* LLAMA_API */
 
+func (l *LLama) LlamaApiMmapSupported() bool {
+	return bool(C.llama_api_mmap_supported())
+}
+func (l *LLama) LlamaApiMlockSupported() bool {
+	return bool(C.llama_api_mlock_supported())
+}
+func (l *LLama) LlamaApiInitBackend() {
+	C.llama_api_init_backend()
+}
+
 func (l *LLama) LlamaApiTimeUs() int64 {
 	return int64(C.llama_api_time_us())
 }

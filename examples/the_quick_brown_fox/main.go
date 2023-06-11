@@ -26,6 +26,7 @@ func main() {
 	l.SetUseMlock(true)
 	l.SetNumPredict(numPredict)
 
+	l.LlamaApiInitBackend()
 	l.LlamaApiInitFromFile(modelName)
 
 	l.AllocateTokens()

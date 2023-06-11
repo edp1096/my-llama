@@ -37,7 +37,9 @@ void llama_api_init_from_file(void* container, char* path_model) {
     myllama_container* c = (myllama_container*)container;
     llama_context_params ctxparams = *(llama_context_params*)c->ctxparams;
 
-    llama_context* ctx = llama_init_from_file(path_model, ctxparams);
+    // llama_context* ctx = llama_init_from_file(path_model, ctxparams);
+    auto ctx = llama_init_from_file(path_model, ctxparams);
+
     c->ctx = (void*)ctx;
 }
 
