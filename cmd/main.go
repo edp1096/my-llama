@@ -35,8 +35,7 @@ var (
 )
 
 var (
-	threads  = 4
-	useMlock = true
+	threads = 4
 )
 
 var (
@@ -183,13 +182,13 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 
 		requestCount := 0 // to ignore prompt
 
-		l.InitContextParams()
-
 		l.SetNumThreads(l.Threads)
-		l.SetUseMlock(useMlock)
+		l.SetUseMlock(true)
+		l.SetNumGpuLayers(32)
 
 		fmt.Println("Threads:", l.Threads)
 
+		l.InitContextParamsFromGptParams()
 		err = l.LoadModel(modelFname)
 		if err != nil {
 			fmt.Println(err.Error())

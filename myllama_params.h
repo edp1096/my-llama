@@ -3,7 +3,7 @@ extern "C" {
 #endif
 
 void init_gpt_params(void* container);
-void init_context_params(void* container);
+void init_context_params_from_gpt_params(void* container);
 
 /* Getters - gptparams */
 int get_gptparams_n_threads(void* container);
@@ -16,6 +16,7 @@ void set_gptparams_use_mlock(void* container, bool value);
 void set_gptparams_n_predict(void* container, int value);
 void set_gptparams_prompt(void* container, char* prompt);
 void set_gptparams_antiprompt(void* container, char* antiprompt);
+void set_gptparams_n_gpu_layers(void* container, int value);
 
 /* Setters - gptparams / sampling parameters */
 void set_gptparams_n_ctx(void* container, int value);

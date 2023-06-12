@@ -22,32 +22,25 @@ std::vector<llama_token> binding_tokenize(struct llama_context* ctx, const std::
     return res;
 }
 
-void* bd_init_container() {
-    myllama_container* c = new myllama_container;
-    c->gptparams = new gpt_params;
-    c->session_tokens = new std::vector<llama_token>;
-
-    return c;
-}
-
 struct llama_context* llama_init_from_gpt_params(const gpt_params& params) {
-    auto lparams = llama_context_default_params();
+    // auto lparams = llama_context_default_params();
+    llama_context_params* lparams = new llama_context_params(llama_context_default_params());
 
-    lparams.n_ctx = params.n_ctx;
-    lparams.n_batch = params.n_batch;
-    lparams.n_gpu_layers = params.n_gpu_layers;
-    lparams.main_gpu = params.main_gpu;
-    memcpy(lparams.tensor_split, params.tensor_split, LLAMA_MAX_DEVICES * sizeof(float));
-    lparams.seed = params.seed;
-    lparams.f16_kv = params.memory_f16;
-    lparams.use_mmap = params.use_mmap;
-    lparams.use_mlock = params.use_mlock;
-    lparams.logits_all = params.perplexity;
-    lparams.embedding = params.embedding;
+    lparams->n_ctx = params.n_ctx;
+    lparams->n_batch = params.n_batch;
+    lparams->n_gpu_layers = params.n_gpu_layers;
+    lparams->main_gpu = params.main_gpu;
+    memcpy(lparams->tensor_split, params.tensor_split, LLAMA_MAX_DEVICES * sizeof(float));
+    lparams->seed = params.seed;
+    lparams->f16_kv = params.memory_f16;
+    lparams->use_mmap = params.use_mmap;
+    lparams->use_mlock = params.use_mlock;
+    lparams->logits_all = params.perplexity;
+    lparams->embedding = params.embedding;
 
     printf("Model: %s\n", params.model.c_str());
 
-    llama_context* lctx = llama_init_from_file(params.model.c_str(), lparams);
+    llama_context* lctx = llama_init_from_file(params.model.c_str(), *lparams);
 
     if (lctx == NULL) {
         fprintf(stderr, "%s: error: failed to load model '%s'\n", __func__, params.model.c_str());
@@ -145,33 +138,25 @@ bool bd_allocate_variables(void* container) {
 bool bd_predict_tokens(void* container) {
     bool result = false;
     myllama_container* c = (myllama_container*)container;
+    llama_context* ctx = (llama_context*)c->ctx;
+    gpt_params* gptparams = (gpt_params*)c->gptparams;
 
     std::vector<llama_token>* last_n_tokens = (std::vector<llama_token>*)c->last_n_tokens;
     std::vector<llama_token>* llama_token_newline = (std::vector<llama_token>*)c->llama_token_newline;
     std::vector<llama_token>* embd = (std::vector<llama_token>*)c->embd;
     std::vector<llama_token>* embd_inp = (std::vector<llama_token>*)c->embd_inp;
-    llama_context* ctx = (llama_context*)c->ctx;
-    gpt_params* params = (gpt_params*)c->gptparams;
 
     std::vector<llama_token>* session_tokens = (std::vector<llama_token>*)c->session_tokens;
 
     // predict
     if (embd->size() > 0) {
         if (c->n_past + (int)embd->size() > c->n_ctx) {
-            const int n_left = c->n_past - params->n_keep;
-
-            // c->n_past = params->n_keep;
-            // always keep the first token - BOS
-            c->n_past = std::max(1, params->n_keep);
+            const int n_left = c->n_past - gptparams->n_keep;
+            c->n_past = std::max(1, gptparams->n_keep);
 
             // insert n_left/2 tokens at the start of embd from last_n_tokens
             embd->insert(embd->begin(), last_n_tokens->begin() + c->n_ctx - n_left / 2 - embd->size(), last_n_tokens->end() - embd->size());
         }
-
-        // if (llama_eval(ctx, embd->data(), embd->size(), c->n_past, params->n_threads)) {
-        //     fprintf(stderr, "%s : failed to eval\n", __func__);
-        //     return result;
-        // }
 
         // try to reuse a matching prefix from the loaded session instead of re-eval (via n_past)
         if (c->n_session_consumed < (int)session_tokens->size()) {
@@ -198,43 +183,41 @@ bool bd_predict_tokens(void* container) {
 
         // evaluate tokens in batches
         // embd is typically prepared beforehand to fit within a batch, but not always
-        for (int i = 0; i < (int)embd->size(); i += params->n_batch) {
+        for (int i = 0; i < (int)embd->size(); i += gptparams->n_batch) {
             int n_eval = (int)embd->size() - i;
-            if (n_eval > params->n_batch) {
-                n_eval = params->n_batch;
+            if (n_eval > gptparams->n_batch) {
+                n_eval = gptparams->n_batch;
             }
-            if (llama_eval(ctx, embd->data() + i, n_eval, c->n_past, params->n_threads)) {
+            if (llama_eval(ctx, embd->data() + i, n_eval, c->n_past, gptparams->n_threads)) {
                 fprintf(stderr, "%s : failed to eval\n", __func__);
                 return result;
             }
             c->n_past += n_eval;
         }
 
-        // if (embd.size() > 0 && !path_session.empty()) {
         if (embd->size() > 0) {
             session_tokens->insert(session_tokens->end(), embd->begin(), embd->end());
             c->n_session_consumed = session_tokens->size();
         }
     }
 
-    // c->n_past += embd->size();
     embd->clear();
 
     if ((int)embd_inp->size() <= c->n_consumed) {
         // out of user input, sample next token
-        const int32_t top_k = params->top_k;
-        const float top_p = params->top_p;
-        const float tfs_z = params->tfs_z;
-        const float temp = params->temp;
-        const float typical_p = params->typical_p;
-        const int32_t repeat_last_n = params->repeat_last_n < 0 ? c->n_ctx : params->repeat_last_n;
-        const float repeat_penalty = params->repeat_penalty;
-        const float alpha_presence = params->presence_penalty;
-        const float alpha_frequency = params->frequency_penalty;
-        const int mirostat = params->mirostat;
-        const float mirostat_tau = params->mirostat_tau;
-        const float mirostat_eta = params->mirostat_eta;
-        const bool penalize_nl = params->penalize_nl;
+        const int32_t top_k = gptparams->top_k;
+        const float top_p = gptparams->top_p;
+        const float tfs_z = gptparams->tfs_z;
+        const float temp = gptparams->temp;
+        const float typical_p = gptparams->typical_p;
+        const int32_t repeat_last_n = gptparams->repeat_last_n < 0 ? c->n_ctx : gptparams->repeat_last_n;
+        const float repeat_penalty = gptparams->repeat_penalty;
+        const float alpha_presence = gptparams->presence_penalty;
+        const float alpha_frequency = gptparams->frequency_penalty;
+        const int mirostat = gptparams->mirostat;
+        const float mirostat_tau = gptparams->mirostat_tau;
+        const float mirostat_eta = gptparams->mirostat_eta;
+        const bool penalize_nl = gptparams->penalize_nl;
 
         llama_token id = 0;
 
@@ -242,8 +225,8 @@ bool bd_predict_tokens(void* container) {
             auto logits = llama_get_logits(ctx);
             auto n_vocab = llama_n_vocab(ctx);
 
-            if (params->penalize_nl) {
-                params->logit_bias[llama_token_eos()] = -INFINITY;
+            if (gptparams->penalize_nl) {
+                gptparams->logit_bias[llama_token_eos()] = -INFINITY;
             }
 
             std::vector<llama_token_data> candidates;
@@ -296,19 +279,17 @@ bool bd_predict_tokens(void* container) {
         }
 
         // replace end of text token with newline token when in interactive mode
-        if (id == llama_token_eos() && params->interactive && !params->instruct) {
+        if (id == llama_token_eos() && gptparams->interactive && !gptparams->instruct) {
             id = llama_token_newline->front();
-            if (params->antiprompt.size() != 0) {
+            if (gptparams->antiprompt.size() != 0) {
                 // tokenize and inject first reverse prompt
-                const auto first_antiprompt = ::binding_tokenize(ctx, params->antiprompt.front(), false);
+                const auto first_antiprompt = ::binding_tokenize(ctx, gptparams->antiprompt.front(), false);
                 embd_inp->insert(embd_inp->end(), first_antiprompt.begin(), first_antiprompt.end());
             }
         }
 
         embd->push_back(id);  // add it to the context
-
-        c->input_noecho = false;  // echo this to console
-
+        // c->input_noecho = false;  // echo this to console
         --c->n_remain;  // decrement remaining sampling budget
     } else {
         // some user input remains from prompt or interaction, forward it to processing
@@ -317,7 +298,7 @@ bool bd_predict_tokens(void* container) {
             last_n_tokens->erase(last_n_tokens->begin());
             last_n_tokens->push_back((*embd_inp)[c->n_consumed]);
             ++c->n_consumed;
-            if ((int)embd->size() >= params->n_batch) {
+            if ((int)embd->size() >= gptparams->n_batch) {
                 break;
             }
         }
@@ -432,7 +413,6 @@ bool bd_wait_or_continue(void* container) {
 
 // int bd_get_embed_id(void* container, int index) {}
 // char* bd_get_embed_string(void* container, int id) {}
-
 
 /* Others */
 bool bd_check_prompt_or_continue(void* container) {

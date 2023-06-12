@@ -15,7 +15,7 @@ func main() {
 		panic(err)
 	}
 
-	l.InitContextParams()
+	l.InitContextParamsFromGptParams()
 	l.SetNumThreads(4)
 	l.SetUseMlock(true)
 

@@ -6,9 +6,7 @@ extern "C" {
 #include "myllama.h"
 
 /* Initialize before main loop */
-void* bd_init_container();
 bool bd_load_model(void* container);
-// void bd_init_params(void* container);
 bool bd_allocate_variables(void* container);
 
 /* For main loop */

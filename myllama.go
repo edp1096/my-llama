@@ -35,7 +35,8 @@ func New() (*LLama, error) {
 func (l *LLama) LoadModel(modelFNAME string) error {
 	C.set_model_path(l.Container, C.CString(modelFNAME))
 
-	result := bool(C.bd_load_model(l.Container))
+	result := bool(C.load_model(l.Container))
+	// result := bool(C.bd_load_model(l.Container))
 	if !result {
 		return fmt.Errorf("failed to load the model")
 	}

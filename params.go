@@ -10,8 +10,8 @@ import (
 func (l *LLama) InitGptParams() {
 	C.init_gpt_params(l.Container)
 }
-func (l *LLama) InitContextParams() {
-	C.init_context_params(l.Container)
+func (l *LLama) InitContextParamsFromGptParams() {
+	C.init_context_params_from_gpt_params(l.Container)
 }
 
 func (l *LLama) AllocateVariables() (err error) {
@@ -50,6 +50,10 @@ func (l *LLama) SetUseMlock(useMlock bool) {
 
 func (l *LLama) SetNumPredict(predicts int) {
 	C.set_gptparams_n_predict(l.Container, C.int(predicts))
+}
+
+func (l *LLama) SetNumGpuLayers(numLayers int) {
+	C.set_gptparams_n_gpu_layers(l.Container, C.int(numLayers))
 }
 
 /* Setters - gpt_params / sampling parameters */

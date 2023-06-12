@@ -42,29 +42,31 @@ void init_gpt_params(void* container) {
     // gptparams->use_mmap = false;
     // gptparams->use_mlock = true;
 
-    gptparams->n_gpu_layers = 33;
-    gptparams->seed = 42;
+    gptparams->n_gpu_layers = 0;
+    gptparams->seed = -1;
     gptparams->n_threads = 4;
-    gptparams->n_predict = 16;
+    // gptparams->n_predict = 16;
     // gptparams->repeat_last_n = 64;
     // gptparams->prompt = "The quick brown fox ";
 
     // gptparams->prompt.insert(0, 1, ' ');
 }
 
-void init_context_params(void* container) {
+void init_context_params_from_gpt_params(void* container) {
     myllama_container* c = (myllama_container*)container;
     gpt_params* gptparams = (gpt_params*)c->gptparams;
     llama_context_params* ctxparams = (llama_context_params*)c->ctxparams;
 
     ctxparams->n_ctx = gptparams->n_ctx;
     ctxparams->n_gpu_layers = gptparams->n_gpu_layers;
-    ctxparams->seed = gptparams->seed;
-    ctxparams->f16_kv = gptparams->memory_f16;
-    ctxparams->use_mmap = gptparams->use_mmap;
-    ctxparams->use_mlock = gptparams->use_mlock;
-    // ctxparams->logits_all = gptparams->perplexity;
-    // ctxparams->embedding = gptparams->embedding;
+    // // ctxparams->main_gpu = gptparams->main_gpu;
+    // // memcpy(ctxparams->tensor_split, gptparams->tensor_split, LLAMA_MAX_DEVICES * sizeof(float));
+    // ctxparams->seed = gptparams->seed;
+    // ctxparams->f16_kv = gptparams->memory_f16;
+    // ctxparams->use_mmap = gptparams->use_mmap;
+    // ctxparams->use_mlock = gptparams->use_mlock;
+    // // ctxparams->logits_all = gptparams->perplexity;
+    // // ctxparams->embedding = gptparams->embedding;
 }
 
 /* Getters - gptparams */
@@ -103,6 +105,12 @@ void set_gptparams_antiprompt(void* container, char* antiprompt) {
     myllama_container* c = (myllama_container*)container;
 
     ((gpt_params*)c->gptparams)->antiprompt.push_back(strdup(antiprompt));
+}
+
+void set_gptparams_n_gpu_layers(void* container, int value) {
+    myllama_container* c = (myllama_container*)container;
+
+    ((gpt_params*)c->gptparams)->n_gpu_layers = value;
 }
 
 /* Setters - gptparams / sampling parameters */

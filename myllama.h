@@ -44,6 +44,8 @@ struct myllama_container {
 
 void* init_container();
 
+bool load_model(void* container);
+
 void set_model_path(void* container, char* path);
 void allocate_tokens(void* container);
 int* get_tokens(void* container);

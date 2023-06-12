@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "myllama.h"
+#include "myllama_params.h"
 
 void* init_container() {
     myllama_container* c = new myllama_container;
@@ -11,7 +12,50 @@ void* init_container() {
     c->ctxparams = (void*)new llama_context_params(llama_context_default_params());
     c->session_tokens = (void*)new std::vector<llama_token>;
 
+    init_gpt_params(c);
+
     return c;
+}
+
+bool load_model(void* container) {
+    myllama_container* c = (myllama_container*)container;
+    gpt_params* gptparams = (gpt_params*)c->gptparams;
+    llama_context_params* ctxparams = (llama_context_params*)c->ctxparams;
+
+    if (gptparams->seed < 0) {
+        gptparams->seed = time(NULL);
+    }
+
+    // gptparams->n_gpu_layers = 32;
+    // printf("n_gpu_layers: %d\n", gptparams->n_gpu_layers);
+
+    llama_init_backend();
+
+    // init_context_params_from_gpt_params(c);
+
+    printf("Model: %s\n", gptparams->model.c_str());
+    llama_context* ctx = llama_init_from_file(gptparams->model.c_str(), *ctxparams);
+
+    if (ctx == NULL) {
+        fprintf(stderr, "%s: error: failed to load model '%s'\n", __func__, gptparams->model.c_str());
+        return false;
+    }
+
+    if (!gptparams->lora_adapter.empty()) {
+        int err = llama_apply_lora_from_file(
+            ctx,
+            gptparams->lora_adapter.c_str(),
+            gptparams->lora_base.empty() ? NULL : gptparams->lora_base.c_str(),
+            gptparams->n_threads);
+        if (err != 0) {
+            fprintf(stderr, "%s: error: failed to apply lora adapter\n", __func__);
+            return false;
+        }
+    }
+
+    c->ctx = ctx;
+
+    return true;
 }
 
 void set_model_path(void* container, char* path) {
@@ -52,7 +96,6 @@ void prepare_candidates(void* container, int n_vocab) {
 
     c->candidates = (void*)candidates_p;
 }
-
 
 /* Getters */
 int get_n_remain(void* container) {
@@ -170,3 +213,5 @@ void load_session(void* container, char* fname) {
         fprintf(stderr, "%s: session file does not exist, will create\n", __func__);
     }
 }
+
+/* From example/main.cpp */

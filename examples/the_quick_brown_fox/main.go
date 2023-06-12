@@ -21,7 +21,7 @@ func main() {
 	}
 
 	l.InitGptParams()
-	l.InitContextParams()
+	l.InitContextParamsFromGptParams()
 	l.SetNumThreads(numThreads)
 	l.SetUseMlock(true)
 	l.SetNumPredict(numPredict)
