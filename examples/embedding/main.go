@@ -18,6 +18,7 @@ func main() {
 	l.InitContextParamsFromGptParams()
 	l.SetNumThreads(4)
 	l.SetUseMlock(true)
+	l.SetNumGpuLayers(32)
 
 	err = l.LoadModel(modelName)
 	if err != nil {
