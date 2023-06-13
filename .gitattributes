@@ -1,2 +1,9 @@
+*.h linguist-detectable=false
+*.c linguist-detectable=false
 *.cpp linguist-detectable=false
+*.cu linguist-detectable=false
+*.cmake linguist-detectable=false
+CMakeLists.txt linguist-detectable=false
+*.html linguist-detectable=false
 *.js linguist-detectable=false
+*.css linguist-detectable=false

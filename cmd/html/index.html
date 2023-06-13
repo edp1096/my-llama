@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>My-llama</title>
+
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div id="top-btns">
+        <button id="open-panel" onclick="sendServerRestart()">Refresh</button>
+        <input type="checkbox" id="switch-shade" onclick="toggleDarkMode()" />
+        <label for="switch-shade" id="switch-shade-label">Light Mode</label>
+        <button id="open-panel" onclick="openPanel()">Panel</button>
+    </div>
+
+    <div id="outputs"></div>
+
+    <hr />
+
+    <div id="input-container">
+        <textarea id="inputs" placeholder="input area"></textarea>
+    </div>
+
+    <button id="send" onclick="sendPrompt()" placeholder="send">Send</button>
+    <button id="stop" onclick="stopResponse()" placeholder="stop">Stop</button>
+
+    <span>Input: click 'Send' button or press ctrl+enter</span>
+    <span id="status" class="status-disconn">Disconnected</span>
+
+    <div id="preferences">
+        <div class="buttons">
+            <button onclick="closePanel()" placeholder="close">Close</button>
+            <button onclick="applyParameters()" placeholder="apply">Apply</button>
+        </div>
+
+
+        <h2>Prompts</h2>
+
+        <h3>
+            <label for="use_dump_session">
+                Save/Load session
+            </label>
+            <input type="checkbox" id="use_dump_session" onclick="toggleDumpState()" />
+        </h3>
+
+        <label for="reflection">
+            <h3>Prefix prompt</h3>
+        </label>
+        <textarea id="reflection"></textarea>
+
+        <label for="antiprompt">
+            <h3>Reverse prompt</h3>
+        </label>
+        <input type="text" id="antiprompt" value="" />
+
+        <label for="response-name">
+            <h3>Response name</h3>
+        </label>
+        <input type="text" id="response-name" value="" />
+
+        <label for="first-input">
+            <h3>First input</h3>
+        </label>
+        <input type="text" id="first-input" value="" />
+
+        <hr />
+
+        <h2>Parameters</h2>
+
+        <label for="model_files">
+            <h3>Model</h3>
+        </label>
+        <select id="model_files" name="model_files" class="select-full-width"></select>
+
+        <h3>CPU/Threads</h3>
+
+        <div>
+            <label>Max CPU counts:</label>
+            <span id="max-cpu-count"></span>
+        </div>
+        <div>
+            <label for="pref_threads">Defined threads:</label>
+            <input type="range" id="sl_threads" class="params_slider" min="4" max="8" value="4" step="1" placeholder="range of params_slider" />
+            <input type="number" id="pref_threads" name="pref_threads" class="cpu_threads_value" value="1" step="1" disabled />
+        </div>
+
+        <h3>Context</h3>
+
+        <div>
+            <label for="pref_n_ctx">Context count:</label>
+            <input type="range" id="sl_n_ctx" class="params_slider" min="32" max="2048" value="2048" step="1" placeholder="range of params_slider" />
+            <input type="number" id="pref_n_ctx" name="pref_n_ctx" class="params_value" value="2048" step="1" />
+        </div>
+
+        <div>
+            <label for="pref_n_batch">Batch size:<br />(must be >= 32<br />to use BLAS)</label>
+            <input type="range" id="sl_n_batch" class="params_slider" min="1" max="1024" value="1024" step="1" placeholder="range of params_slider" />
+            <input type="number" id="pref_n_batch" name="pref_n_batch" class="params_value" value="1024" step="1" />
+        </div>
+
+        <hr />
+
+        <h3>Sampling</h3>
+
+        <div>
+            <label for="pref_repeat_penalty">Mirostat:</label>
+            <input type="radio" id="pref_topk_topp_use" name="pref_sampling_method" value="not_use" checked="checked" />
+            <label for="pref_topk_topp_use">Use top_k/top_p</label>
+            <input type="radio" id="pref_mirostat_use_1" name="pref_sampling_method" value="mirostat1" />
+            <label for="pref_mirostat_use_1">Use 1.0</label>
+            <input type="radio" id="pref_mirostat_use_2" name="pref_sampling_method" value="mirostat2" />
+            <label for="pref_mirostat_use_2">Use 2.0</label>
+        </div>
+
+        <h4>Top_k</h4>
+        <div>
+            <label for="pref_top_k">Top K:</label>
+            <input type="range" id="sl_top_k" class="params_slider" min="1" max="1000" value="400" step="1" placeholder="range of params_slider" />
+            <input type="number" id="pref_top_k" name="pref_top_k" class="params_value" value="400" step="1" />
+        </div>
+
+        <div>
+            <label for="pref_top_p">Top P:</label>
+            <input type="range" id="sl_top_p" class="params_slider" min="0.01" max="1.0" value="0.9" step="0.01" placeholder="range of params_slider" />
+            <input type="number" id="pref_top_p" name="pref_top_p" class="params_value" value="0.9" step="0.01" />
+        </div>
+
+        <h4>Mirostat</h4>
+
+        <div>
+            <!-- mirostat_tau -->
+            <label for="pref_mirostat_ent">Target<br />Cross entropy:</label>
+            <input type="range" id="sl_mirostat_ent" class="params_slider" min="0.1" max="5.0" value="3.0" step="0.1" placeholder="range of params_slider" />
+            <input type="number" id="pref_mirostat_ent" name="pref_mirostat_ent" class="params_value" value="3.0" step="0.1" />
+        </div>
+
+        <div>
+            <!-- mirostat_eta -->
+            <label for="pref_mirostat_lr">Learning rate:</label>
+            <input type="range" id="sl_mirostat_lr" class="params_slider" min="0.1" max="1.0" value="0.1" step="0.1" placeholder="range of params_slider" />
+            <input type="number" id="pref_mirostat_lr" name="pref_mirostat_lr" class="params_value" value="0.1" step="0.1" />
+        </div>
+
+        <h4>Common params</h4>
+
+        <div>
+            <label for="pref_temperature">Temperature:</label>
+            <input type="range" id="sl_temperature" class="params_slider" min="0.01" max="1.0" value="0.15" step="0.01" placeholder="range of params_slider" />
+            <input type="number" id="pref_temperature" name="pref_temperature" class="params_value" value="0.15" step="0.01" />
+        </div>
+
+        <div>
+            <label for="pref_repeat_penalty">Repeat penalty:</label>
+            <input type="range" id="sl_repeat_penalty" class="params_slider" min="0.01" max="1.5" value="1.0" step="0.01" placeholder="range of params_slider" />
+            <input type="number" id="pref_repeat_penalty" name="pref_repeat_penalty" class="params_value" value="1.0" step="0.1" />
+        </div>
+
+        <hr />
+    </div>
+</body>
+
+<script src="script.js"></script>
+
+</html>
