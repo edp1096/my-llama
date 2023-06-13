@@ -136,9 +136,6 @@ go build -tags cuda
     * Set environment value `export GGML_CUDA_NO_PINNED=1` if CUDA not work
 
 
-## Todo
-* [ ] Add Papago, Kakao, DeepL translator
-
 ## Source
 * https://github.com/ggerganov/llama.cpp
 * https://github.com/go-skynet/go-llama.cpp
