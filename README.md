@@ -74,59 +74,62 @@ Unblock-File *.ps1
 ```
 
 ### Clone repository then build library
-* CPU
+* Clone
 ```powershell
 git clone https://github.com/edp1096/my-llama.git
-
-cd my-llama
-
-build_lib.ps1
 ```
-* GPU/CLBlast
+* Build
 ```powershell
-git clone https://github.com/edp1096/my-llama.git
+# CPU
+./build_lib.ps1
 
-cd my-llama
+# GPU/CLBlast
+./build_lib.ps1 clblast
 
-build_lib.ps1 clblast
-```
-* GPU/CUDA
-```powershell
-git clone https://github.com/edp1096/my-llama.git
-
-cd my-llama
-
-build_lib.ps1 cuda
+# GPU/CUDA
+./build_lib.ps1 cuda
 ```
 
-* Clean
+* Clean temporary files
 ```powershell
-clean.ps1
+./clean.ps1
 
 # or
 
-clean.ps1 all
+./clean.ps1 all
 ```
 
 ### Then build runner in cmd folder or in example folder
-* CPU
+* Build runner in cmd
 ```powershell
 cd cmd
+
+# CPU
 go build [-tags cpu]
-```
-* GPU/CLBlast
-```powershell
-cd cmd
+
+# GPU/CLBlast
 go build -tags clblast
-```
-* GPU/CUDA
-```powershell
-cd cmd
+
+# GPU/CUDA
 go build -tags cuda
 ```
 
 ### Linux
-* See [build_lib.sh](/build_lib.sh) and [clean.sh](/clean.sh)
+* Build library
+```sh
+# CPU
+./build_lib.sh
+
+# GPU/CLBlast
+./build_lib.sh clblast
+
+# GPU/CUDA
+./build_lib.sh cuda
+```
+* Clean temporary files
+```sh
+./clean.sh
+```
 * Tested with nVidia driver 530, CUDA toolkit 12.1
     * Ubuntu 20.04, RTX 1080ti
     * Ubuntu 20.04, RTX 3090
