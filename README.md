@@ -112,7 +112,7 @@ clean.ps1 all
 * CPU
 ```powershell
 cd cmd
-go build -tags cpu
+go build [-tags cpu]
 ```
 * GPU/CLBlast
 ```powershell
@@ -138,7 +138,6 @@ go build -tags cuda
 
 ## Todo
 * [ ] Add Papago, Kakao, DeepL translator
-* [ ] Remove `binding.cpp`
 
 ## Source
 * https://github.com/ggerganov/llama.cpp

@@ -11,10 +11,10 @@ void free_pointer(void* ptr) {
     free(ptr);
 }
 
-void* llama_api_context_default_params() {
-    llama_context_params params = llama_context_default_params();
+void llama_api_context_default_params(void* container) {
+    myllama_container* c = (myllama_container*)container;
 
-    return (void*)new llama_context_params(params);
+    c->ctxparams = (void*)new llama_context_params(llama_context_default_params());
 }
 
 bool llama_api_mmap_supported() {
@@ -50,12 +50,18 @@ void llama_api_free(void* container) {
     llama_free((llama_context*)c->ctx);
 }
 
-int llama_api_model_quantize(char* fname_inp, char* fname_out, int ftype_int, int nthread) {
+int llama_api_model_quantize(void* container, char* fname_inp, char* fname_out, int ftype_int, int nthread) {
     llama_model_quantize_params params = llama_model_quantize_default_params();
     params.ftype = (llama_ftype)ftype_int;
     params.nthread = nthread;
 
     return llama_model_quantize(fname_inp, fname_out, &params);
+}
+
+int llama_api_apply_lora_from_file(void* container, char* path_lora, char* path_base_model, int nthread) {
+    myllama_container* c = (myllama_container*)container;
+
+    return llama_apply_lora_from_file((llama_context*)c->ctx, path_lora, path_base_model, nthread);
 }
 
 int llama_api_get_kv_cache_token_count(void* container) {

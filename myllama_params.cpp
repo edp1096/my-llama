@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "common.h"
 #include "myllama.h"
 #include "myllama_params.h"
@@ -40,29 +42,44 @@ void init_gpt_params(void* container) {
     // gptparams->use_mmap = false;
     // gptparams->use_mlock = true;
 
-    gptparams->n_gpu_layers = 33;
-    gptparams->seed = 42;
+    gptparams->n_gpu_layers = 0;
+    gptparams->seed = -1;
     gptparams->n_threads = 4;
-    gptparams->n_predict = 16;
+    // gptparams->n_predict = 16;
     // gptparams->repeat_last_n = 64;
     // gptparams->prompt = "The quick brown fox ";
 
     // gptparams->prompt.insert(0, 1, ' ');
 }
 
-void init_context_params(void* container) {
+void init_context_params_from_gpt_params(void* container) {
     myllama_container* c = (myllama_container*)container;
     gpt_params* gptparams = (gpt_params*)c->gptparams;
     llama_context_params* ctxparams = (llama_context_params*)c->ctxparams;
 
     ctxparams->n_ctx = gptparams->n_ctx;
     ctxparams->n_gpu_layers = gptparams->n_gpu_layers;
+    ctxparams->main_gpu = gptparams->main_gpu;
+    memcpy(ctxparams->tensor_split, gptparams->tensor_split, LLAMA_MAX_DEVICES * sizeof(float));
     ctxparams->seed = gptparams->seed;
     ctxparams->f16_kv = gptparams->memory_f16;
     ctxparams->use_mmap = gptparams->use_mmap;
     ctxparams->use_mlock = gptparams->use_mlock;
-    // ctxparams->logits_all = gptparams->perplexity;
-    // ctxparams->embedding = gptparams->embedding;
+    ctxparams->logits_all = gptparams->perplexity;
+    ctxparams->embedding = gptparams->embedding;
+}
+
+/* Getters - gptparams */
+int get_gptparams_n_threads(void* container) {
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->n_threads;
+}
+
+int get_gptparams_top_k(void* container) {
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->top_k;
+}
+
+float get_gptparams_top_p(void* container) {
+    return ((gpt_params*)((myllama_container*)container)->gptparams)->top_p;
 }
 
 /* Setters - gptparams. require restart */
@@ -76,4 +93,51 @@ void set_gptparams_use_mlock(void* container, bool value) {
 
 void set_gptparams_n_predict(void* container, int value) {
     ((gpt_params*)((myllama_container*)container)->gptparams)->n_predict = value;
+}
+
+void set_gptparams_prompt(void* container, char* prompt) {
+    myllama_container* c = (myllama_container*)container;
+
+    ((gpt_params*)c->gptparams)->prompt = strdup(prompt);
+}
+
+void set_gptparams_antiprompt(void* container, char* antiprompt) {
+    myllama_container* c = (myllama_container*)container;
+
+    ((gpt_params*)c->gptparams)->antiprompt.push_back(strdup(antiprompt));
+}
+
+void set_gptparams_n_gpu_layers(void* container, int value) {
+    myllama_container* c = (myllama_container*)container;
+
+    ((gpt_params*)c->gptparams)->n_gpu_layers = value;
+}
+
+/* Setters - gptparams / sampling parameters */
+void set_gptparams_n_ctx(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->n_ctx = value;
+}
+
+void set_gptparams_n_batch(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->n_batch = value;
+}
+
+void set_gptparams_sampling_method(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->mirostat = value;
+}
+
+void set_gptparams_top_k(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->top_k = value;
+}
+
+void set_gptparams_top_p(void* container, float value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->top_p = value;
+}
+
+void set_gptparams_temperature(void* container, float value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->temp = value;
+}
+
+void set_gptparams_repeat_penalty(void* container, float value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->repeat_penalty = value;
 }

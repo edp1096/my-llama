@@ -5,7 +5,7 @@ extern "C" {
 
 #include <stdint.h>
 
-void* llama_api_context_default_params();
+void llama_api_context_default_params(void* container);
 
 bool llama_api_mmap_supported();
 bool llama_api_mlock_supported();
@@ -15,7 +15,9 @@ int64_t llama_api_time_us();
 void llama_api_init_from_file(void* container, char* path_model);
 void llama_api_free(void* container);
 
-int llama_api_model_quantize(char* fname_inp, char* fname_out, int ftype, int nthread);
+int llama_api_model_quantize(void* container, char* fname_inp, char* fname_out, int ftype_int, int nthread);
+int llama_api_apply_lora_from_file(void* container, char* path_lora, char* path_base_model, int nthread);
+
 int llama_api_get_kv_cache_token_count(void* container);
 void llama_api_set_rng_seed(void* container, int seed);
 

@@ -2,6 +2,8 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
 struct tokens_array {
     int* data;
     int size;
@@ -19,7 +21,6 @@ struct myllama_container {
     int n_remain;
     int n_consumed;
     int n_session_consumed;
-    int id;
 
     bool is_interacting;
     bool input_noecho;
@@ -35,19 +36,53 @@ struct myllama_container {
     void* candidates;
 
     void* embd;
-    void* embd_inp;  // will be removed
+    void* embd_inp;
 
     void* last_n_tokens;
     void* llama_token_newline;
 
-    char* user_input;  // will be removed
+    char* user_input;
 };
 
 void* init_container();
 
+bool load_model(void* container);
+
+void set_model_path(void* container, char* path);
 void allocate_tokens(void* container);
 int* get_tokens(void* container);
 void prepare_candidates(void* container, int n_vocab);
+
+void free_params(void* container);
+
+/* Getters */
+int get_n_remain(void* container);
+int get_embd_size(void* container);
+int get_embed_id(void* container, int index);
+char* get_embed_string(void* container, int id);
+
+/* Setters */
+void set_is_interacting(void* container, bool is_interacting);
+void set_user_input(void* container, const char* user_input);
+
+/* Misc. */
+void save_state(void* container, char* fname);
+void load_state(void* container, char* fname);
+void save_session(void* container, char* fname);
+void load_session(void* container, char* fname);
+
+/* From example/main.cpp */
+// Initialize before main loop
+bool allocate_variables(void* container);
+
+// For main loop
+bool predict_tokens(void* container);
+bool append_input(void* container);
+bool wait_or_continue(void* container);
+
+// Others
+bool check_prompt_or_continue(void* container);
+void dropback_user_input(void* container);
 
 #ifdef __cplusplus
 }

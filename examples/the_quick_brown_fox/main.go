@@ -21,10 +21,13 @@ func main() {
 	}
 
 	l.InitGptParams()
-	l.InitContextParams()
+
 	l.SetNumThreads(numThreads)
 	l.SetUseMlock(true)
 	l.SetNumPredict(numPredict)
+	l.SetNumGpuLayers(32)
+
+	l.InitContextParamsFromGptParams()
 
 	l.LlamaApiInitBackend()
 	l.LlamaApiInitFromFile(modelName)
