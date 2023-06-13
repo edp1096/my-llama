@@ -35,7 +35,7 @@ void init_gpt_params(void* container) {
     gptparams->mirostat_eta = 0.10f;       // learning rate
 
     // gptparams->interactive = true;
-    // gptparams->interactive_first = false; // instruct
+    // gptparams->interactive_first = gptparams->interactive;
     // gptparams->antiprompt = {};
 
     // gptparams->n_predict = 512;
@@ -59,14 +59,14 @@ void init_context_params_from_gpt_params(void* container) {
 
     ctxparams->n_ctx = gptparams->n_ctx;
     ctxparams->n_gpu_layers = gptparams->n_gpu_layers;
-    // // ctxparams->main_gpu = gptparams->main_gpu;
-    // // memcpy(ctxparams->tensor_split, gptparams->tensor_split, LLAMA_MAX_DEVICES * sizeof(float));
-    // ctxparams->seed = gptparams->seed;
-    // ctxparams->f16_kv = gptparams->memory_f16;
-    // ctxparams->use_mmap = gptparams->use_mmap;
-    // ctxparams->use_mlock = gptparams->use_mlock;
-    // // ctxparams->logits_all = gptparams->perplexity;
-    // // ctxparams->embedding = gptparams->embedding;
+    ctxparams->main_gpu = gptparams->main_gpu;
+    memcpy(ctxparams->tensor_split, gptparams->tensor_split, LLAMA_MAX_DEVICES * sizeof(float));
+    ctxparams->seed = gptparams->seed;
+    ctxparams->f16_kv = gptparams->memory_f16;
+    ctxparams->use_mmap = gptparams->use_mmap;
+    ctxparams->use_mlock = gptparams->use_mlock;
+    ctxparams->logits_all = gptparams->perplexity;
+    ctxparams->embedding = gptparams->embedding;
 }
 
 /* Getters - gptparams */

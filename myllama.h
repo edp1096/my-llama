@@ -2,6 +2,8 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
 struct tokens_array {
     int* data;
     int size;
@@ -51,6 +53,8 @@ void allocate_tokens(void* container);
 int* get_tokens(void* container);
 void prepare_candidates(void* container, int n_vocab);
 
+void free_params(void* container);
+
 /* Getters */
 int get_n_remain(void* container);
 int get_embd_size(void* container);
@@ -66,6 +70,19 @@ void save_state(void* container, char* fname);
 void load_state(void* container, char* fname);
 void save_session(void* container, char* fname);
 void load_session(void* container, char* fname);
+
+/* From example/main.cpp */
+// Initialize before main loop
+bool allocate_variables(void* container);
+
+// For main loop
+bool predict_tokens(void* container);
+bool append_input(void* container);
+bool wait_or_continue(void* container);
+
+// Others
+bool check_prompt_or_continue(void* container);
+void dropback_user_input(void* container);
 
 #ifdef __cplusplus
 }

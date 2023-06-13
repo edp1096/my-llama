@@ -186,9 +186,10 @@ func wsController(w http.ResponseWriter, req *http.Request) {
 		l.SetUseMlock(true)
 		l.SetNumGpuLayers(32)
 
+		l.InitContextParamsFromGptParams()
+
 		fmt.Println("Threads:", l.Threads)
 
-		l.InitContextParamsFromGptParams()
 		err = l.LoadModel(modelFname)
 		if err != nil {
 			fmt.Println(err.Error())

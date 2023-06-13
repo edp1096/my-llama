@@ -3,5 +3,5 @@
 
 package myllama
 
-// #cgo LDFLAGS: -static -L. -lstdc++ -lllama -lbinding
+// #cgo LDFLAGS: -static -L. -lstdc++ -lllama -lmyllama
 import "C"

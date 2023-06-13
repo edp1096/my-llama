@@ -1,6 +1,6 @@
 package myllama
 
-// #include "binding.h"
+// #include "myllama.h"
 // #include "myllama_params.h"
 import "C"
 import (
@@ -8,13 +8,11 @@ import (
 )
 
 func (l *LLama) SetUserInput(input string) {
-	container := l.Container
-	C.set_user_input(container, C.CString(input))
+	C.set_user_input(l.Container, C.CString(input))
 }
 
 func (l *LLama) AppendInput() (err error) {
-	container := l.Container
-	ok := bool(C.bd_append_input(container))
+	ok := bool(C.append_input(l.Container))
 	if !ok {
 		err = errors.New("failed to append the input")
 	}
@@ -23,11 +21,9 @@ func (l *LLama) AppendInput() (err error) {
 }
 
 func (l *LLama) SetPrompt(prompt string) {
-	container := l.Container
-	C.set_gptparams_prompt(container, C.CString(prompt))
+	C.set_gptparams_prompt(l.Container, C.CString(prompt))
 }
 
 func (l *LLama) SetAntiPrompt(antiprompt string) {
-	container := l.Container
-	C.set_gptparams_antiprompt(container, C.CString(antiprompt))
+	C.set_gptparams_antiprompt(l.Container, C.CString(antiprompt))
 }

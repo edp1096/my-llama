@@ -3,7 +3,7 @@ package myllama
 /*
 #cgo CXXFLAGS: -Ivendors/llama.cpp -Ivendors/llama.cpp/examples
 #include <stdlib.h>
-#include "binding.h"
+#include "myllama.h"
 #include "myllama_llama_api.h"
 */
 import "C"
@@ -36,7 +36,6 @@ func (l *LLama) LoadModel(modelFNAME string) error {
 	C.set_model_path(l.Container, C.CString(modelFNAME))
 
 	result := bool(C.load_model(l.Container))
-	// result := bool(C.bd_load_model(l.Container))
 	if !result {
 		return fmt.Errorf("failed to load the model")
 	}
@@ -45,11 +44,20 @@ func (l *LLama) LoadModel(modelFNAME string) error {
 }
 
 func (l *LLama) PredictTokens() bool {
-	return bool(C.bd_predict_tokens(l.Container))
+	return bool(C.predict_tokens(l.Container))
+}
+
+func (l *LLama) FreeParams() {
+	C.free_params(l.Container)
+}
+
+func (l *LLama) FreeModel() {
+	C.llama_api_free(l.Container)
 }
 
 func (l *LLama) Free() {
-	C.llama_api_free(l.Container)
+	l.FreeParams()
+	l.FreeModel()
 }
 
 func (l *LLama) GetNumRemain() int {
@@ -90,11 +98,11 @@ func (l *LLama) LoadSession(fname string) {
 }
 
 func (l *LLama) CheckPromptOrContinue() bool {
-	return bool(C.bd_check_prompt_or_continue(l.Container))
+	return bool(C.check_prompt_or_continue(l.Container))
 }
 
 func (l *LLama) DropBackUserInput() {
-	C.bd_dropback_user_input(l.Container)
+	C.dropback_user_input(l.Container)
 }
 
 /* LLAMA_API */

@@ -4,7 +4,7 @@ $llamaCppSharedLibExt="dll"
 $dllName="llama.dll"
 $defName="llama.def"
 $libLlamaName="libllama.a"
-$libBindingName="libbinding.a"
+$libMyllamaName="libmyllama.a"
 
 $cmakePrefixPath=""
 $cmakeUseCLBLAST="OFF"
@@ -53,7 +53,7 @@ if ($args[0] -eq "clblast") {
     $dllName="llama_cl.dll"
     $defName="llama_cl.def"
     $libLlamaName="libllama_cl.a"
-    $libBindingName="libbinding_cl.a"
+    $libMyllamaName="libmyllama_cl.a"
 
     $cmakePrefixPath="../../openclblast"
     $cmakeUseCLBLAST="ON"
@@ -66,7 +66,7 @@ if ($args[0] -eq "cuda") {
     $dllName="llama_cu.dll"
     $defName="llama_cu.def"
     $libLlamaName="libllama_cu.a"
-    $libBindingName="libbinding_cu.a"
+    $libMyllamaName="libmyllama_cu.a"
 
     $cmakeUseCUDA="ON"
 }
@@ -94,10 +94,10 @@ if ($args[0] -eq "cuda") {
 }
 dlltool -k -d ./$defName -l ./$libLlamaName
 
-<# Compile binding #>
-g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples binding.cpp -o binding.o -c
+<# Compile binding - myllama, myllama_llama_api #>
+g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples myllama.cpp -o myllama.o -c
 g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples myllama_llama_api.cpp -o myllama_llama_api.o -c
-ar src $libBindingName myllama_llama_api.o binding.o
+ar src $libMyllamaName myllama_llama_api.o myllama.o
 
 
 # <# Restore overwritten vendors/llama.cpp_mod for clblast/cuda to original commit #>

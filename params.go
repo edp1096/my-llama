@@ -1,6 +1,6 @@
 package myllama
 
-// #include "binding.h"
+// #include "myllama.h"
 // #include "myllama_params.h"
 import "C"
 import (
@@ -16,7 +16,7 @@ func (l *LLama) InitContextParamsFromGptParams() {
 
 func (l *LLama) AllocateVariables() (err error) {
 	container := l.Container
-	result := bool(C.bd_allocate_variables(container))
+	result := bool(C.allocate_variables(container))
 
 	if !result {
 		err = errors.New("failed to initialize the parameters")
@@ -81,8 +81,8 @@ func (l *LLama) SetTopK(topK int) {
 func (l *LLama) SetTopP(topP float64) {
 	C.set_gptparams_top_p(l.Container, C.float(topP))
 }
-func (l *LLama) SetTemperature(temperature float64) {
-	C.set_gptparams_temperature(l.Container, C.float(temperature))
+func (l *LLama) SetTemperature(temper float64) {
+	C.set_gptparams_temperature(l.Container, C.float(temper))
 }
 func (l *LLama) SetRepeatPenalty(penalty float64) {
 	C.set_gptparams_repeat_penalty(l.Container, C.float(penalty))

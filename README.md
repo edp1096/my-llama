@@ -138,7 +138,6 @@ go build -tags cuda
 
 ## Todo
 * [ ] Add Papago, Kakao, DeepL translator
-* [ ] Remove `binding.cpp`
 
 ## Source
 * https://github.com/ggerganov/llama.cpp

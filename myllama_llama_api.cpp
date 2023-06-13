@@ -37,7 +37,8 @@ void llama_api_init_from_file(void* container, char* path_model) {
     myllama_container* c = (myllama_container*)container;
     llama_context_params ctxparams = *(llama_context_params*)c->ctxparams;
 
-    llama_context* ctx = llama_init_from_file(path_model, ctxparams);
+    // llama_context* ctx = llama_init_from_file(path_model, ctxparams);
+    auto ctx = llama_init_from_file(path_model, ctxparams);
 
     c->ctx = (void*)ctx;
 }
@@ -45,11 +46,6 @@ void llama_api_init_from_file(void* container, char* path_model) {
 void llama_api_free(void* container) {
     myllama_container* c = (myllama_container*)container;
     llama_context* ctx = (llama_context*)c->ctx;
-    gpt_params* gptparams = (gpt_params*)c->gptparams;
-
-    if (gptparams != NULL) {
-        delete gptparams;
-    }
 
     llama_free((llama_context*)c->ctx);
 }
