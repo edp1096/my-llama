@@ -5,7 +5,7 @@ Llama 7B runner on my windows machine
 ## This is a ..
 
 * Go binding for interactive mode of `llama.cpp/examples/main`
-* `cmd`
+* `examples/runner`
     * Websocket server
     * Go embedded web ui
 
@@ -22,7 +22,7 @@ Llama 7B runner on my windows machine
 ### Use this as go module
 See <a href="https://pkg.go.dev/github.com/edp1096/my-llama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama.svg" alt="Go Reference"></a> or [my-llama-app](https://github.com/edp1096/my-llama-app) repo.
 
-### runner in cmd
+### runner in `examples/runner`
 ```powershell
 # Just launch
 my-llama.exe
@@ -99,10 +99,10 @@ git clone https://github.com/edp1096/my-llama.git
 ./clean.ps1 all
 ```
 
-### Then build runner in cmd folder or in example folder
-* Build runner in cmd
+### Then build in examples folder
+* Build runner in `examples/runner` folder
 ```powershell
-cd cmd
+cd examples/runner
 
 # CPU
 go build [-tags cpu]
