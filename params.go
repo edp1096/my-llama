@@ -56,6 +56,10 @@ func (l *LLama) SetNumGpuLayers(numLayers int) {
 	C.set_gptparams_n_gpu_layers(l.Container, C.int(numLayers))
 }
 
+func (l *LLama) SetEmbedding(useEmbedding bool) {
+	C.set_gptparams_embedding(l.Container, C.bool(useEmbedding))
+}
+
 /* Setters - gpt_params / sampling parameters */
 func (l *LLama) SetNCtx(nCtx int) {
 	C.set_gptparams_n_ctx(l.Container, C.int(nCtx))

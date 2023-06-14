@@ -17,6 +17,7 @@ void set_gptparams_n_predict(void* container, int value);
 void set_gptparams_prompt(void* container, char* prompt);
 void set_gptparams_antiprompt(void* container, char* antiprompt);
 void set_gptparams_n_gpu_layers(void* container, int value);
+void set_gptparams_embedding(void* container, bool value);
 
 /* Setters - gptparams / sampling parameters */
 void set_gptparams_n_ctx(void* container, int value);

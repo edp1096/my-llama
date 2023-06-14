@@ -216,13 +216,13 @@ func (l *LLama) LlamaApiGetLogits() {
 
 // Get the embeddings for the input
 // shape: [n_embd] (1-dimensional)
-func (l *LLama) LlamaApiGetEmbeddings(embeddingSize int) []float64 {
-	embeddings := C.llama_api_get_embeddings(l.Container)
-	defer C.free(unsafe.Pointer(embeddings))
+func (l *LLama) LlamaApiGetEmbeddings(numEmbedding int) []float64 {
+	embeddingsPtr := C.llama_api_get_embeddings(l.Container)
+	// defer C.free(unsafe.Pointer(embeddingsPtr)) // When uncommented, not work why??
 
-	embeddingSlice := make([]float64, embeddingSize)
-	for i := 0; i < embeddingSize; i++ {
-		embeddingSlice[i] = float64(*(*C.float)(unsafe.Pointer(uintptr(unsafe.Pointer(&embeddings)) + uintptr(i)*unsafe.Sizeof(C.float(0)))))
+	embeddingSlice := make([]float64, numEmbedding)
+	for i := 0; i < numEmbedding; i++ {
+		embeddingSlice[i] = float64(*(*C.float)(unsafe.Pointer(uintptr(unsafe.Pointer(embeddingsPtr)) + uintptr(i)*unsafe.Sizeof(C.float(0)))))
 	}
 
 	return embeddingSlice

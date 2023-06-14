@@ -45,8 +45,6 @@ void llama_api_init_from_file(void* container, char* path_model) {
 
 void llama_api_free(void* container) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     llama_free((llama_context*)c->ctx);
 }
 
@@ -66,8 +64,6 @@ int llama_api_apply_lora_from_file(void* container, char* path_lora, char* path_
 
 int llama_api_get_kv_cache_token_count(void* container) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     int result = llama_get_kv_cache_token_count((llama_context*)c->ctx);
 
     return result;
@@ -75,15 +71,11 @@ int llama_api_get_kv_cache_token_count(void* container) {
 
 void llama_api_set_rng_seed(void* container, int seed) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     llama_set_rng_seed((llama_context*)c->ctx, seed);
 }
 
 int llama_api_get_state_size(void* container) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     int result = (int)llama_get_state_size((llama_context*)c->ctx);
 
     return result;
@@ -91,8 +83,6 @@ int llama_api_get_state_size(void* container) {
 
 int llama_api_copy_state_data(void* container, void* dst_p) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     int result = (int)llama_copy_state_data((llama_context*)c->ctx, (uint8_t*)dst_p);
 
     return result;
@@ -100,8 +90,6 @@ int llama_api_copy_state_data(void* container, void* dst_p) {
 
 int llama_api_set_state_data(void* container, void* src_p) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     int result = (int)llama_set_state_data((llama_context*)c->ctx, (uint8_t*)src_p);
 
     return result;
@@ -109,8 +97,6 @@ int llama_api_set_state_data(void* container, void* src_p) {
 
 bool llama_api_load_session_file(void* container, char* path_session, void* tokens_out, int n_token_capacity, int* n_token_count_out) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     bool result = llama_load_session_file((llama_context*)c->ctx, path_session, (llama_token*)tokens_out, (size_t)n_token_capacity, (size_t*)n_token_count_out);
 
     return result;
@@ -118,8 +104,6 @@ bool llama_api_load_session_file(void* container, char* path_session, void* toke
 
 bool llama_api_save_session_file(void* container, char* path_session, void* tokens, int n_token_count) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     bool result = llama_save_session_file((llama_context*)c->ctx, path_session, (llama_token*)tokens, (size_t)n_token_count);
 
     return result;
@@ -127,9 +111,7 @@ bool llama_api_save_session_file(void* container, char* path_session, void* toke
 
 int llama_api_eval(void* container, int* tokens, int n_tokens, int n_past, int n_threads) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
-    int result = llama_eval(ctx, tokens, n_tokens, n_past, n_threads);
+    int result = llama_eval((llama_context*)c->ctx, tokens, n_tokens, n_past, n_threads);
 
     return result;  // 0: success, 1: fail
 }
@@ -155,17 +137,13 @@ int llama_api_tokenize(void* container, char* text, bool add_bos) {
 
 int llama_api_n_vocab(void* container) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
-    int n_vocab = llama_n_vocab(ctx);
+    int n_vocab = llama_n_vocab((llama_context*)c->ctx);
 
     return n_vocab;
 }
 
 int llama_api_n_ctx(void* container) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     int n_ctx = llama_n_ctx((llama_context*)c->ctx);
 
     return n_ctx;
@@ -173,8 +151,6 @@ int llama_api_n_ctx(void* container) {
 
 int llama_api_n_embd(void* container) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     int n_embd = llama_n_embd((llama_context*)c->ctx);
 
     return n_embd;
@@ -182,15 +158,11 @@ int llama_api_n_embd(void* container) {
 
 void llama_api_get_logits(void* container) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     c->logits = llama_get_logits((llama_context*)c->ctx);
 }
 
 float* llama_api_get_embeddings(void* container) {
     myllama_container* c = (myllama_container*)container;
-    llama_context* ctx = (llama_context*)c->ctx;
-
     float* embeddings = llama_get_embeddings((llama_context*)c->ctx);
 
     return embeddings;
