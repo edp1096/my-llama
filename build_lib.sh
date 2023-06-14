@@ -30,7 +30,6 @@ elif [ "$1" = "clblast" ]; then
     cmake --install . --prefix ../..
 
     cd ../..
-    # cp -f ./lib/libOpenCL_lin64.so ../libOpenCL.so
     ar src ../libOpenCL_lin64.a ./lib/libOpenCL.so 
 
     rm -rf ./CLBlast
