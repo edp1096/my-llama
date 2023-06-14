@@ -11,6 +11,7 @@ int get_gptparams_top_k(void* container);
 float get_gptparams_top_p(void* container);
 
 /* Setters - gptparams */
+void set_gptparams_seed(void* container, int value);
 void set_gptparams_n_threads(void* container, int value);
 void set_gptparams_use_mlock(void* container, bool value);
 void set_gptparams_n_predict(void* container, int value);

@@ -40,6 +40,10 @@ func (l *LLama) GetTopP() float64 {
 }
 
 /* Setters - gpt_params */
+func (l *LLama) SetSeed(value int) {
+	C.set_gptparams_seed(l.Container, C.int(value))
+}
+
 func (l *LLama) SetNumThreads(threads int) {
 	C.set_gptparams_n_threads(l.Container, C.int(threads))
 }

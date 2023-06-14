@@ -83,6 +83,10 @@ float get_gptparams_top_p(void* container) {
 }
 
 /* Setters - gptparams. require restart */
+void set_gptparams_seed(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->seed = value;
+}
+
 void set_gptparams_n_threads(void* container, int value) {
     ((gpt_params*)((myllama_container*)container)->gptparams)->n_threads = value;
 }

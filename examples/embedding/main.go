@@ -15,7 +15,8 @@ func main() {
 		panic(err)
 	}
 
-	// l.LlamaApiInitBackend()
+	l.LlamaApiInitBackend()
+	l.InitGptParams()
 
 	l.SetNumThreads(4)
 	l.SetUseMlock(true)
@@ -32,14 +33,12 @@ func main() {
 	numPast := 0
 	prompt := " " + "Hello world!"
 
-	/* Tokenize */
 	tokenData, tokenSize := l.LlamaApiTokenize(prompt, true)
 	for i := 0; i < tokenSize; i++ {
 		tokenString := l.LlamaApiTokenToStr(tokenData[i])
 		fmt.Printf("Token %d -> %s\n", tokenData[i], tokenString)
 	}
 
-	/* Get embedding */
 	isOK := l.LlamaApiEval(tokenData, tokenSize, numPast)
 	if !isOK {
 		panic("Eval failed")
