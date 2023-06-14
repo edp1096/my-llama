@@ -1,4 +1,4 @@
-package main // import "the_quick_brown_fox"
+package main // import "minimal"
 
 import (
 	"fmt"
@@ -8,31 +8,34 @@ import (
 
 func main() {
 	modelName := "vicuna-7B-1.1-ggml_q4_0-ggjt_v3.bin"
-	prompt := "The quick brown fox"
-
-	numThreads := 4
 	numPredict := 16
-
-	numPast := 0
 
 	l, err := llama.New()
 	if err != nil {
 		panic(err)
 	}
 
+	l.LlamaApiInitBackend()
 	l.InitGptParams()
 
-	l.SetNumThreads(numThreads)
+	l.SetNumThreads(4)
 	l.SetUseMlock(true)
 	l.SetNumPredict(numPredict)
 	l.SetNumGpuLayers(32)
+	l.SetSeed(42)
 
 	l.InitContextParamsFromGptParams()
 
-	l.LlamaApiInitBackend()
-	l.LlamaApiInitFromFile(modelName)
+	// l.LlamaApiInitFromFile(modelName)
+	err = l.LoadModel(modelName)
+	if err != nil {
+		panic(err)
+	}
 
 	l.AllocateTokens()
+
+	numPast := 0
+	prompt := "The quick brown fox"
 
 	promptTokens, promptNumTokens := l.LlamaApiTokenize(prompt, true)
 	fmt.Println("promptTokens:", promptTokens)
@@ -50,8 +53,7 @@ func main() {
 
 	for i := 0; i < numPredict; i++ {
 		l.LlamaApiGetLogits()
-		numVocab := 0
-		numVocab = l.LlamaApiNumVocab()
+		numVocab := l.LlamaApiNumVocab()
 
 		l.PrepareCandidates(numVocab)
 		nextToken := l.LlamaApiSampleToken()

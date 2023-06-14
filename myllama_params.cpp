@@ -83,6 +83,10 @@ float get_gptparams_top_p(void* container) {
 }
 
 /* Setters - gptparams. require restart */
+void set_gptparams_seed(void* container, int value) {
+    ((gpt_params*)((myllama_container*)container)->gptparams)->seed = value;
+}
+
 void set_gptparams_n_threads(void* container, int value) {
     ((gpt_params*)((myllama_container*)container)->gptparams)->n_threads = value;
 }
@@ -97,20 +101,22 @@ void set_gptparams_n_predict(void* container, int value) {
 
 void set_gptparams_prompt(void* container, char* prompt) {
     myllama_container* c = (myllama_container*)container;
-
     ((gpt_params*)c->gptparams)->prompt = strdup(prompt);
 }
 
 void set_gptparams_antiprompt(void* container, char* antiprompt) {
     myllama_container* c = (myllama_container*)container;
-
     ((gpt_params*)c->gptparams)->antiprompt.push_back(strdup(antiprompt));
 }
 
 void set_gptparams_n_gpu_layers(void* container, int value) {
     myllama_container* c = (myllama_container*)container;
-
     ((gpt_params*)c->gptparams)->n_gpu_layers = value;
+}
+
+void set_gptparams_embedding(void* container, bool value) {
+    myllama_container* c = (myllama_container*)container;
+    ((gpt_params*)c->gptparams)->embedding = value;
 }
 
 /* Setters - gptparams / sampling parameters */

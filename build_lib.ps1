@@ -11,15 +11,8 @@ $cmakeUseCLBLAST="OFF"
 $cmakeUseCUDA="OFF"
 
 
-<# All #>
-# llama.cpp compile error bdbda1b1 so always copy
-# cp -f llama.cpp_mod/* vendors/llama.cpp/
-
 <# Prepare clblast and opencl #>
 if ($args[0] -eq "clblast") {
-    # llama.cpp compile error bdbda1b1 so always copy
-    # cp -f llama.cpp_mod/* vendors/llama.cpp/
-
     if (-not (Test-Path -Path "opencl.zip")) {
         echo "Downloading OpenCL..."
         curl --progress-bar -Lo opencl.zip "https://github.com/KhronosGroup/OpenCL-SDK/releases/download/v2023.04.17/OpenCL-SDK-v2023.04.17-Win-x64.zip"
@@ -27,7 +20,6 @@ if ($args[0] -eq "clblast") {
 
     if (-not (Test-Path -Path "clblast.zip")) {
         echo "Downloading CLBlast..."
-        # curl --progress-bar -Lo clblast.zip "https://github.com/CNugteren/CLBlast/releases/download/1.5.3/CLBlast-1.5.3-Windows-x64.zip"
         # curl --progress-bar -Lo clblast.zip "https://ci.appveyor.com/api/buildjobs/nikwayllaa7nia4c/artifacts/CLBlast-1.6.0-Windows-x64.zip"
         curl --progress-bar -Lo clblast.7z "https://github.com/CNugteren/CLBlast/releases/download/1.6.0/CLBlast-1.6.0-windows-x64.7z"
     }
@@ -46,7 +38,7 @@ if ($args[0] -eq "clblast") {
     rm -rf CLBlast-1.6.0-windows-x64
 
     cp -rf openclblast/OpenCL-SDK-v2023.04.17-Win-x64/* openclblast
-    cp -rf openclblast_cmake/*.cmake openclblast/lib/cmake/CLBlast
+    cp -rf vendors/openclblast_cmake/*.cmake openclblast/lib/cmake/CLBlast
 
     rm -rf openclblast/OpenCL-SDK-v2023.04.17-Win-x64
 
@@ -60,9 +52,6 @@ if ($args[0] -eq "clblast") {
 }
 
 if ($args[0] -eq "cuda") {
-    # llama.cpp compile error bdbda1b1 so always copy
-    # cp -f llama.cpp_mod/* vendors/llama.cpp/
-
     $dllName="llama_cu.dll"
     $defName="llama_cu.def"
     $libLlamaName="libllama_cu.a"

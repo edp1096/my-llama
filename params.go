@@ -40,6 +40,10 @@ func (l *LLama) GetTopP() float64 {
 }
 
 /* Setters - gpt_params */
+func (l *LLama) SetSeed(value int) {
+	C.set_gptparams_seed(l.Container, C.int(value))
+}
+
 func (l *LLama) SetNumThreads(threads int) {
 	C.set_gptparams_n_threads(l.Container, C.int(threads))
 }
@@ -54,6 +58,10 @@ func (l *LLama) SetNumPredict(predicts int) {
 
 func (l *LLama) SetNumGpuLayers(numLayers int) {
 	C.set_gptparams_n_gpu_layers(l.Container, C.int(numLayers))
+}
+
+func (l *LLama) SetEmbedding(useEmbedding bool) {
+	C.set_gptparams_embedding(l.Container, C.bool(useEmbedding))
 }
 
 /* Setters - gpt_params / sampling parameters */
