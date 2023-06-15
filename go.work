@@ -4,6 +4,6 @@ use (
 	.
 	./examples/embedding
 	./examples/minimal
-	./examples/rest
+	./examples/rest-server
 	./examples/runner
 )

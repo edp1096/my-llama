@@ -9,5 +9,5 @@ func main() {
 		return c.SendString("Hello, World 👋!")
 	})
 
-	app.Listen(":8864")
+	app.Listen("127.0.0.1:8864")
 }
