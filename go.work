@@ -2,7 +2,8 @@ go 1.20
 
 use (
 	.
-	./examples/runner
 	./examples/embedding
 	./examples/minimal
+	./examples/rest
+	./examples/runner
 )
