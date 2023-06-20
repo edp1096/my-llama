@@ -136,7 +136,7 @@ numPredict: 16
  */
 ```
 
-### runner in `examples/runner`
+### [Runner](/examples/runner/main.go) in [Release page](https://github.com/edp1096/my-llama/releases)
 ```powershell
 # Just launch
 my-llama.exe
