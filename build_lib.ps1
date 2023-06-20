@@ -11,36 +11,39 @@ $cmakeUseCLBLAST="OFF"
 $cmakeUseCUDA="OFF"
 
 
+import-module bitstransfer
+
 <# Prepare clblast and opencl #>
 if ($args[0] -eq "clblast") {
     if (-not (Test-Path -Path "opencl.zip")) {
         echo "Downloading OpenCL..."
-        curl --progress-bar -Lo opencl.zip "https://github.com/KhronosGroup/OpenCL-SDK/releases/download/v2023.04.17/OpenCL-SDK-v2023.04.17-Win-x64.zip"
+        start-bitstransfer -destination opencl.zip -source "https://github.com/KhronosGroup/OpenCL-SDK/releases/download/v2023.04.17/OpenCL-SDK-v2023.04.17-Win-x64.zip"
     }
 
     if (-not (Test-Path -Path "clblast.zip")) {
         echo "Downloading CLBlast..."
-        # curl --progress-bar -Lo clblast.zip "https://ci.appveyor.com/api/buildjobs/nikwayllaa7nia4c/artifacts/CLBlast-1.6.0-Windows-x64.zip"
-        curl --progress-bar -Lo clblast.7z "https://github.com/CNugteren/CLBlast/releases/download/1.6.0/CLBlast-1.6.0-windows-x64.7z"
+        # "https://ci.appveyor.com/api/buildjobs/nikwayllaa7nia4c/artifacts/CLBlast-1.6.0-Windows-x64.zip"
+        start-bitstransfer -destination clblast.7z -source "https://github.com/CNugteren/CLBlast/releases/download/1.6.0/CLBlast-1.6.0-windows-x64.7z"
     }
 
     mkdir -f openclblast >$null
-    rm -rf openclblast/*
+    remove-item -r -force -ea 0 openclblast/*
     tar -xf opencl.zip -C openclblast
     # tar -xf clblast.zip -C openclblast
     if (-not (Test-Path -Path "7zr.exe")) {
         echo "Downloading 7zr..."
-        curl --progress-bar -Lo 7zr.exe "https://www.7-zip.org/a/7zr.exe"
+        start-bitstransfer -destination 7zr.exe -source "https://www.7-zip.org/a/7zr.exe"
     }
     .\7zr.exe x -y .\clblast.7z -o"." -r
-    mv -f CLBlast-1.6.0-windows-x64/* openclblast/
-    rm -f ./7zr.exe
-    rm -rf CLBlast-1.6.0-windows-x64
+    # mv -f CLBlast-1.6.0-windows-x64/* openclblast/
+    move-item -force CLBlast-1.6.0-windows-x64/* openclblast/
+    remove-item -force -ea 0 ./7zr.exe
+    remove-item -r -force -ea 0 CLBlast-1.6.0-windows-x64
 
-    cp -rf openclblast/OpenCL-SDK-v2023.04.17-Win-x64/* openclblast
-    cp -rf vendors/openclblast_cmake/*.cmake openclblast/lib/cmake/CLBlast
+    copy-item -r -force openclblast/OpenCL-SDK-v2023.04.17-Win-x64/* openclblast
+    copy-item -r -force vendors/openclblast_cmake/*.cmake openclblast/lib/cmake/CLBlast
 
-    rm -rf openclblast/OpenCL-SDK-v2023.04.17-Win-x64
+    remove-item -r -force -ea 0 openclblast/OpenCL-SDK-v2023.04.17-Win-x64
 
     $dllName="llama_cl.dll"
     $defName="llama_cl.def"
@@ -70,7 +73,7 @@ cd build
 cmake .. -DCMAKE_PREFIX_PATH="$cmakePrefixPath" -DLLAMA_CUBLAS="$cmakeUseCUDA" -DLLAMA_CLBLAST="$cmakeUseCLBLAST" -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
 cmake --build . --config Release
 
-cp bin/Release/$llamaCppSharedLibName.$llamaCppSharedLibExt ../../../$dllName
+copy-item -force bin/Release/$llamaCppSharedLibName.$llamaCppSharedLibExt ../../../$dllName
 
 cd ../../..
 

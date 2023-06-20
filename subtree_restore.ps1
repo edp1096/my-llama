@@ -1,2 +1,2 @@
-# Restore subtree
-git restore vendors
+git checkout -- vendors/llama.cpp
+git clean vendors/llama.cpp -df
