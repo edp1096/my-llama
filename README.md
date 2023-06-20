@@ -12,9 +12,9 @@ Llama 7B runner on my windows machine
 
 ## Download pre-compiled binary, dll
 * [DLL](https://github.com/edp1096/my-llama/releases)
-* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.19/my-llama_cpu.zip)
-* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.19/my-llama_cl.zip)
-* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.19/my-llama_cu.zip) - Require [CUDA toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [this](https://github.com/ggerganov/llama.cpp/releases/download/master-66874d4/cudart-llama-bin-win-cu12.1.0-x64.zip)
+* [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.20/my-llama_cpu.zip)
+* [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.20/my-llama_cl.zip)
+* [MS-Windows cuda](https://github.com/edp1096/my-llama/releases/download/v0.1.20/my-llama_cu.zip) - Require [CUDA toolkit 12](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64) or [this](https://github.com/ggerganov/llama.cpp/releases/download/master-66874d4/cudart-llama-bin-win-cu12.1.0-x64.zip)
 
 
 ## Usage
@@ -22,13 +22,16 @@ Llama 7B runner on my windows machine
 ### Use this as go module
 See <a href="https://pkg.go.dev/github.com/edp1096/my-llama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama.svg" alt="Go Reference"></a> or [my-llama-app](https://github.com/edp1096/my-llama-app) repo.
 
-* Compile
+* Compile - Should be placed shared libraries
 ```sh
-$ go build
-# or
-$ go build -tags clblast
-# or
-$ go build -tags cuda
+# CPU
+go build [-tags cpu]
+
+# GPU/CLBlast
+go build -tags clblast
+
+# GPU/CUDA
+go build -tags cuda
 ```
 
 * [Example](/examples/minimal/main.go)
@@ -133,7 +136,7 @@ numPredict: 16
  */
 ```
 
-### runner in `examples/runner`
+### [Runner](/examples/runner/main.go) in [Release page](https://github.com/edp1096/my-llama/releases)
 ```powershell
 # Just launch
 my-llama.exe
