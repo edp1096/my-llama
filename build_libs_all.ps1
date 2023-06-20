@@ -17,5 +17,6 @@ git restore vendors
 
 <# cleaning #>
 cd bin
-remove-item -force -ea 0 *.dll *.exe
+remove-item -force -ea 0 *.dll
+remove-item -force -ea 0 *.exe
 cd ..

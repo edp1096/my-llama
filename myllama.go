@@ -1,7 +1,7 @@
 package myllama
 
 /*
-#cgo CXXFLAGS: -Ivendors/llama.cpp -Ivendors/llama.cpp/examples
+#cgo CXXFLAGS: -Illama.cpp -Illama.cpp/examples
 #include <stdlib.h>
 #include "myllama.h"
 #include "myllama_llama_api.h"

@@ -1,1 +1,1 @@
-git subtree add --prefix vendors/llama.cpp https://github.com/ggerganov/llama.cpp.git master --squash
+git subtree add --prefix llama.cpp https://github.com/ggerganov/llama.cpp.git master --squash

@@ -1,2 +1,2 @@
-git checkout -- vendors/llama.cpp
-git clean vendors/llama.cpp -df
+git checkout -- llama.cpp
+git clean llama.cpp -df

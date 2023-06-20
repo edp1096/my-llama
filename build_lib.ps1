@@ -1,3 +1,5 @@
+$threadCount = 8
+
 $llamaCppSharedLibName="llama"
 $llamaCppSharedLibExt="dll"
 
@@ -11,6 +13,7 @@ $cmakeUseCLBLAST="OFF"
 $cmakeUseCUDA="OFF"
 
 
+cd vendors
 import-module bitstransfer
 
 <# Prepare clblast and opencl #>
@@ -41,7 +44,7 @@ if ($args[0] -eq "clblast") {
     remove-item -r -force -ea 0 CLBlast-1.6.0-windows-x64
 
     copy-item -r -force openclblast/OpenCL-SDK-v2023.04.17-Win-x64/* openclblast
-    copy-item -r -force vendors/openclblast_cmake/*.cmake openclblast/lib/cmake/CLBlast
+    copy-item -r -force openclblast_cmake/*.cmake openclblast/lib/cmake/CLBlast
 
     remove-item -r -force -ea 0 openclblast/OpenCL-SDK-v2023.04.17-Win-x64
 
@@ -50,7 +53,7 @@ if ($args[0] -eq "clblast") {
     $libLlamaName="libllama_cl.a"
     $libMyllamaName="libmyllama_cl.a"
 
-    $cmakePrefixPath="../../openclblast"
+    $cmakePrefixPath="../vendors/openclblast"
     $cmakeUseCLBLAST="ON"
 }
 
@@ -63,15 +66,25 @@ if ($args[0] -eq "cuda") {
     $cmakeUseCUDA="ON"
 }
 
+cd ..
 
-<# Compile vendors/llama.cpp - msvc/cmake #>
-cd vendors/llama.cpp
 
-mkdir -f build >$null
-cd build
+<# Compile llama.cpp - msvc/cmake #>
+cd llama.cpp
 
-cmake .. -DCMAKE_PREFIX_PATH="$cmakePrefixPath" -DLLAMA_CUBLAS="$cmakeUseCUDA" -DLLAMA_CLBLAST="$cmakeUseCLBLAST" -DBUILD_SHARED_LIBS=1 -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_TESTS=0
-cmake --build . --config Release
+# mkdir -f build >$null
+# cd build
+
+cmake -B ../build . `
+    -DCMAKE_CXX_FLAGS="/EHsc /wd4819" -DCMAKE_CUDA_FLAGS="-Xcompiler /wd4819" `
+    -DCMAKE_PREFIX_PATH="$cmakePrefixPath" `
+    -DBUILD_SHARED_LIBS="ON" `
+    -DLLAMA_CUBLAS="$cmakeUseCUDA" -DLLAMA_CLBLAST="$cmakeUseCLBLAST" `
+    -DLLAMA_BUILD_EXAMPLES="OFF" -DLLAMA_BUILD_TESTS="OFF"
+
+cd ../build
+
+cmake --build . --config Release -j $threadCount
 
 copy-item -force bin/Release/$llamaCppSharedLibName.$llamaCppSharedLibExt ../../../$dllName
 
@@ -87,12 +100,20 @@ if ($args[0] -eq "cuda") {
 dlltool -k -d ./$defName -l ./$libLlamaName
 
 <# Compile binding - myllama, myllama_llama_api #>
-g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples myllama.cpp -o myllama.o -c
-g++ -O3 -std=c++11 -fPIC -march=native -mtune=native -I./vendors/llama.cpp -I./vendors/llama.cpp/examples myllama_llama_api.cpp -o myllama_llama_api.o -c
+g++ `
+    -O3 -std=c++11 -fPIC -march=native -mtune=native `
+    -I./llama.cpp -I./llama.cpp/examples `
+    myllama.cpp -o myllama.o -c
+g++ `
+    -O3 -std=c++11 -fPIC -march=native -mtune=native `
+    -I./llama.cpp -I./llama.cpp/examples `
+    myllama_llama_api.cpp -o myllama_llama_api.o -c
+
 ar src $libMyllamaName myllama_llama_api.o myllama.o
 
 
-# <# Restore overwritten vendors/llama.cpp_mod for clblast/cuda to original commit #>
-if ($args[0] -eq "clblast" -or $args[0] -eq "cuda") {
-    git restore vendors
-}
+# <# Restore overwritten llama.cpp_mod for clblast/cuda to original commit #>
+# No more necessary
+# if ($args[0] -eq "clblast" -or $args[0] -eq "cuda") {
+#     git restore vendors
+# }

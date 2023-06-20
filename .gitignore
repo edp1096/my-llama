@@ -29,7 +29,7 @@ llama.def
 llama_cl.def
 llama_cu.def
 
-openclblast/
+vendors/openclblast/
 
 clblast.7z
 clblast.zip

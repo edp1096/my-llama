@@ -1,12 +1,10 @@
-git restore vendors
-
 <# cpu #>
 ./clean.ps1
 ./build_lib.ps1
 
 cd examples/runner
 go build -tags cpu -trimpath -ldflags="-w -s" -o ../../bin/run-myllama_cpu.exe
-cp -f ../../llama.dll ../../bin/
+copy-item -force ../../llama.dll ../../bin/
 cd ../..
 
 cd bin
@@ -21,8 +19,8 @@ cd ..
 
 cd examples/runner
 go build -tags clblast -trimpath -ldflags="-w -s" -o ../../bin/run-myllama_cl.exe
-cp -f ../../llama_cl.dll ../../bin/
-cp -f ../../openclblast/lib/clblast.dll ../../bin/
+copy-item -force ../../llama_cl.dll ../../bin/
+copy-item -force ../../openclblast/lib/clblast.dll ../../bin/
 cd ../..
 
 cd bin
@@ -37,7 +35,7 @@ cd ..
 
 cd examples/runner
 go build -tags cuda -trimpath -ldflags="-w -s" -o ../../bin/run-myllama_cu.exe
-cp -f ../../llama_cu.dll ../../bin/
+copy-item -force ../../llama_cu.dll ../../bin/
 cd ../..
 
 cd bin
@@ -48,5 +46,6 @@ cd ..
 
 <# cleaning #>
 cd bin
-rm -f *.dll *.exe
+remove-item -force -ea 0 *.dll
+remove-item -force -ea 0 *.exe
 cd ..
