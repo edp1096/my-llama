@@ -1,5 +1,6 @@
 .vscode
 /bin/
+/build
 *.a
 !libllama.a
 !libllama_lin64.a

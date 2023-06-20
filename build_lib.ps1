@@ -86,9 +86,9 @@ cd ../build
 
 cmake --build . --config Release -j $threadCount
 
-copy-item -force bin/Release/$llamaCppSharedLibName.$llamaCppSharedLibExt ../../../$dllName
+copy-item -force bin/Release/$llamaCppSharedLibName.$llamaCppSharedLibExt ../$dllName
 
-cd ../../..
+cd ..
 
 gendef ./$dllName
 if ($args[0] -eq "clblast") {

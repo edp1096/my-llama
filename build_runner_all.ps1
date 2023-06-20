@@ -20,7 +20,7 @@ cd ..
 cd examples/runner
 go build -tags clblast -trimpath -ldflags="-w -s" -o ../../bin/run-myllama_cl.exe
 copy-item -force ../../llama_cl.dll ../../bin/
-copy-item -force ../../openclblast/lib/clblast.dll ../../bin/
+copy-item -force ../../vendors/openclblast/lib/clblast.dll ../../bin/
 cd ../..
 
 cd bin
