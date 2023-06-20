@@ -22,6 +22,117 @@ Llama 7B runner on my windows machine
 ### Use this as go module
 See <a href="https://pkg.go.dev/github.com/edp1096/my-llama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama.svg" alt="Go Reference"></a> or [my-llama-app](https://github.com/edp1096/my-llama-app) repo.
 
+* Compile
+```sh
+$ go build
+# or
+$ go build -tags clblast
+# or
+$ go build -tags cuda
+```
+
+* [Example](/examples/minimal/main.go)
+```go
+package main // import "minimal"
+
+import (
+	"fmt"
+
+	llama "github.com/edp1096/my-llama"
+)
+
+func main() {
+	modelName := "vicuna-7B-1.1-ggml_q4_0-ggjt_v3.bin"
+	numPredict := 16
+
+	l, err := llama.New()
+	if err != nil {
+		panic(err)
+	}
+
+	l.LlamaApiInitBackend()
+	l.InitGptParams()
+
+	l.SetNumThreads(4)
+	l.SetUseMlock(true)
+	l.SetNumPredict(numPredict)
+	l.SetNumGpuLayers(32)
+	l.SetSeed(42)
+
+	l.InitContextParamsFromGptParams()
+
+	err = l.LoadModel(modelName)
+	if err != nil {
+		panic(err)
+	}
+
+	l.AllocateTokens()
+
+	numPast := 0
+	prompt := "The quick brown fox"
+
+	promptTokens, promptNumTokens := l.LlamaApiTokenize(prompt, true)
+	fmt.Println("promptTokens:", promptTokens)
+
+	if promptNumTokens < 1 {
+		fmt.Println("numToken < 1")
+		panic("numToken < 1")
+	}
+
+	isOK := l.LlamaApiEval(promptTokens, promptNumTokens, numPast)
+	numPast += promptNumTokens
+
+	fmt.Println("n_prompt_token, n_past, isOK:", promptNumTokens, numPast, isOK)
+	fmt.Println("numPredict:", numPredict)
+
+	for i := 0; i < numPredict; i++ {
+		l.LlamaApiGetLogits()
+		numVocab := l.LlamaApiNumVocab()
+
+		l.PrepareCandidates(numVocab)
+		nextToken := l.LlamaApiSampleToken()
+		nextTokenStr := l.LlamaApiTokenToStr(nextToken)
+
+		fmt.Print(nextTokenStr)
+		l.LlamaApiEval([]int32{nextToken}, 1, numPast)
+
+		numPast++
+	}
+
+	fmt.Println()
+
+	l.LlamaApiFree()
+}
+
+/*
+$ ./minimal
+System Info: AVX = 1 | AVX2 = 1 | AVX512 = 0 | AVX512_VBMI = 0 | AVX512_VNNI = 0 | FMA = 1 | NEON = 0 | ARM_FMA = 0 | F16C = 1 | FP16_VA = 0 | WASM_SIMD = 0 | BLAS = 0 | SSE3 = 1 | VSX = 0 |
+Model: vicuna-7B-1.1-ggml_q4_0-ggjt_v3.bin
+llama.cpp: loading model from vicuna-7B-1.1-ggml_q4_0-ggjt_v3.bin
+llama_model_load_internal: format     = ggjt v3 (latest)
+llama_model_load_internal: n_vocab    = 32000
+llama_model_load_internal: n_ctx      = 512
+llama_model_load_internal: n_embd     = 4096
+llama_model_load_internal: n_mult     = 256
+llama_model_load_internal: n_head     = 32
+llama_model_load_internal: n_layer    = 32
+llama_model_load_internal: n_rot      = 128
+llama_model_load_internal: ftype      = 2 (mostly Q4_0)
+llama_model_load_internal: n_ff       = 11008
+llama_model_load_internal: n_parts    = 1
+llama_model_load_internal: model size = 7B
+llama_model_load_internal: ggml ctx size =    0.07 MB
+llama_model_load_internal: mem required  = 5407.71 MB (+ 1026.00 MB per state)
+...................................................................................................
+llama_init_from_file: kv self size  =  256.00 MB
+promptTokens: [1 1576 4996 17354 1701 29916]
+n_prompt_token, n_past, isOK: 6 6 true
+numPredict: 16
+ jumps over the lazy dog.
+...
+ */
+```
+
 ### runner in `examples/runner`
 ```powershell
 # Just launch

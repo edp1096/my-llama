@@ -1,14 +1,11 @@
-cd vendors/llama.cpp
-
-make clean; rm -rf build/*
-
-cd ../..
+rm -rf build
+cd llama.cpp; make clean; cd ..
 
 rm -f ./*.o
 
-
 if [ "$1" = "all" ]; then
-    rm -rf openclblast
+    rm -rf vendors/openclblast
 fi
 
-git restore vendors
+git checkout -- llama.cpp
+git clean llama.cpp -df

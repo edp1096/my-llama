@@ -8,11 +8,11 @@ rm -f vendors/*.a
 rm -f vendors/*.def
 rm -f vendors/*.dll
 
-rm -f vendors/llama.cpp/*.o
-rm -f vendors/llama.cpp/*.a
+rm -f llama.cpp/*.o
+rm -f llama.cpp/*.a
 
-rm -rf vendors/llama.cpp/build
-rm -f vendors/llama.cpp/build-info.h
+rm -rf build
+rm -f llama.cpp/build-info.h
 
 rm -f 7zr.exe
 
