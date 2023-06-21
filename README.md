@@ -105,7 +105,8 @@ $ go build -tags clblast
 # GPU/CUDA
 $ go build -tags cuda
 
-# Copy shared libraries to folder where executable file exists
+# Before run, copy shared libraries(DLL) to folder where executable file exists
+
 --------------------------------------------------
 
 $ ./minimal
