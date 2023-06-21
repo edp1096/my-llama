@@ -8,7 +8,7 @@ Llama 7B runner on my windows machine
     * Go embedded web ui
 
 
-## Download pre-compiled binary, dll
+## DLL and pre-compiled example/runner
 * [DLL](https://github.com/edp1096/my-llama/releases)
 * [MS-Windows cpu](https://github.com/edp1096/my-llama/releases/download/v0.1.20/my-llama_cpu.zip)
 * [MS-Windows clblast](https://github.com/edp1096/my-llama/releases/download/v0.1.20/my-llama_cl.zip)
