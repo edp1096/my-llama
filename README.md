@@ -135,16 +135,6 @@ numPredict: 16
  */
 ```
 
-### [Runner](/examples/runner/main.go) in [Release page](https://github.com/edp1096/my-llama/releases)
-```powershell
-# Just launch
-my-llama.exe
-
-# Launch with browser open
-my-llama.exe -b
-```
-* When modified parameters in panel seem not working, try refresh the browser screen
-
 
 ## Build from source
 
