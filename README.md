@@ -22,18 +22,6 @@ Llama 7B runner on my windows machine
 ### Use this as go module
 See <a href="https://pkg.go.dev/github.com/edp1096/my-llama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama.svg" alt="Go Reference"></a> or [my-llama-app](https://github.com/edp1096/my-llama-app) repo.
 
-* Compile - Should be placed shared libraries
-```sh
-# CPU
-go build [-tags cpu]
-
-# GPU/CLBlast
-go build -tags clblast
-
-# GPU/CUDA
-go build -tags cuda
-```
-
 * [Example](/examples/minimal/main.go)
 ```go
 package main // import "minimal"
@@ -108,6 +96,18 @@ func main() {
 }
 
 /*
+# CPU
+$ go build [-tags cpu]
+
+# GPU/CLBlast
+$ go build -tags clblast
+
+# GPU/CUDA
+$ go build -tags cuda
+
+# Copy shared libraries to folder where executable file exists
+--------------------------------------------------
+
 $ ./minimal
 System Info: AVX = 1 | AVX2 = 1 | AVX512 = 0 | AVX512_VBMI = 0 | AVX512_VNNI = 0 | FMA = 1 | NEON = 0 | ARM_FMA = 0 | F16C = 1 | FP16_VA = 0 | WASM_SIMD = 0 | BLAS = 0 | SSE3 = 1 | VSX = 0 |
 Model: vicuna-7B-1.1-ggml_q4_0-ggjt_v3.bin
