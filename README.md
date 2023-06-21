@@ -20,7 +20,7 @@ Llama 7B runner on my windows machine
 ## Usage
 
 ### Use this as go module
-See <a href="https://pkg.go.dev/github.com/edp1096/my-llama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama.svg" alt="Go Reference"></a> or [my-llama-app](https://github.com/edp1096/my-llama-app) repo.
+See <a href="https://pkg.go.dev/github.com/edp1096/my-llama"><img src="https://pkg.go.dev/badge/github.com/edp1096/my-llama.svg" alt="Go Reference"></a> or [examples](/examples).
 
 * [Example](/examples/minimal/main.go)
 ```go
