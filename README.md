@@ -1,5 +1,3 @@
-![image description](doc/screenshot.gif)
-
 Llama 7B runner on my windows machine
 
 ## This is a ..
