@@ -92,8 +92,9 @@ func main() {
 
 	l.LlamaApiFree()
 }
-
-/*
+```
+* Compile and run
+```powershell
 # CPU
 $ go build [-tags cpu]
 
@@ -103,9 +104,7 @@ $ go build -tags clblast
 # GPU/CUDA
 $ go build -tags cuda
 
-# Before run, copy shared libraries(DLL) to folder where executable file exists
-
---------------------------------------------------
+# Before run, copy shared libraries(*.dll or *.so) to folder where executable file exists
 
 $ ./minimal
 System Info: AVX = 1 | AVX2 = 1 | AVX512 = 0 | AVX512_VBMI = 0 | AVX512_VNNI = 0 | FMA = 1 | NEON = 0 | ARM_FMA = 0 | F16C = 1 | FP16_VA = 0 | WASM_SIMD = 0 | BLAS = 0 | SSE3 = 1 | VSX = 0 |
@@ -132,7 +131,6 @@ n_prompt_token, n_past, isOK: 6 6 true
 numPredict: 16
  jumps over the lazy dog.
 ...
- */
 ```
 
 
@@ -202,21 +200,6 @@ git clone https://github.com/edp1096/my-llama.git
 ./clean.ps1 all
 ```
 
-### Then build in examples folder
-* Build runner in `examples/runner` folder
-```powershell
-cd examples/runner
-
-# CPU
-go build [-tags cpu]
-
-# GPU/CLBlast
-go build -tags clblast
-
-# GPU/CUDA
-go build -tags cuda
-```
-
 ### Linux
 * Build library
 ```sh
@@ -233,13 +216,13 @@ go build -tags cuda
 ```sh
 ./clean.sh
 ```
-* Tested with nVidia driver 530, CUDA toolkit 12.1
-    * Ubuntu 20.04, RTX 1080ti
-    * Ubuntu 20.04, RTX 3090
+* Tested
+	* NVidia driver 530, CUDA toolkit 12.1
+    * Ubuntu 20.04, RTX 1080ti / RTX 3090
     * WSL Ubuntu 22.04, RTX 3060ti
 * WSL
-    * Because [not support opencl](https://github.com/microsoft/WSL/issues/6951), clblast not work
-    * Set environment value `export GGML_CUDA_NO_PINNED=1` if CUDA not work
+    * clblast - [not support opencl](https://github.com/microsoft/WSL/issues/6951), so not work
+    * cuda - Set environment value `export GGML_CUDA_NO_PINNED=1` if out of memory error
 
 
 ## Source
